@@ -4,8 +4,12 @@ public with sharing class MarkdownImageHandler {
   private static final Integer MAX_TOTAL_IMAGE_BYTES = 6 * 1024 * 1024; // 6 MB
   private static final Integer CPU_TIME_THRESHOLD_MS = 10000; // 10 seconds
   private static final Integer HEAP_BUFFER_BYTES = 256 * 1024; // 256 KB
-  private static final Set<String> SUPPORTED_IMAGE_MIME_PREFIXES = new Set<String>{
-    'image/'
+  private static final Set<String> SUPPORTED_IMAGE_MIME_TYPES = new Set<String>{
+    'image/png',
+    'image/jpeg',
+    'image/svg+xml',
+    'image/gif',
+    'image/webp'
   };
 
   @AuraEnabled
@@ -204,6 +208,12 @@ public with sharing class MarkdownImageHandler {
         );
       }
 
+      if (!isValidBase64(match.base64Data)) {
+        throw new MarkdownImageHandlerException(
+          'Embedded image data is not valid Base64.'
+        );
+      }
+
       Long bytes = estimateBytesFromBase64(match.base64Data);
       if (bytes > MAX_IMAGE_BYTES) {
         throw new MarkdownImageHandlerException(
@@ -225,12 +235,7 @@ public with sharing class MarkdownImageHandler {
     if (String.isBlank(mimeType)) {
       return false;
     }
-    for (String prefix : SUPPORTED_IMAGE_MIME_PREFIXES) {
-      if (mimeType.startsWith(prefix)) {
-        return true;
-      }
-    }
-    return false;
+    return SUPPORTED_IMAGE_MIME_TYPES.contains(mimeType.toLowerCase());
   }
 
   private static Long estimateBytesFromBase64(String base64Data) {
@@ -254,6 +259,19 @@ public with sharing class MarkdownImageHandler {
     }
     String base64Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
     return base64Chars.contains(c);
+  }
+
+  @TestVisible
+  private static Boolean isValidBase64(String base64Data) {
+    if (String.isBlank(base64Data)) {
+      return false;
+    }
+    for (Integer i = 0; i < base64Data.length(); i++) {
+      if (!isBase64Char(base64Data.substring(i, i + 1))) {
+        return false;
+      }
+    }
+    return true;
   }
 
   @TestVisible

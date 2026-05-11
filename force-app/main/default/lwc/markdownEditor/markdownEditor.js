@@ -512,7 +512,27 @@ export default class MarkdownEditor extends LightningElement {
   }
 
   handleSave() {
-    if (this.isSaving || !this.recordId || !this.normalizedFieldApiName) {
+    if (this.isSaving) {
+      return;
+    }
+    if (!this.recordId) {
+      this.dispatchEvent(
+        new ShowToastEvent({
+          title: this.labels.saveErrorTitle,
+          message: this.labels.recordIdMissingError,
+          variant: "error"
+        })
+      );
+      return;
+    }
+    if (!this.normalizedFieldApiName) {
+      this.dispatchEvent(
+        new ShowToastEvent({
+          title: this.labels.saveErrorTitle,
+          message: this.labels.fieldApiNameMissingError,
+          variant: "error"
+        })
+      );
       return;
     }
     this.isSaving = true;

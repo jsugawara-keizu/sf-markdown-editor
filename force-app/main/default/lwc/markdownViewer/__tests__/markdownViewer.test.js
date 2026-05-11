@@ -105,6 +105,18 @@ describe("c-markdown-viewer", () => {
     expect(global.MarkdownCore.renderAndSanitizeAsync).not.toHaveBeenCalled();
   });
 
+  it("renders correctly when given an empty direct value", async () => {
+    global.MarkdownCore = makeMarkdownCoreMock();
+    window.MarkdownCore = global.MarkdownCore;
+    const el = createElement("c-markdown-viewer", { is: MarkdownViewer });
+    el.value = "";
+    document.body.appendChild(el);
+
+    await flushPromises();
+
+    expect(el.shadowRoot.querySelector("lightning-spinner")).not.toBeNull();
+  });
+
   it("keeps rendering when mermaid script load fails", async () => {
     global.MarkdownCore = makeMarkdownCoreMock();
     window.MarkdownCore = global.MarkdownCore;
