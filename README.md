@@ -32,6 +32,12 @@
 - `manifest/package.xml`
   - デプロイ対象メタデータをまとめたパッケージマニフェスト
 
+## ライセンス
+
+- このリポジトリは `MIT` ライセンスのもとで公開されています。
+- `packages/markdown-core` が依存する主要ライブラリは `MIT` ライセンスです。
+- `markdownCore` / `mermaidJs` の静的リソースは再配布可能な形でバンドルされています。
+
 ## ドキュメント
 
 - `docs/markdown-components.md`

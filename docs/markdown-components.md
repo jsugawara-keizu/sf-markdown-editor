@@ -268,7 +268,13 @@ npm test
 
 - `docs/markdown-component-tests.md`
 
-## 10. 開発 / デプロイ
+## 10. ライセンス
+
+- このリポジトリは `MIT` ライセンスのもとで公開されています。
+- `packages/markdown-core` の主要依存ライブラリはすべて `MIT` です。
+- `markdownCore` / `mermaidJs` の静的リソースは `MIT` ベースのライブラリを含む形で再配布可能です。
+
+## 11. 開発 / デプロイ
 
 ### 依存関係インストール
 
@@ -282,7 +288,7 @@ npm install
 sfdx force:source:deploy -p force-app/main/default/lwc/markdownEditor,force-app/main/default/lwc/markdownViewer,force-app/main/default/labels,force-app/main/default/translations,force-app/main/default/classes,force-app/main/default/customPermissions,force-app/main/default/permissionsets,force-app/main/default/staticresources
 ```
 
-## 11. 注意点
+## 12. 注意点
 
 - `MarkdownEditor` の `textarea` には `maxlength` を指定していません。
 - `MarkdownViewer` は Mermaid 読み込み失敗時も Markdown レンダリングを継続します。

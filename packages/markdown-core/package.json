@@ -2,6 +2,7 @@
   "name": "@sf-markdown-editor/markdown-core",
   "version": "1.0.0",
   "description": "AST-first Markdown knowledge processing pipeline for Salesforce LWC",
+  "license": "MIT",
   "type": "module",
   "main": "dist/markdown-core.iife.js",
   "scripts": {
