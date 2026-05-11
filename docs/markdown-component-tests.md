@@ -35,6 +35,8 @@
   - 値変更時に再レンダリングが行われることを確認します。
 - `does not call renderAndSanitizeAsync for empty value`
   - 空の Markdown ではレンダリングが呼ばれないことを確認します。
+- `renders correctly when given an empty direct value`
+  - `value=""` を直接渡してもコンポーネントが正常に表示されることを確認します。
 - `keeps rendering when mermaid script load fails`
   - Mermaid 読み込み失敗時でも Markdown のレンダリングが継続されることを確認します。
 - `shows error state when markdown-core load fails`

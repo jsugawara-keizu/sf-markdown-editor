@@ -8,7 +8,7 @@
 - 保存済み Markdown をレンダリング・表示する `MarkdownViewer`
 - Base64 埋め込み画像を Salesforce Content に変換して保存する Apex ロジック
 - 多言語対応のカスタムラベルによる UI 文言管理
-- LWC テストケースを明示した開発ドキュメント
+- 実装に沿った LWC / Apex テストケースの整理
 
 ## 2. リポジトリ構成
 
@@ -36,13 +36,16 @@
   - `MarkdownEditorViewerAccess.customPermission-meta.xml`
 - `force-app/main/default/permissionsets`
   - `MarkdownEditorViewer.permissionset-meta.xml`
+- `force-app/main/default/staticresources`
+  - `markdownCore.resource-meta.xml`
+  - `mermaidJs.resource-meta.xml`
 - `manifest/package.xml`
 - `packages/markdown-core`
   - Markdown 解析 / レンダリング / サニタイズの共通ロジック
 
 ## 3. アーキテクチャ概要
 
-`MarkdownEditor` と `MarkdownViewer` は LWC UI 層を担い、静的リソース `markdownCore` と `mermaidJs` を経由して Markdown レンダリングを行います。Apex `MarkdownImageHandler` は Base64 埋め込み画像の保存と Markdown 置換を担当します。
+`MarkdownEditor` と `MarkdownViewer` は LWC UI 層を担い、`markdown-core` および `mermaidJs` の静的リソースを通じて Markdown レンダリングを行います。Apex `MarkdownImageHandler` は Base64 埋め込み画像の保存と Markdown 置換を担当します。
 
 ```mermaid
 flowchart LR
@@ -56,30 +59,30 @@ flowchart LR
 
   E -->|保存時| A
   A -->|保存| R
-  E -->|レンダリング/補助| MC
+  E -->|レンダリング時補助| MC
   V -->|レンダリング| MC
-  MC -->|ビルド元| P
-  E -->|ラベル参照| L
-  V -->|ラベル参照| L
-  V -->|データ読み込み| R
+  MC -->|ライブラリ実装| P
+  E -->|ラベル取得| L
+  V -->|ラベル取得| L
+  V -->|レコードデータ取得| R
 ```
 
 ## 4. MarkdownEditor
 
 ### 4.1 目的
 
-`MarkdownEditor` はレコードページ上で Markdown を編集し、`fieldApiName` で指定した長文エリア項目に保存します。
+`MarkdownEditor` はレコードページ上で Markdown を入力・編集し、指定した `fieldApiName` の長文欄へ保存します。
 
 ### 4.2 主な特徴
 
-- Markdown 編集ツールバー
+- Markdown 編集用ツールバー
 - 編集 / プレビューのタブ切り替え
 - `defaultMode` による初期表示制御
-- Base64 埋め込み画像の検出・Salesforce への保存
-- 編集権限がない場合はプレビューへフォールバック
-- `textarea` に `maxlength` は設定していない
+- Base64 埋め込み画像の検出・保存
+- 更新不可フィールドでは編集不可 / プレビュー自動遷移
+- `textarea` には `maxlength` を設定しない
 
-### 4.3 API
+### 4.3 公開 API
 
 - `@api recordId`
 - `@api objectApiName`
@@ -89,85 +92,51 @@ flowchart LR
 
 ### 4.4 保存フロー
 
-1. `@wire(getObjectInfo)` でフィールドのアクセス可否と長さ情報を取得
+1. `@wire(getObjectInfo)` でフィールドアクセス可否と `length` を取得
 2. `@wire(getRecord)` で Markdown をロード
-3. 編集時に `isDirty` フラグを設定
-4. 保存時に `MarkdownImageHandler.saveMarkdownWithImages` を呼び出し
-5. 保存成功後 `getRecordNotifyChange()` を実行
+3. 編集時に `isDirty` を設定
+4. 保存時に `MarkdownImageHandler.saveMarkdownWithImages` を呼び出す
+5. 保存後に `getRecordNotifyChange()` を実行
 
 ### 4.5 画像保存処理
 
-- Markdown から data URI を抽出
-- 各画像を `ContentVersion` に登録
-- `FirstPublishLocationId` にレコード ID を設定し、Salesforce 側で `ContentDocument` / `ContentDocumentLink` を生成
-- `ContentDocumentId` に変換した URL で Markdown を置換
-- 画像種別・サイズ・総容量・ランタイム制限を検証
+- Markdown から `data:image/...;base64,` 形式の data URI を抽出
+- 各画像を `ContentVersion` として登録
+- `FirstPublishLocationId` にレコード ID を設定
+- `ContentDocumentId` を基にダウンロード URL へ置換
+- MIME タイプ / 1 画像サイズ / 総サイズ / Salesforce ランタイム制限を検証
 
-### 4.6 ラベル
+### 4.6 文言管理
 
-`MarkdownEditor` は多くの UI 文言をカスタムラベルから取得します。例:
-
-- `MarkdownToolbarAriaLabel`
-- `MarkdownBoldTitle` / `MarkdownBoldLabel`
-- `MarkdownItalicTitle` / `MarkdownItalicLabel`
-- `MarkdownHeadingTitle` / `MarkdownHeadingLabel`
-- `MarkdownCodeTitle` / `MarkdownCodeLabel`
-- `MarkdownUnorderedListTitle` / `MarkdownUnorderedListLabel`
-- `MarkdownOrderedListTitle` / `MarkdownOrderedListLabel`
-- `MarkdownLinkTitle` / `MarkdownLinkLabel`
-- `MarkdownTableTitle` / `MarkdownTableLabel`
-- `MarkdownStrikethroughTitle` / `MarkdownStrikethroughLabel`
-- `MarkdownBlockquoteTitle` / `MarkdownBlockquoteLabel`
-- `MarkdownImageTitle` / `MarkdownImageLabel`
-- `MarkdownHorizontalRuleTitle` / `MarkdownHorizontalRuleLabel`
-- `MarkdownEditTabLabel` / `MarkdownPreviewTabLabel`
-- `MarkdownSaveLabel` / `MarkdownSavedLabel`
-- `MarkdownEditorPlaceholder`
-- `MarkdownEditorAriaLabel`
-- `MarkdownTabsAriaLabel`
-- `MarkdownCharacterCountSuffix`
-- `MarkdownUnsavedBadge`
-- `MarkdownBoldPlaceholder`
-- `MarkdownItalicPlaceholder`
-- `MarkdownHeadingPlaceholder`
-- `MarkdownListPlaceholder`
-- `MarkdownLinkPlaceholder`
-- `MarkdownTableTemplate`
-- `MarkdownTableCellPlaceholder`
-- `MarkdownTextPlaceholder`
-- `MarkdownBlockquotePlaceholder`
-- `MarkdownImageDescriptionPlaceholder`
-- `MarkdownSaveSuccessMessage`
-- `MarkdownSaveErrorMessage`
+`MarkdownEditor` は多くの UI 文言をカスタムラベルで管理します。
 
 ## 5. MarkdownViewer
 
 ### 5.1 目的
 
-`MarkdownViewer` は保存済み Markdown をサニタイズして表示します。
+`MarkdownViewer` は保存済み Markdown を安全にレンダリングして表示します。
 
 ### 5.2 主な特徴
 
-- `markdown-core` によるレンダリング
-- Mermaid ランタイム読み込み
-- `lwc:dom="manual"` による HTML 直接描画
-- エラー状態 / 読み込み中表示
+- `markdown-core` による Markdown → HTML 変換
+- Mermaid ランタイムのオプション読み込み
+- DOM 直接描画によるサニタイズ済み HTML 表示
+- `value` プロパティを直接受け入れ、レコード API より優先表示
+- `value` が空文字でも動作
 
-### 5.3 API
+### 5.3 公開 API
 
 - `@api recordId`
 - `@api objectApiName`
 - `@api fieldApiName`
 - `@api value`
 
-`value` が設定されている場合は、レコード取得より優先されます。
-
 ### 5.4 レンダリングフロー
 
-1. Markdown を `markdownValue` に設定
+1. `markdownValue` を設定
 2. `scheduleRender()` で 80ms デバウンス
-3. `window.MarkdownCore.renderAndSanitizeAsync()` を呼び出し
-4. 生成 HTML を DOM に挿入
+3. `window.MarkdownCore.renderAndSanitizeAsync(markdown)` を実行
+4. 安全な HTML を DOM に挿入
 5. ページ内リンクを補正
 
 ### 5.5 カスタムラベル
@@ -180,44 +149,49 @@ flowchart LR
 
 ### 6.1 目的
 
-`MarkdownImageHandler` は Base64 埋め込み画像を Salesforce の Content に保存し、Markdown の data URI をダウンロード URL に置換します。
+`MarkdownImageHandler` は embedded Base64 画像を Salesforce の Content に保存し、Markdown をダウンロード URL に置換します。
 
-### 6.2 実装内容
+### 6.2 実装
 
 - `MarkdownImageHandler.cls`
 - `MarkdownImageHandlerTest.cls`
 
-### 6.3 テストカバレッジ
+### 6.3 現在のチェック内容
 
-`MarkdownImageHandlerTest.cls` では以下を検証しています。
+- サポート画像 MIME タイプは `image/png`, `image/jpeg`, `image/svg+xml`, `image/gif`, `image/webp`
+- Base64 文字列の妥当性チェック
+- 1 画像あたり 2MB まで、合計 6MB まで
+- Salesforce の CPU / heap 制限に近い場合は早期エラー
 
-- 画像なし Markdown の保存
-- Base64 埋め込み画像の変換と `ContentVersion` / `ContentDocumentLink` の生成
-- JPEG / PNG / SVG の mime 型処理
-- サポート外 MIME タイプのエラー
-- `recordId` / `fieldApiName` の入力値チェック
-- `objectApiName` 無指定時の保存
-- `markdownContent` が `null` の場合の空文字保存
-- 更新不可能フィールドのエラー
+### 6.4 保存フロー
 
-### 6.4 エラーハンドリング
+1. `extractDataUris()` で data URI を抽出
+2. `validateEmbeddedImages()` で MIME / Base64 / サイズを検証
+3. `ContentVersion` を作成して挿入
+4. 保存済み `ContentVersion` から `ContentDocumentId` を取得
+5. Markdown 内の data URI をダウンロード URL に置換
+6. 更新済み Markdown を指定フィールドに保存
 
-- サポート外 MIME タイプは例外を返す
-- 画像単体サイズ / 総サイズ制限を超えた場合は例外を返す
-- Salesforce の CPU / heap 制限に近い場合は例外を返す
-- 無効項目 / レコード ID に対しては明示的に例外を返す
+### 6.5 エラーハンドリング
+
+- 無効な MIME タイプは AuraHandledException
+- 無効な Base64 データは AuraHandledException
+- 画像サイズ超過は AuraHandledException
+- 更新不可フィールドは AuraHandledException
+- `recordId` / `fieldApiName` の未指定も AuraHandledException
 
 ## 7. メタデータと権限
 
 - `manifest/package.xml` に Apex クラス、LWC、静的リソース、カスタムラベル、翻訳、パーミッションセット、カスタムパーミッションを含む
 - `MarkdownEditorViewerAccess` カスタムパーミッション
 - `MarkdownEditorViewer` パーミッションセット
-  - `MarkdownImageHandler` Apex クラスへのアクセスを含む
 
 ## 8. テスト
 
 - `force-app/main/default/lwc/markdownEditor/__tests__/markdownEditor.test.js`
 - `force-app/main/default/lwc/markdownViewer/__tests__/markdownViewer.test.js`
+- `packages/markdown-core/__tests__/` のテスト
+- `force-app/main/default/classes/MarkdownImageHandlerTest.cls`
 
 ### 実行コマンド
 
@@ -240,10 +214,10 @@ npm install
 ### Salesforce へのデプロイ
 
 ```bash
-sfdx force:source:deploy -p force-app/main/default/lwc/markdownEditor,force-app/main/default/lwc/markdownViewer,force-app/main/default/labels,force-app/main/default/translations,force-app/main/default/classes,force-app/main/default/customPermissions,force-app/main/default/permissionsets
+sfdx force:source:deploy -p force-app/main/default/lwc/markdownEditor,force-app/main/default/lwc/markdownViewer,force-app/main/default/labels,force-app/main/default/translations,force-app/main/default/classes,force-app/main/default/customPermissions,force-app/main/default/permissionsets,force-app/main/default/staticresources
 ```
 
 ## 10. 注意点
 
-- `MarkdownEditor` の `textarea` は `maxlength` を設定していません。Base64 埋め込み画像を含む Markdown を扱うため、保存時の制限でエラーを補足します。
-- `MarkdownViewer` は `markdown-core` のロードと Mermaid のロードを別経路で扱い、レンダリング時に安全なフォールバックをサポートします。
+- `MarkdownEditor` の `textarea` には `maxlength` を指定していません。
+- `MarkdownViewer` は Mermaid 読み込み失敗時も Markdown レンダリングを継続します。
