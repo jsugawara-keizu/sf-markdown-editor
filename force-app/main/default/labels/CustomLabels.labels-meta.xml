@@ -1,0 +1,443 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomLabels xmlns="http://soap.sforce.com/2006/04/metadata">
+    <labels>
+        <fullName>MarkdownToolbarAriaLabel</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Markdown toolbar</shortDescription>
+        <value>Markdown toolbar</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownBoldTitle</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Bold (Ctrl+B)</shortDescription>
+        <value>Bold (Ctrl+B)</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownBoldLabel</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Bold</shortDescription>
+        <value>Bold</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownItalicTitle</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Italic (Ctrl+I)</shortDescription>
+        <value>Italic (Ctrl+I)</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownItalicLabel</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Italic</shortDescription>
+        <value>Italic</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownHeadingTitle</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Heading</shortDescription>
+        <value>Heading</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownHeadingLabel</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Heading</shortDescription>
+        <value>Heading</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownCodeTitle</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Code block</shortDescription>
+        <value>Code block</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownCodeLabel</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Code</shortDescription>
+        <value>Code</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownUnorderedListTitle</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Unordered list</shortDescription>
+        <value>Unordered list</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownUnorderedListLabel</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Unordered list</shortDescription>
+        <value>Unordered list</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownOrderedListTitle</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Ordered list</shortDescription>
+        <value>Ordered list</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownOrderedListLabel</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Ordered list</shortDescription>
+        <value>Ordered list</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownLinkTitle</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Link</shortDescription>
+        <value>Link</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownLinkLabel</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Link</shortDescription>
+        <value>Link</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownTableTitle</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Table</shortDescription>
+        <value>Table</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownTableLabel</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Table</shortDescription>
+        <value>Table</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownStrikethroughTitle</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Strikethrough</shortDescription>
+        <value>Strikethrough</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownStrikethroughLabel</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Strikethrough</shortDescription>
+        <value>Strikethrough</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownBlockquoteTitle</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Blockquote</shortDescription>
+        <value>Blockquote</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownBlockquoteLabel</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Blockquote</shortDescription>
+        <value>Blockquote</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownImageTitle</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Image</shortDescription>
+        <value>Image</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownImageLabel</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Image</shortDescription>
+        <value>Image</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownHorizontalRuleTitle</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Horizontal rule</shortDescription>
+        <value>Horizontal rule</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownHorizontalRuleLabel</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Horizontal rule</shortDescription>
+        <value>Horizontal rule</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownEditTabLabel</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Edit</shortDescription>
+        <value>Edit</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownPreviewTabLabel</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Preview</shortDescription>
+        <value>Preview</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownSaveLabel</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Save</shortDescription>
+        <value>Save</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownSavedLabel</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Saved</shortDescription>
+        <value>Saved</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownEditorPlaceholder</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Enter markdown...</shortDescription>
+        <value>Enter markdown...</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownEditorAriaLabel</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Markdown editor</shortDescription>
+        <value>Markdown editor</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownPreviewAriaLabel</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Markdown preview</shortDescription>
+        <value>Markdown preview</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownTabsAriaLabel</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Edit / Preview</shortDescription>
+        <value>Edit / Preview</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownCharacterCountSuffix</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>characters</shortDescription>
+        <value>characters</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownUnsavedBadge</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Unsaved</shortDescription>
+        <value>Unsaved</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownLoadingAltText</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Loading markdown library</shortDescription>
+        <value>Loading markdown library</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownViewerErrorText</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Failed to render markdown.</shortDescription>
+        <value>Failed to render markdown.</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownBoldPlaceholder</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>bold text</shortDescription>
+        <value>bold text</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownItalicPlaceholder</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>italic text</shortDescription>
+        <value>italic text</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownHeadingPlaceholder</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Heading</shortDescription>
+        <value>Heading</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownListPlaceholder</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>List item</shortDescription>
+        <value>List item</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownLinkPlaceholder</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Link text</shortDescription>
+        <value>Link text</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownTableTemplate</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription
+    >| Column 1 | Column 2 | Column 3 |\n| --- | --- | --- |\n| </shortDescription>
+        <value
+    >| Column 1 | Column 2 | Column 3 |\n| --- | --- | --- |\n| </value>
+    </labels>
+    <labels>
+        <fullName>MarkdownTableCellPlaceholder</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Cell</shortDescription>
+        <value>Cell</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownTextPlaceholder</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>text</shortDescription>
+        <value>text</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownBlockquotePlaceholder</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Quote text</shortDescription>
+        <value>Quote text</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownImageDescriptionPlaceholder</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Image description</shortDescription>
+        <value>Image description</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownSaveSuccessMessage</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Saved successfully.</shortDescription>
+        <value>Saved successfully.</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownSaveErrorMessage</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Failed to save the markdown.</shortDescription>
+        <value>Failed to save the markdown.</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownSaveSuccessTitle</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Save successful</shortDescription>
+        <value>Save successful</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownSaveErrorTitle</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Save failed</shortDescription>
+        <value>Save failed</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownUndoTitle</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Undo</shortDescription>
+        <value>Undo</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownUndoLabel</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Undo</shortDescription>
+        <value>Undo</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownRedoTitle</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Redo</shortDescription>
+        <value>Redo</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownRedoLabel</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Redo</shortDescription>
+        <value>Redo</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownCancelTitle</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Cancel</shortDescription>
+        <value>Cancel</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownCancelLabel</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Cancel</shortDescription>
+        <value>Cancel</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownSavingStatus</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Saving…</shortDescription>
+        <value>Saving…</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownRecordIdMissingError</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Record ID missing</shortDescription>
+        <value
+    >recordId is missing. Place this component on a Record Page.</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownObjectApiNameMissingError</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Object API name missing</shortDescription>
+        <value
+    >objectApiName is missing. Verify this component is on a Record Page.</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownFieldApiNameMissingError</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Field API name missing</shortDescription>
+        <value
+    >fieldApiName is not configured. Check the component settings.</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownFieldAccessSummary</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Field access summary</shortDescription>
+        <value
+    >objectApiName={0} | fieldApiName={1} | readable={2} | updateable={3}</value>
+    </labels>
+</CustomLabels>

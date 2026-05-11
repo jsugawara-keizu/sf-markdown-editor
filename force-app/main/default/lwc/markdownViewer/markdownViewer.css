@@ -1,0 +1,176 @@
+/*
+ * markdownViewer.css
+ *
+ * GitHub 風の最低限スタイル。
+ * SLDS 2 カスタムプロパティを使用しダークモード・テーマに追従する。
+ */
+
+.md-viewer-root {
+  font-family: var(
+    --slds-g-font-family-sans,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif
+  );
+  font-size: calc(var(--slds-g-font-size-3, 0.875rem) * 0.9);
+  line-height: 1.6;
+  color: var(--slds-g-color-on-surface, #080707);
+  word-break: break-word;
+}
+
+.md-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 4rem;
+}
+
+.md-error {
+  color: var(--slds-g-color-error-1, #c23934);
+  font-size: var(--slds-g-font-size-2, 0.75rem);
+}
+
+/* ---- Headings ---- */
+.md-content :global(h1),
+.md-content :global(h2),
+.md-content :global(h3),
+.md-content :global(h4),
+.md-content :global(h5),
+.md-content :global(h6) {
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--slds-g-color-on-surface, #080707);
+}
+
+.md-content :global(h1) {
+  font-size: 2em;
+  border-bottom: 1px solid var(--slds-g-color-border-1, #dddbda);
+  padding-bottom: 0.25em;
+}
+.md-content :global(h2) {
+  font-size: 1.5em;
+  border-bottom: 1px solid var(--slds-g-color-border-1, #dddbda);
+  padding-bottom: 0.25em;
+}
+.md-content :global(h3) {
+  font-size: 1.25em;
+}
+.md-content :global(h4) {
+  font-size: 1em;
+}
+.md-content :global(h5) {
+  font-size: 0.875em;
+}
+.md-content :global(h6) {
+  font-size: 0.85em;
+  color: var(--slds-g-color-neutral-2, #706e6b);
+}
+
+/* ---- Paragraph / inline ---- */
+.md-content :global(p) {
+  margin-top: 0;
+  margin-bottom: 1em;
+}
+
+.md-content :global(a) {
+  color: var(--slds-g-color-brand-1, #0070d2);
+  text-decoration: none;
+}
+
+.md-content :global(a:hover) {
+  text-decoration: underline;
+}
+
+.md-content :global(strong) {
+  font-weight: 700;
+}
+.md-content :global(em) {
+  font-style: italic;
+}
+.md-content :global(del) {
+  text-decoration: line-through;
+  color: var(--slds-g-color-neutral-2, #706e6b);
+}
+
+/* ---- Code ---- */
+.md-content :global(code) {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 0.85em;
+  background: var(--slds-g-color-surface-2, #f3f2f2);
+  border-radius: 3px;
+  padding: 0.2em 0.4em;
+}
+
+.md-content :global(pre) {
+  background: var(--slds-g-color-surface-2, #f3f2f2);
+  border-radius: 6px;
+  padding: 1em;
+  overflow-x: auto;
+  margin-bottom: 1em;
+}
+
+.md-content :global(pre code) {
+  background: transparent;
+  padding: 0;
+  font-size: 0.875em;
+}
+
+/* ---- Blockquote ---- */
+.md-content :global(blockquote) {
+  margin: 0 0 1em;
+  padding: 0 1em;
+  border-left: 4px solid var(--slds-g-color-border-1, #dddbda);
+  color: var(--slds-g-color-neutral-2, #706e6b);
+}
+
+/* ---- Lists ---- */
+.md-content :global(ul),
+.md-content :global(ol) {
+  margin-top: 0;
+  margin-bottom: 1em;
+  padding-left: 2em;
+}
+
+.md-content :global(li) {
+  margin-bottom: 0.25em;
+}
+
+/* ---- Table (GFM) ---- */
+.md-content :global(table) {
+  border-collapse: collapse;
+  width: 100%;
+  margin-bottom: 1em;
+  font-size: 0.875em;
+}
+
+.md-content :global(th),
+.md-content :global(td) {
+  border: 1px solid var(--slds-g-color-border-1, #dddbda);
+  padding: 0.4em 0.8em;
+  text-align: left;
+}
+
+.md-content :global(thead tr) {
+  background: var(--slds-g-color-surface-2, #f3f2f2);
+  font-weight: 600;
+}
+
+.md-content :global(tbody tr:nth-child(even)) {
+  background: var(--slds-g-color-surface-1, #fafaf9);
+}
+
+/* ---- HR ---- */
+.md-content :global(hr) {
+  border: none;
+  border-top: 1px solid var(--slds-g-color-border-1, #dddbda);
+  margin: 1.5em 0;
+}
+
+/* ---- Image ---- */
+.md-content :global(img) {
+  max-width: 100%;
+  height: auto;
+}

@@ -1,0 +1,269 @@
+<template>
+  <template lwc:if={fieldHasAccess}>
+    <div class={rootClass}>
+      <!-- Toolbar -->
+      <div class="md-toolbar" role="toolbar" aria-label={labels.toolbarAria}>
+        <template lwc:if={isEditMode}>
+          <button
+            class="md-toolbar__btn"
+            data-action="bold"
+            title={labels.boldTitle}
+            aria-label={labels.boldLabel}
+            onclick={handleToolbarClick}
+            disabled={isSaving}
+          >
+            <strong>B</strong>
+          </button>
+
+          <button
+            class="md-toolbar__btn md-toolbar__btn--italic"
+            data-action="italic"
+            title={labels.italicTitle}
+            aria-label={labels.italicLabel}
+            onclick={handleToolbarClick}
+            disabled={isSaving}
+          >
+            <em>I</em>
+          </button>
+
+          <button
+            class="md-toolbar__btn"
+            data-action="heading"
+            title={labels.headingTitle}
+            aria-label={labels.headingLabel}
+            onclick={handleToolbarClick}
+            disabled={isSaving}
+          >
+            H
+          </button>
+
+          <button
+            class="md-toolbar__btn md-toolbar__btn--code"
+            data-action="code"
+            title={labels.codeTitle}
+            aria-label={labels.codeLabel}
+            onclick={handleToolbarClick}
+            disabled={isSaving}
+          >
+            &lt;/&gt;
+          </button>
+
+          <button
+            class="md-toolbar__btn"
+            data-action="ul"
+            title={labels.ulTitle}
+            aria-label={labels.ulLabel}
+            onclick={handleToolbarClick}
+            disabled={isSaving}
+          >
+            UL
+          </button>
+
+          <button
+            class="md-toolbar__btn"
+            data-action="ol"
+            title={labels.olTitle}
+            aria-label={labels.olLabel}
+            onclick={handleToolbarClick}
+            disabled={isSaving}
+          >
+            OL
+          </button>
+
+          <button
+            class="md-toolbar__btn"
+            data-action="link"
+            title={labels.linkTitle}
+            aria-label={labels.linkLabel}
+            onclick={handleToolbarClick}
+            disabled={isSaving}
+          >
+            🔗
+          </button>
+
+          <button
+            class="md-toolbar__btn"
+            data-action="table"
+            title={labels.tableTitle}
+            aria-label={labels.tableLabel}
+            onclick={handleToolbarClick}
+            disabled={isSaving}
+          >
+            ⊞
+          </button>
+
+          <button
+            class="md-toolbar__btn"
+            data-action="strikethrough"
+            title={labels.strikethroughTitle}
+            aria-label={labels.strikethroughLabel}
+            onclick={handleToolbarClick}
+            disabled={isSaving}
+          >
+            <del>S</del>
+          </button>
+
+          <button
+            class="md-toolbar__btn"
+            data-action="blockquote"
+            title={labels.blockquoteTitle}
+            aria-label={labels.blockquoteLabel}
+            onclick={handleToolbarClick}
+            disabled={isSaving}
+          >
+            &gt;
+          </button>
+
+          <button
+            class="md-toolbar__btn"
+            data-action="image"
+            title={labels.imageTitle}
+            aria-label={labels.imageLabel}
+            onclick={handleToolbarClick}
+            disabled={isSaving}
+          >
+            🖼
+          </button>
+
+          <button
+            class="md-toolbar__btn"
+            data-action="hr"
+            title={labels.hrTitle}
+            aria-label={labels.hrLabel}
+            onclick={handleToolbarClick}
+            disabled={isSaving}
+          >
+            —
+          </button>
+
+          <button
+            class="md-toolbar__btn"
+            data-action="undo"
+            title={labels.undoTitle}
+            aria-label={labels.undoLabel}
+            onclick={handleToolbarClick}
+            disabled={isUndoDisabled}
+          >
+            ↶
+          </button>
+
+          <button
+            class="md-toolbar__btn"
+            data-action="redo"
+            title={labels.redoTitle}
+            aria-label={labels.redoLabel}
+            onclick={handleToolbarClick}
+            disabled={isRedoDisabled}
+          >
+            ↻
+          </button>
+
+          <span class="md-toolbar__divider" aria-hidden="true"></span>
+        </template>
+
+        <div class="md-tabs" role="tablist" aria-label={labels.tabsAria}>
+          <button
+            class={editTabClass}
+            role="tab"
+            data-tab="edit"
+            aria-selected={isEditMode}
+            aria-controls="md-edit-panel"
+            id="md-tab-edit"
+            onclick={handleTabClick}
+            disabled={isEditTabDisabled}
+          >
+            {labels.editTab}
+          </button>
+          <button
+            class={previewTabClass}
+            role="tab"
+            data-tab="preview"
+            aria-selected={isPreviewMode}
+            aria-controls="md-preview-panel"
+            id="md-tab-preview"
+            onclick={handleTabClick}
+          >
+            {labels.previewTab}
+          </button>
+        </div>
+
+        <template lwc:if={isEditMode}>
+          <lightning-button-stateful
+            class="md-save-btn"
+            label-when-off={labels.saveLabel}
+            label-when-on={labels.savedLabel}
+            label-when-hover={labels.saveLabel}
+            icon-name-when-off="utility:save"
+            icon-name-when-on="utility:check"
+            icon-name-when-hover="utility:save"
+            selected={isSaveDisabled}
+            disabled={isSaveDisabled}
+            onclick={handleSave}
+            title={labels.saveLabel}
+            aria-label={labels.saveLabel}
+          ></lightning-button-stateful>
+          <lightning-button-icon
+            class="md-cancel-btn"
+            icon-name="utility:close"
+            alternative-text={labels.cancelLabel}
+            title={labels.cancelTitle}
+            onclick={handleToolbarClick}
+            data-action="cancel"
+            disabled={isCancelDisabled}
+          ></lightning-button-icon>
+        </template>
+      </div>
+
+      <!-- Edit pane -->
+      <template lwc:if={isEditMode}>
+        <div id="md-edit-panel" role="tabpanel" aria-labelledby="md-tab-edit">
+          <textarea
+            class="md-textarea"
+            data-id="textarea"
+            oninput={handleInput}
+            onkeydown={handleKeydown}
+            placeholder={labels.editorPlaceholder}
+            aria-label={labels.editorAria}
+            spellcheck="false"
+            autocomplete="off"
+            autocapitalize="off"
+            disabled={textareaDisabled}
+            aria-busy={isSaving}
+          ></textarea>
+        </div>
+      </template>
+
+      <!-- Preview pane -->
+      <template lwc:if={isPreviewMode}>
+        <div
+          id="md-preview-panel"
+          role="tabpanel"
+          aria-labelledby="md-tab-preview"
+          class="md-preview-pane"
+        >
+          <c-markdown-viewer value={internalValue}></c-markdown-viewer>
+        </div>
+      </template>
+
+      <template lwc:if={isEditMode}>
+        <div class="md-footer" aria-live="polite" aria-atomic="true">
+          <span class="md-char-count"
+            >{charCountDisplay} {labels.charCountSuffix}</span
+          >
+          <template lwc:if={isSaving}>
+            <lightning-spinner
+              class="md-saving-spinner"
+              size="small"
+              alternative-text={labels.savingStatus}
+              variant="brand"
+            ></lightning-spinner>
+            <span class="md-save-status">{labels.savingStatus}</span>
+          </template>
+          <template lwc:if={isDirty}>
+            <span class="md-dirty-badge">{labels.unsavedBadge}</span>
+          </template>
+        </div>
+      </template>
+    </div>
+  </template>
+</template>

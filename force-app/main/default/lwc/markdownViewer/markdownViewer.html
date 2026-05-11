@@ -1,0 +1,30 @@
+<template>
+  <template lwc:if={fieldHasAccess}>
+    <div class="md-viewer-root">
+      <template lwc:if={isLoading}>
+        <div class="md-loading" role="status" aria-live="polite">
+          <lightning-spinner
+            alternative-text={labels.loadingAltText}
+            size="small"
+          ></lightning-spinner>
+        </div>
+      </template>
+
+      <template lwc:if={hasError}>
+        <div class="md-error" role="alert">
+          <p>{labels.viewerErrorText}</p>
+        </div>
+      </template>
+
+      <!-- lwc:dom="manual" — replaceChildren で子ノードを差し替えるため
+             LWC の DOM 管理対象から外す。これがないと replaceChildren が
+             再レンダーをトリガーし無限ループになる。 -->
+      <div
+        class="md-content"
+        data-id="content"
+        lwc:dom="manual"
+        aria-label={labels.previewAria}
+      ></div>
+    </div>
+  </template>
+</template>

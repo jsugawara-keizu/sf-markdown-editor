@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Translations xmlns="http://soap.sforce.com/2006/04/metadata">
+    <language>en_US</language>
+    <customLabels>
+        <name>MarkdownToolbarAriaLabel</name>
+        <value>Markdown toolbar</value>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownBoldTitle</name>
+        <value>Bold (Ctrl+B)</value>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownBoldLabel</name>
+        <value>Bold</value>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownItalicTitle</name>
+        <value>Italic (Ctrl+I)</value>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownItalicLabel</name>
+        <value>Italic</value>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownHeadingTitle</name>
+        <value>Heading</value>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownHeadingLabel</name>
+        <value>Heading</value>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownCodeTitle</name>
+        <value>Code block</value>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownCodeLabel</name>
+        <value>Code</value>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownUnorderedListTitle</name>
+        <value>Unordered list</value>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownUnorderedListLabel</name>
+        <value>Unordered list</value>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownOrderedListTitle</name>
+        <value>Ordered list</value>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownOrderedListLabel</name>
+        <value>Ordered list</value>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownLinkTitle</name>
+        <value>Link</value>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownLinkLabel</name>
+        <value>Link</value>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownTableTitle</name>
+        <value>Table</value>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownTableLabel</name>
+        <value>Table</value>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownStrikethroughTitle</name>
+        <value>Strikethrough</value>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownStrikethroughLabel</name>
+        <value>Strikethrough</value>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownBlockquoteTitle</name>
+        <value>Blockquote</value>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownBlockquoteLabel</name>
+        <value>Blockquote</value>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownImageTitle</name>
+        <value>Image</value>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownImageLabel</name>
+        <value>Image</value>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownHorizontalRuleTitle</name>
+        <value>Horizontal rule</value>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownHorizontalRuleLabel</name>
+        <value>Horizontal rule</value>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownEditTabLabel</name>
+        <value>Edit</value>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownPreviewTabLabel</name>
+        <value>Preview</value>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownSaveLabel</name>
+        <value>Save</value>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownSavedLabel</name>
+        <value>Saved</value>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownEditorPlaceholder</name>
+        <value>Enter markdown...</value>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownEditorAriaLabel</name>
+        <value>Markdown editor</value>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownPreviewAriaLabel</name>
+        <value>Markdown preview</value>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownTabsAriaLabel</name>
+        <value>Edit / Preview</value>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownCharacterCountSuffix</name>
+        <value>characters</value>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownUnsavedBadge</name>
+        <value>Unsaved</value>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownLoadingAltText</name>
+        <value>Loading markdown library</value>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownViewerErrorText</name>
+        <value>Failed to render markdown.</value>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownBoldPlaceholder</name>
+        <value>bold text</value>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownItalicPlaceholder</name>
+        <value>italic text</value>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownHeadingPlaceholder</name>
+        <value>Heading</value>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownListPlaceholder</name>
+        <value>List item</value>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownLinkPlaceholder</name>
+        <value>Link text</value>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownTableTemplate</name>
+        <value>| Column 1 | Column 2 | Column 3 |\n| --- | --- | --- |\n| </value>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownTableCellPlaceholder</name>
+        <value>Cell</value>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownTextPlaceholder</name>
+        <value>text</value>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownBlockquotePlaceholder</name>
+        <value>Quote text</value>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownImageDescriptionPlaceholder</name>
+        <value>Image description</value>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownSaveSuccessMessage</name>
+        <value>Saved successfully.</value>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownSaveErrorMessage</name>
+        <value>Failed to save the markdown.</value>
+    </customLabels>
+</Translations>

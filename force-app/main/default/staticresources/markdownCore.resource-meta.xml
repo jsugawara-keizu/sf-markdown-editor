@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<StaticResource xmlns="http://soap.sforce.com/2006/04/metadata">
+    <cacheControl>Public</cacheControl>
+    <contentType>application/zip</contentType>
+    <description>markdown-core IIFE bundle (unified + remark + DOMPurify). Used by markdownViewer and markdownEditor LWC components.</description>
+</StaticResource>
