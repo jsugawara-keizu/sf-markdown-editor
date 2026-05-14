@@ -1,0 +1,10 @@
+{
+  "skillOverrides": {
+    "sf-apex": "on",
+    "sf-lwc": "on",
+    "sf-deploy": "on",
+    "sf-metadata": "on",
+    "sf-testing": "on",
+    "sf-debug": "on"
+  }
+}

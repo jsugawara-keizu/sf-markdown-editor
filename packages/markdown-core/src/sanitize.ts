@@ -3,6 +3,25 @@ import rehypeParse from 'rehype-parse';
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
 import rehypeStringify from 'rehype-stringify';
 import type { Schema } from 'hast-util-sanitize';
+import type { Root, Element, Text } from 'hast';
+import { visit } from 'unist-util-visit';
+
+// style タグのテキストコンテンツから url() / @import / expression() を除去する
+export function rehypeSanitizeStyleContent() {
+  return (tree: Root) => {
+    visit(tree, 'element', (node: Element) => {
+      if (node.tagName !== 'style') return;
+      node.children = node.children.map((child) => {
+        if (child.type !== 'text') return child;
+        const safe = (child as Text).value
+          .replace(/url\s*\([^)]*\)/gi, 'url()')
+          .replace(/@import\b[^;]*/gi, '')
+          .replace(/expression\s*\([^)]*\)/gi, '');
+        return { ...child, value: safe } as Text;
+      });
+    });
+  };
+}
 
 function mergeAttributes(
   base: Schema['attributes'],
@@ -18,7 +37,7 @@ function mergeAttributes(
 
 const SVG_TAGS = [
   'svg', 'g', 'path', 'defs', 'marker', 'style', 'line', 'rect', 'polygon',
-  'polyline', 'circle', 'ellipse', 'text', 'tspan', 'foreignObject', 'title',
+  'polyline', 'circle', 'ellipse', 'text', 'tspan', 'title',
   'desc', 'linearGradient', 'radialGradient', 'stop', 'pattern', 'clipPath',
   'mask', 'symbol', 'use', 'image', 'filter', 'feGaussianBlur', 'feOffset',
   'feBlend', 'feColorMatrix', 'feComponentTransfer', 'feFuncA', 'feFuncB',
@@ -47,9 +66,16 @@ const SVG_DASHED_ATTRS = [
   'marker-start',
   'marker-end',
   'marker-mid',
+  'marker-width',
+  'marker-height',
+  'markerunits',
   'stroke-width',
   'font-size',
   'font-family',
+  'font-weight',
+  'font-style',
+  'font-stretch',
+  'font-variant',
   'text-anchor',
   'dominant-baseline',
   'stop-color',
@@ -60,34 +86,10 @@ const SVG_DASHED_ATTRS = [
   'mask-units',
   'flood-color',
   'flood-opacity',
-  'marker-width',
-  'marker-height',
-  'markerunits',
   'refx',
   'refy',
-  'font-weight',
-  'font-style',
-  'font-stretch',
-  'font-variant',
   'letter-spacing',
   'word-spacing',
-  'text-anchor',
-  'text-length',
-  'length-adjust',
-  'text-rendering',
-  'alignment-baseline',
-  'marker-width',
-  'marker-height',
-  'markerunits',
-  'refx',
-  'refy',
-  'font-weight',
-  'font-style',
-  'font-stretch',
-  'font-variant',
-  'letter-spacing',
-  'word-spacing',
-  'text-anchor',
   'text-length',
   'length-adjust',
   'text-rendering',
@@ -136,7 +138,6 @@ export const markdownSanitizeSchema: Schema = {
     linearGradient: [...SVG_ATTRS.map((a) => [a]), ...SVG_DASHED_ATTRS.map((a) => [a])],
     radialGradient: [...SVG_ATTRS.map((a) => [a]), ...SVG_DASHED_ATTRS.map((a) => [a])],
     stop: [...SVG_ATTRS.map((a) => [a]), ...SVG_DASHED_ATTRS.map((a) => [a])],
-    foreignObject: [...SVG_ATTRS.map((a) => [a]), ...SVG_DASHED_ATTRS.map((a) => [a])],
     use: [...SVG_ATTRS.map((a) => [a]), ...SVG_DASHED_ATTRS.map((a) => [a])],
     symbol: [...SVG_ATTRS.map((a) => [a]), ...SVG_DASHED_ATTRS.map((a) => [a])],
     image: [...SVG_ATTRS.map((a) => [a]), ...SVG_DASHED_ATTRS.map((a) => [a])],
@@ -167,6 +168,7 @@ export const markdownSanitizeSchema: Schema = {
 const htmlSanitizer = unified()
   .use(rehypeParse, { fragment: true })
   .use(rehypeSanitize, markdownSanitizeSchema)
+  .use(rehypeSanitizeStyleContent)
   .use(rehypeStringify)
   .freeze();
 

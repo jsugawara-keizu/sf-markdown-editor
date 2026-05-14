@@ -81,8 +81,9 @@ public with sharing class MarkdownImageHandler {
         ]
       );
 
+      // 末尾から置換することで、先行する置換がオフセットに影響しないようにする
       String modifiedMarkdown = markdownContent;
-      for (Integer i = 0; i < matches.size(); i++) {
+      for (Integer i = matches.size() - 1; i >= 0; i--) {
         DataUriMatch m = matches[i];
         ContentVersion saved = reloaded.get(versionsToInsert[i].Id);
         if (saved == null || saved.ContentDocumentId == null) {
@@ -92,11 +93,10 @@ public with sharing class MarkdownImageHandler {
           DOWNLOAD_URL_TEMPLATE,
           new List<String>{ String.valueOf(saved.ContentDocumentId) }
         );
-        modifiedMarkdown = replaceFirst(
-          modifiedMarkdown,
-          m.fullMatch,
-          downloadUrl
-        );
+        modifiedMarkdown =
+          modifiedMarkdown.substring(0, m.startIndex) +
+          downloadUrl +
+          modifiedMarkdown.substring(m.endIndex);
       }
 
       updateRecordField(recordId, fieldApiName, modifiedMarkdown);
@@ -182,6 +182,8 @@ public with sharing class MarkdownImageHandler {
       match.fullMatch = markdown.substring(dataStart, cursor);
       match.mimeType = mimeType;
       match.base64Data = base64Data;
+      match.startIndex = dataStart;
+      match.endIndex = cursor;
       result.add(match);
 
       searchFrom = cursor;
@@ -266,12 +268,8 @@ public with sharing class MarkdownImageHandler {
     if (String.isBlank(base64Data)) {
       return false;
     }
-    for (Integer i = 0; i < base64Data.length(); i++) {
-      if (!isBase64Char(base64Data.substring(i, i + 1))) {
-        return false;
-      }
-    }
-    return true;
+    return Pattern.matches('[A-Za-z0-9+/]+=*', base64Data) &&
+      base64Data.length() > 0;
   }
 
   @TestVisible
@@ -349,6 +347,8 @@ public with sharing class MarkdownImageHandler {
     public String fullMatch;
     public String mimeType;
     public String base64Data;
+    public Integer startIndex;
+    public Integer endIndex;
   }
 
   public class MarkdownImageHandlerException extends Exception {

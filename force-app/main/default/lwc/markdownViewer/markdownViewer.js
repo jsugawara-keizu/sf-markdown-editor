@@ -148,7 +148,7 @@ export default class MarkdownViewer extends LightningElement {
 
   @wire(getRecord, { recordId: "$recordId", fields: "$qualifiedFields" })
   wiredRecord({ data, error }) {
-    if (this.isFlowMode || this._directValue !== undefined || error || !data) {
+    if (this.isFlowMode || this._directValue !== "" || error || !data) {
       return;
     }
     const fieldData = data.fields[this.normalizedFieldKey];
@@ -158,7 +158,7 @@ export default class MarkdownViewer extends LightningElement {
 
   @wire(getObjectInfo, { objectApiName: "$objectApiName" })
   wiredObjectInfo({ data, error }) {
-    if (this.isFlowMode || this._directValue !== undefined) {
+    if (this.isFlowMode || this._directValue !== "") {
       this.fieldIsReadable = true;
       this.fieldIsUpdateable = false;
       return;
@@ -351,12 +351,6 @@ export default class MarkdownViewer extends LightningElement {
     }
 
     try {
-      if (
-        typeof window !== "undefined" &&
-        window.MarkdownCore?.setMermaidDebugEnabled
-      ) {
-        window.MarkdownCore.setMermaidDebugEnabled(true);
-      }
       const safeHtml =
         await window.MarkdownCore.renderAndSanitizeAsync(markdown);
       if (this._renderVersion !== version) {

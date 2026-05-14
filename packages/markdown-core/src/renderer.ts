@@ -10,6 +10,7 @@ import rehypeHighlight from 'rehype-highlight';
 import rehypeKatex from 'rehype-katex';
 import rehypeSanitize from 'rehype-sanitize';
 import rehypeStringify from 'rehype-stringify';
+import { rehypeSanitizeStyleContent } from './sanitize';
 import type { Root as MdastRoot } from 'mdast';
 import { visit } from 'unist-util-visit';
 import type { Code, Html } from 'mdast';
@@ -75,7 +76,7 @@ function resolveGlobalMermaidCompiler(): MermaidCompiler | null {
         // so keep plain SVG labels and avoid DOMPurify's NodeIterator path.
         m.initialize({
           startOnLoad: false,
-          securityLevel: 'loose',
+          securityLevel: 'strict',
           htmlLabels: false,
           flowchart: { htmlLabels: false }
         });
@@ -125,6 +126,7 @@ const markdownToHtmlProcessor = unified()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   .use(rehypeKatex as any, { output: 'mathml' })
   .use(rehypeSanitize, markdownSanitizeSchema)
+  .use(rehypeSanitizeStyleContent)
   .use(rehypeStringify)
   .freeze();
 
@@ -137,6 +139,7 @@ const mdastToHtmlProcessor = unified()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   .use(rehypeKatex as any, { output: 'mathml' })
   .use(rehypeSanitize, markdownSanitizeSchema)
+  .use(rehypeSanitizeStyleContent)
   .use(rehypeStringify)
   .freeze();
 

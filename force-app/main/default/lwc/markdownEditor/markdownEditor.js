@@ -277,8 +277,8 @@ export default class MarkdownEditor extends LightningElement {
   @track fieldMaxLength = null;
   @track fieldIsUpdateable = true;
   @track fieldIsReadable = true;
-  @track history = [];
-  @track historyIndex = -1;
+  history = [];
+  historyIndex = -1;
   labels = LABELS;
   isDirty = false;
   editStartValue = null;
@@ -448,7 +448,9 @@ export default class MarkdownEditor extends LightningElement {
 
   handleKeydown(event) {
     const { key, metaKey, ctrlKey } = event;
-    const isMac = navigator.platform.toUpperCase().includes("MAC");
+    const isMac = /mac/i.test(
+      navigator.userAgentData?.platform ?? navigator.userAgent
+    );
     const modKey = isMac ? metaKey : ctrlKey;
     if (!modKey) {
       return;
@@ -577,15 +579,26 @@ export default class MarkdownEditor extends LightningElement {
     const scrollState = this.captureScrollState(ta);
     const start = ta.selectionStart;
     const end = ta.selectionEnd;
+    const hadSelection = start !== end;
     const text = this.internalValue.slice(start, end) || placeholder;
     const insert = `${prefix}${text}${suffix}`;
     this.spliceValue(ta, start, end, insert);
-    this.restoreFocus(
-      ta,
-      start + insert.length,
-      start + insert.length,
-      scrollState
-    );
+    if (hadSelection) {
+      this.restoreFocus(
+        ta,
+        start + insert.length,
+        start + insert.length,
+        scrollState
+      );
+    } else {
+      // プレースホルダーを選択状態にして即上書きできるようにする
+      this.restoreFocus(
+        ta,
+        start + prefix.length,
+        start + prefix.length + placeholder.length,
+        scrollState
+      );
+    }
   }
 
   insertLinePrefix(prefix, placeholder) {
@@ -658,7 +671,7 @@ export default class MarkdownEditor extends LightningElement {
     this.historyIndex -= 1;
     const state = this.history[this.historyIndex];
     this.internalValue = state.value;
-    this.isDirty = true;
+    this.isDirty = state.value !== this.editStartValue;
     if (ta) {
       ta.value = state.value;
       this.restoreFocus(
@@ -679,7 +692,7 @@ export default class MarkdownEditor extends LightningElement {
     this.historyIndex += 1;
     const state = this.history[this.historyIndex];
     this.internalValue = state.value;
-    this.isDirty = true;
+    this.isDirty = state.value !== this.editStartValue;
     if (ta) {
       ta.value = state.value;
       this.restoreFocus(
