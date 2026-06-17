@@ -64,6 +64,11 @@ npm run build
 `_directValue` は `""` で初期化されるため、ガード条件は `!== undefined` ではなく `!== ""` を使うこと。
 `wiredRecord` と `wiredObjectInfo` 両方に適用。
 
+### markdownViewer.js — YAMLフロントマターの除去
+
+`doRenderAsync` 内で `renderAndSanitizeAsync` に渡す前に、`/^---\n[\s\S]*?\n---\n?/` でYAMLフロントマター（`---` で囲まれたブロック）を除去する。
+Markdown ファイルの先頭に `sf_id` や `sources` 等のメタデータを書いても、Previewでは表示されない。Editモードでは生テキストとして編集可能。
+
 ### MarkdownImageHandler.cls — 画像置換
 
 `extractDataUris()` は `startIndex` / `endIndex` を `DataUriMatch` に格納する。

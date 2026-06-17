@@ -351,8 +351,9 @@ export default class MarkdownViewer extends LightningElement {
     }
 
     try {
+      const strippedMarkdown = markdown.replace(/^---\n[\s\S]*?\n---\n?/, "");
       const safeHtml =
-        await window.MarkdownCore.renderAndSanitizeAsync(markdown);
+        await window.MarkdownCore.renderAndSanitizeAsync(strippedMarkdown);
       if (this._renderVersion !== version) {
         return;
       }

@@ -155,4 +155,20 @@ describe("c-markdown-viewer", () => {
     const errorEl = el.shadowRoot.querySelector(".md-error");
     expect(errorEl).not.toBeNull();
   });
+
+  it("strips YAML frontmatter before rendering", async () => {
+    global.MarkdownCore = makeMarkdownCoreMock();
+    window.MarkdownCore = global.MarkdownCore;
+    const el = createElement("c-markdown-viewer", { is: MarkdownViewer });
+    document.body.appendChild(el);
+    await flushPromises();
+
+    el.value = '---\nsf_id: "abc123"\nsources: []\n---\n\n# Hello';
+    jest.runOnlyPendingTimers();
+    await flushPromises();
+
+    expect(global.MarkdownCore.renderAndSanitizeAsync).toHaveBeenLastCalledWith(
+      "\n# Hello"
+    );
+  });
 });
