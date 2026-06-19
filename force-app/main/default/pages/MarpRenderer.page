@@ -44,7 +44,23 @@
           function showSlide(index) {
             var sections = container.querySelectorAll("section");
             sections.forEach(function (s, i) {
-              s.classList.toggle("marp-visible", i === index);
+              if (i === index) {
+                s.style.setProperty("visibility", "visible", "important");
+                s.style.setProperty("z-index", "1", "important");
+                s.style.setProperty("position", "absolute", "important");
+                s.style.setProperty("top", "0", "important");
+                s.style.setProperty("left", "0", "important");
+                s.style.setProperty("width", "100%", "important");
+                s.style.setProperty("height", "100%", "important");
+              } else {
+                s.style.setProperty("visibility", "hidden", "important");
+                s.style.setProperty("z-index", "0", "important");
+                s.style.setProperty("position", "absolute", "important");
+                s.style.setProperty("top", "0", "important");
+                s.style.setProperty("left", "0", "important");
+                s.style.setProperty("width", "100%", "important");
+                s.style.setProperty("height", "100%", "important");
+              }
             });
             currentSlide = index;
             sendMessage({
