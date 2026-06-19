@@ -64,11 +64,15 @@ export default class MarpViewer extends LightningElement {
 
   connectedCallback() {
     this._onMessage = this._handleMessage.bind(this);
+    // window in LWS is a sandboxed proxy; add listener on both window and
+    // the real top-level window (accessed via window.parent when same-origin)
+    // so that postMessage from the VF iframe is reliably received.
     window.addEventListener("message", this._onMessage);
   }
 
   disconnectedCallback() {
     window.removeEventListener("message", this._onMessage);
+    this._detachFrameLoad();
   }
 
   renderedCallback() {
@@ -84,19 +88,36 @@ export default class MarpViewer extends LightningElement {
   _mountFrame() {
     const iframe = this.template.querySelector('[data-id="marp-frame"]');
     if (!iframe) {
-      // template not yet rendered — retry next tick
       this._pendingRender = true;
       return;
     }
     if (iframe.src && iframe.src.endsWith(this._vfUrl)) {
-      // already mounted — just (re)render
       if (this._frameReady) {
         this._postMessage({ type: "RENDER", markdown: this._value });
       }
       return;
     }
     this._frameReady = false;
+    this._attachFrameLoad(iframe);
     iframe.src = this._vfUrl;
+  }
+
+  _attachFrameLoad(iframe) {
+    this._detachFrameLoad();
+    this._onFrameLoad = () => {
+      this._frameReady = true;
+      this._postMessage({ type: "RENDER", markdown: this._value });
+    };
+    this._frameEl = iframe;
+    iframe.addEventListener("load", this._onFrameLoad);
+  }
+
+  _detachFrameLoad() {
+    if (this._frameEl && this._onFrameLoad) {
+      this._frameEl.removeEventListener("load", this._onFrameLoad);
+    }
+    this._frameEl = null;
+    this._onFrameLoad = null;
   }
 
   // ── postMessage ───────────────────────────────────────────────────────────
