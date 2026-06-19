@@ -300,7 +300,35 @@ function showSlide(index) {
 
 #### 縦スクロール
 
-`.marp-slide-wrapper` に `max-height: 80vh; overflow-y: auto` を設定しており、スライドがビューポートの 80% を超える場合はコンポーネント内でスクロールします。
+スライドコンテンツが縦長になった場合、VF ページ（`MarpRenderer.page`）内の `section` に `overflow-y: auto; justify-content: flex-start` を CSS 注入してスクロールします。LWC 側ではなく iframe 内でスクロールするため、`aspect-ratio: 16/9` のアスペクト比を維持しつつ、コンテンツがはみ出した場合のみスクロールバーが表示されます。
+
+> **実装の注意:** Marp は `result.css` を動的に `<style>` 要素として挿入するため、スクロール・テーブル表示の CSS は静的な `<style>` ではなく `renderMarkdown()` 内で `result.css` の後ろに連結して注入する必要があります。
+
+#### テーブル表示
+
+Marp の `section` は `display: flex; flex-direction: column` であるため、そのままでは子要素の `table` が `display: block` に変換されて行高が崩れます。`style.textContent` の末尾に以下を注入して修正しています。
+
+```css
+section table {
+  display: table !important;
+  height: auto !important;
+  width: 100% !important;
+}
+section thead,
+section tbody,
+section tfoot {
+  display: table-row-group !important;
+}
+section tr {
+  display: table-row !important;
+  height: auto !important;
+}
+section td,
+section th {
+  display: table-cell !important;
+  height: auto !important;
+}
+```
 
 #### 擬似フルスクリーン
 
