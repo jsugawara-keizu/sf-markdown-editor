@@ -99,7 +99,14 @@
           function renderMarkdown(markdown) {
             dbg("[render] called, md length=" + (markdown || "").length);
             try {
-              dbg("[render] MarpCore=" + typeof MarpCore + " .Marp=" + (typeof MarpCore !== "undefined" ? typeof MarpCore.Marp : "n/a"));
+              dbg(
+                "[render] MarpCore=" +
+                  typeof MarpCore +
+                  " .Marp=" +
+                  (typeof MarpCore !== "undefined"
+                    ? typeof MarpCore.Marp
+                    : "n/a")
+              );
               var marp = new MarpCore.Marp({ html: false });
               var result = marp.render(markdown);
               var html = result.html;
@@ -154,14 +161,20 @@
             sendMessage({ type: "PAGE_READY" });
             try {
               var nameData = JSON.parse(window.name || "{}");
-              dbg("[load] nameData.markdown length=" + (nameData.markdown || "").length);
+              dbg(
+                "[load] nameData.markdown length=" +
+                  (nameData.markdown || "").length
+              );
               if (nameData.markdown) {
                 renderMarkdown(nameData.markdown);
               } else {
-                dbg("[load] no markdown in window.name, waiting for postMessage");
+                dbg(
+                  "[load] no markdown in window.name, waiting for postMessage"
+                );
               }
             } catch (ignore) {
               dbg("[load] window.name parse error: " + ignore);
+            }
           });
         })();
       </script>
