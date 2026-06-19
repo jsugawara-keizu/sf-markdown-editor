@@ -23,11 +23,11 @@
   outline: none;
 }
 
-/* slide container — fixed viewport height so the page doesn't grow unbounded */
+/* 16:9 aspect-ratio container */
 .marp-aspect {
   position: relative;
   width: 100%;
-  height: 65vh;
+  aspect-ratio: 16 / 9;
   background: var(--slds-g-color-neutral-base-95, #1a1a2e);
   border-radius: 4px;
   overflow: hidden;
