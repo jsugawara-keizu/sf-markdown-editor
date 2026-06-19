@@ -21,8 +21,6 @@
   flex-direction: column;
   gap: var(--slds-g-spacing-2, 0.5rem);
   outline: none;
-  max-height: 80vh;
-  overflow-y: auto;
 }
 
 /* 16:9 aspect-ratio container */
@@ -30,6 +28,7 @@
   position: relative;
   width: 100%;
   aspect-ratio: 16 / 9;
+  max-height: 65vh;
   background: var(--slds-g-color-neutral-base-95, #1a1a2e);
   border-radius: 4px;
   overflow: hidden;
@@ -70,6 +69,7 @@
 .marp-root--fullscreen .marp-aspect {
   flex: 1;
   aspect-ratio: unset;
+  max-height: none;
 }
 
 .marp-counter {
