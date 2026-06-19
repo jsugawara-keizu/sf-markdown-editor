@@ -29,6 +29,10 @@
           position: relative;
         }
         /* section visibility is controlled solely by marp-style (injected at render time) */
+        .mermaid svg {
+          max-width: 100%;
+          height: auto;
+        }
       </style>
     </head>
     <body>
@@ -78,7 +82,7 @@
 
               container.innerHTML = result.html;
 
-              // Convert mermaid code blocks to divs and render them.
+              // Convert mermaid code blocks to divs.
               container
                 .querySelectorAll("code.language-mermaid")
                 .forEach(function (code) {
@@ -88,17 +92,34 @@
                   div.textContent = code.textContent;
                   pre.parentNode.replaceChild(div, pre);
                 });
-              if (typeof mermaid !== "undefined") {
-                mermaid.initialize({ startOnLoad: false, theme: "default" });
-                mermaid.run({ querySelector: ".mermaid" });
-              }
 
-              slideCount = container.querySelectorAll(
-                "svg[data-marpit-svg]"
-              ).length;
-              currentSlide = 0;
-              showSlide(0);
-              sendMessage({ type: "READY", slideCount: slideCount });
+              // Render mermaid diagrams explicitly before hiding slides.
+              // mermaid.render() needs elements to be visible to measure size.
+              var afterMermaid = function () {
+                slideCount = container.querySelectorAll(
+                  "svg[data-marpit-svg]"
+                ).length;
+                currentSlide = 0;
+                showSlide(0);
+                sendMessage({ type: "READY", slideCount: slideCount });
+              };
+              var mermaidDivs = Array.from(
+                container.querySelectorAll(".mermaid")
+              );
+              if (typeof mermaid !== "undefined" && mermaidDivs.length > 0) {
+                mermaid.initialize({ startOnLoad: false, theme: "default" });
+                var promises = mermaidDivs.map(function (div, i) {
+                  var source = div.textContent;
+                  return mermaid
+                    .render("mermaid-diag-" + i, source)
+                    .then(function (result) {
+                      div.innerHTML = result.svg;
+                    });
+                });
+                Promise.all(promises).then(afterMermaid).catch(afterMermaid);
+              } else {
+                afterMermaid();
+              }
             } catch (e) {
               sendMessage({ type: "ERROR", message: String(e) });
             }
