@@ -1,9 +1,19 @@
 import { LightningElement, api, track } from "lwc";
+import MarpPrevSlide from "@salesforce/label/c.MarpPrevSlide";
+import MarpNextSlide from "@salesforce/label/c.MarpNextSlide";
+import MarpToggleSlideView from "@salesforce/label/c.MarpToggleSlideView";
+import MarpToggleDocView from "@salesforce/label/c.MarpToggleDocView";
 
 const MARP_FRONTMATTER_RE = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/;
 const MARP_DIRECTIVE_RE = /^\s*marp\s*:\s*true\s*$/m;
 
 export default class MarpViewer extends LightningElement {
+  label = {
+    MarpPrevSlide,
+    MarpNextSlide,
+    MarpToggleSlideView,
+    MarpToggleDocView
+  };
   @api
   get value() {
     return this._value;
@@ -37,7 +47,7 @@ export default class MarpViewer extends LightningElement {
   }
 
   get toggleLabel() {
-    return this._forceDocMode ? "スライド表示" : "ドキュメント表示";
+    return this._forceDocMode ? MarpToggleSlideView : MarpToggleDocView;
   }
 
   get toggleIcon() {
@@ -186,7 +196,9 @@ export default class MarpViewer extends LightningElement {
   // ── helpers ───────────────────────────────────────────────────────────────
 
   _detectMarp(markdown) {
-    const match = MARP_FRONTMATTER_RE.exec(markdown);
+    // Strip leading HTML comments (e.g. doctoc TOC) before frontmatter check.
+    const stripped = markdown.replace(/^(<!--[\s\S]*?-->\s*)+/, "");
+    const match = MARP_FRONTMATTER_RE.exec(stripped);
     if (!match) return false;
     return MARP_DIRECTIVE_RE.test(match[1]);
   }

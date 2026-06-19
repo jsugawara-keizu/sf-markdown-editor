@@ -33,7 +33,7 @@
               variant="border-filled"
               size="small"
               disabled={isPrevDisabled}
-              alternative-text="前のスライド"
+              alternative-text={label.MarpPrevSlide}
               onclick={handlePrev}
             ></lightning-button-icon>
             <span class="marp-counter" aria-live="polite">{slideCounter}</span>
@@ -42,7 +42,7 @@
               variant="border-filled"
               size="small"
               disabled={isNextDisabled}
-              alternative-text="次のスライド"
+              alternative-text={label.MarpNextSlide}
               onclick={handleNext}
             ></lightning-button-icon>
           </div>

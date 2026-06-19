@@ -381,6 +381,13 @@ export default class MarkdownEditor extends LightningElement {
     return "md-tab";
   }
 
+  get hasMarp() {
+    const fm = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/.exec(
+      this.internalValue.replace(/^(<!--[\s\S]*?-->\s*)+/, "")
+    );
+    return fm ? /^\s*marp\s*:\s*true\s*$/m.test(fm[1]) : false;
+  }
+
   get charCount() {
     return this.internalValue.length;
   }

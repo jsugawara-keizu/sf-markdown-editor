@@ -242,7 +242,10 @@
           class="md-preview-pane"
         >
           <c-marp-viewer value={internalValue}></c-marp-viewer>
-          <c-markdown-viewer value={internalValue}></c-markdown-viewer>
+          <template lwc:if={hasMarp}></template>
+          <template lwc:else>
+            <c-markdown-viewer value={internalValue}></c-markdown-viewer>
+          </template>
         </div>
       </template>
 

@@ -440,4 +440,32 @@
         <value
     >objectApiName={0} | fieldApiName={1} | readable={2} | updateable={3}</value>
     </labels>
+    <labels>
+        <fullName>MarpPrevSlide</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Marp previous slide button</shortDescription>
+        <value>Previous slide</value>
+    </labels>
+    <labels>
+        <fullName>MarpNextSlide</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Marp next slide button</shortDescription>
+        <value>Next slide</value>
+    </labels>
+    <labels>
+        <fullName>MarpToggleSlideView</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Marp toggle to slide view</shortDescription>
+        <value>Slide view</value>
+    </labels>
+    <labels>
+        <fullName>MarpToggleDocView</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Marp toggle to document view</shortDescription>
+        <value>Document view</value>
+    </labels>
 </CustomLabels>
