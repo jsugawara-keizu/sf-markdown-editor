@@ -50,6 +50,25 @@
   gap: var(--slds-g-spacing-3, 0.75rem);
 }
 
+/* fullscreen: fill the screen and override max-height constraint */
+.marp-root:fullscreen {
+  background: var(--slds-g-color-neutral-base-15, #111);
+  display: flex;
+  flex-direction: column;
+  padding: var(--slds-g-spacing-2, 0.5rem);
+}
+
+.marp-root:fullscreen .marp-slide-wrapper {
+  flex: 1;
+  max-height: none;
+  overflow: hidden;
+}
+
+.marp-root:fullscreen .marp-aspect {
+  flex: 1;
+  height: auto;
+}
+
 .marp-counter {
   font-size: var(--slds-g-font-size-2, 0.75rem);
   color: var(--slds-g-color-neutral-2, #706e6b);

@@ -12,6 +12,16 @@
           onclick={handleToggle}
         ></lightning-button-icon>
         <span class="marp-toggle-label">{toggleLabel}</span>
+        <template lwc:if={isSlideMode}>
+          <lightning-button-icon
+            icon-name={fullscreenIcon}
+            variant="border-filled"
+            size="small"
+            title={fullscreenLabel}
+            alternative-text={fullscreenLabel}
+            onclick={handleFullscreen}
+          ></lightning-button-icon>
+        </template>
       </div>
 
       <template lwc:if={isSlideMode}>

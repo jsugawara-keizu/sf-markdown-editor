@@ -35,6 +35,7 @@ export default class MarpViewer extends LightningElement {
   @track _isSlideMode = false;
   @track _slideCount = 0;
   @track _currentSlide = 0;
+  @track _isFullscreen = false;
 
   // ── getters ──────────────────────────────────────────────────────────────
 
@@ -66,6 +67,18 @@ export default class MarpViewer extends LightningElement {
     return this._currentSlide >= this._slideCount - 1;
   }
 
+  get isFullscreen() {
+    return this._isFullscreen;
+  }
+
+  get fullscreenIcon() {
+    return this._isFullscreen ? "utility:contract" : "utility:expand";
+  }
+
+  get fullscreenLabel() {
+    return this._isFullscreen ? "全画面を終了" : "全画面表示";
+  }
+
   get _vfUrl() {
     return "/apex/MarpRenderer";
   }
@@ -78,10 +91,15 @@ export default class MarpViewer extends LightningElement {
     // the real top-level window (accessed via window.parent when same-origin)
     // so that postMessage from the VF iframe is reliably received.
     window.addEventListener("message", this._onMessage);
+    this._onFullscreenChange = () => {
+      this._isFullscreen = !!document.fullscreenElement;
+    };
+    document.addEventListener("fullscreenchange", this._onFullscreenChange);
   }
 
   disconnectedCallback() {
     window.removeEventListener("message", this._onMessage);
+    document.removeEventListener("fullscreenchange", this._onFullscreenChange);
     this._detachFrameLoad();
   }
 
@@ -166,6 +184,15 @@ export default class MarpViewer extends LightningElement {
   }
 
   // ── handlers ──────────────────────────────────────────────────────────────
+
+  handleFullscreen() {
+    const el = this.template.querySelector(".marp-root");
+    if (!document.fullscreenElement) {
+      el.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen();
+    }
+  }
 
   handleToggle() {
     this._forceDocMode = !this._forceDocMode;
