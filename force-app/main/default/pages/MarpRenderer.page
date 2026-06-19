@@ -81,8 +81,10 @@
                 result.css +
                 "\n#slide-container svg[data-marpit-svg]{position:absolute;top:0;left:0;width:100%;height:100%;display:none}" +
                 "\nsection{overflow-y:auto!important;overflow-x:hidden!important;justify-content:flex-start!important}" +
-                "\nsection table{height:auto!important;width:100%!important}" +
-                "\nsection tr,section td,section th{height:auto!important}";
+                "\nsection table{display:table!important;height:auto!important;width:100%!important}" +
+                "\nsection thead,section tbody,section tfoot{display:table-row-group!important}" +
+                "\nsection tr{display:table-row!important;height:auto!important}" +
+                "\nsection td,section th{display:table-cell!important;height:auto!important}";
               document.head.appendChild(style);
 
               container.innerHTML = result.html;
