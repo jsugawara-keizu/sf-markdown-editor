@@ -421,6 +421,18 @@ section th {
 - `MarkdownEditorViewerAccess` カスタムパーミッション
 - `MarkdownEditorViewer` パーミッションセット
 
+### MarkdownEditorViewer 権限セットの内容
+
+| 種別                | 対象                         | 内容                                         |
+| ------------------- | ---------------------------- | -------------------------------------------- |
+| `customPermissions` | `MarkdownEditorViewerAccess` | LWC コンポーネント表示制御                   |
+| `userPermissions`   | `LightningExperienceUser`    | Lightning Experience 利用                    |
+| `userPermissions`   | `ApiEnabled`                 | API アクセス                                 |
+| `classAccesses`     | `MarkdownImageHandler`       | 画像保存 Apex                                |
+| `pageAccesses`      | `MarpRenderer`               | Marp スライド VF ページ（iframe 埋め込み用） |
+
+> **注意:** `MarpRenderer` VF ページは `marpViewer` コンポーネントが iframe として埋め込みます。ユーザーがこのページにアクセスできないと Marp スライドが表示されないため、`pageAccesses` の付与が必要です。
+
 ## 10. テスト
 
 - `force-app/main/default/lwc/markdownEditor/__tests__/markdownEditor.test.js`
