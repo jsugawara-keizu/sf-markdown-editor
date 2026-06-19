@@ -35,6 +35,7 @@
       <div id="slide-container"></div>
 
       <script src="{!URLFOR($Resource.marpCore)}"></script>
+      <script src="{!URLFOR($Resource.mermaidJs)}"></script>
       <script>
         (function () {
           var slideCount = 0;
@@ -76,6 +77,22 @@
               document.head.appendChild(style);
 
               container.innerHTML = result.html;
+
+              // Convert mermaid code blocks to divs and render them.
+              container
+                .querySelectorAll("code.language-mermaid")
+                .forEach(function (code) {
+                  var pre = code.parentNode;
+                  var div = document.createElement("div");
+                  div.className = "mermaid";
+                  div.textContent = code.textContent;
+                  pre.parentNode.replaceChild(div, pre);
+                });
+              if (typeof mermaid !== "undefined") {
+                mermaid.initialize({ startOnLoad: false, theme: "default" });
+                mermaid.run({ querySelector: ".mermaid" });
+              }
+
               slideCount = container.querySelectorAll(
                 "svg[data-marpit-svg]"
               ).length;
