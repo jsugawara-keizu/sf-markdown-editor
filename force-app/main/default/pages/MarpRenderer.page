@@ -51,10 +51,33 @@
       <div id="slide-container">
         <div id="status">Loading Marp...</div>
       </div>
+      <div
+        id="debug"
+        style="
+          position: fixed;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          background: rgba(0, 0, 0, 0.85);
+          color: #0f0;
+          font: 11px monospace;
+          padding: 4px 8px;
+          z-index: 9999;
+          white-space: pre-wrap;
+          max-height: 120px;
+          overflow-y: auto;
+        "
+      ></div>
 
       <script src="{!URLFOR($Resource.marpCore)}"></script>
       <script>
         (function () {
+          var debugEl = document.getElementById("debug");
+          function dbg(msg) {
+            debugEl.textContent += msg + "\n";
+          }
+          dbg("[1] inline script start");
+          dbg("[marpCore] typeof MarpCore=" + typeof MarpCore);
           var ALLOWED_ORIGIN = "{!$CurrentPage.URL}".replace(/\/apex\/.*/, "");
           var slideCount = 0;
           var currentSlide = 0;
@@ -74,7 +97,9 @@
           }
 
           function renderMarkdown(markdown) {
+            dbg("[render] called, md length=" + (markdown || "").length);
             try {
+              dbg("[render] MarpCore=" + typeof MarpCore + " .Marp=" + (typeof MarpCore !== "undefined" ? typeof MarpCore.Marp : "n/a"));
               var marp = new MarpCore.Marp({ html: false });
               var result = marp.render(markdown);
               var html = result.html;
@@ -96,7 +121,9 @@
               currentSlide = 0;
               showSlide(0);
               sendMessage({ type: "READY", slideCount: slideCount });
+              dbg("[render] ok slides=" + slideCount);
             } catch (e) {
+              dbg("[render] ERROR: " + e);
               sendMessage({ type: "ERROR", message: String(e) });
             }
           }
@@ -123,17 +150,18 @@
           });
 
           window.addEventListener("load", function () {
+            dbg("[load] window.name=" + window.name.substring(0, 80));
             sendMessage({ type: "PAGE_READY" });
-            // Primary channel: window.name is set by the LWC before src is
-            // assigned, bypassing LWS postMessage proxy restrictions.
             try {
               var nameData = JSON.parse(window.name || "{}");
+              dbg("[load] nameData.markdown length=" + (nameData.markdown || "").length);
               if (nameData.markdown) {
                 renderMarkdown(nameData.markdown);
+              } else {
+                dbg("[load] no markdown in window.name, waiting for postMessage");
               }
             } catch (ignore) {
-              // window.name was not JSON; wait for RENDER via postMessage
-            }
+              dbg("[load] window.name parse error: " + ignore);
           });
         })();
       </script>
