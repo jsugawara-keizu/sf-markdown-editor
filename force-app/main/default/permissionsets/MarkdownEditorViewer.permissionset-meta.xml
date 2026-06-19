@@ -19,4 +19,8 @@
         <apexClass>MarkdownImageHandler</apexClass>
         <enabled>true</enabled>
     </classAccesses>
+    <pageAccesses>
+        <apexPage>MarpRenderer</apexPage>
+        <enabled>true</enabled>
+    </pageAccesses>
 </PermissionSet>
