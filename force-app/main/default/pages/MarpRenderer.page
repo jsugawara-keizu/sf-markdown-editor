@@ -89,6 +89,12 @@
 
               container.innerHTML = result.html;
 
+              // Open all links in a new tab.
+              container.querySelectorAll("a[href]").forEach(function (a) {
+                a.setAttribute("target", "_blank");
+                a.setAttribute("rel", "noopener noreferrer");
+              });
+
               // Convert mermaid code blocks to divs.
               container
                 .querySelectorAll("code.language-mermaid")
