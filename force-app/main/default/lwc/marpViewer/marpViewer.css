@@ -50,23 +50,26 @@
   gap: var(--slds-g-spacing-3, 0.75rem);
 }
 
-/* fullscreen: fill the screen and override max-height constraint */
-.marp-root:fullscreen {
+/* CSS-based fullscreen overlay (LWS blocks requestFullscreen) */
+.marp-root--fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
   background: var(--slds-g-color-neutral-base-15, #111);
   display: flex;
   flex-direction: column;
-  padding: var(--slds-g-spacing-2, 0.5rem);
+  padding: var(--slds-g-spacing-3, 0.75rem);
 }
 
-.marp-root:fullscreen .marp-slide-wrapper {
+.marp-root--fullscreen .marp-slide-wrapper {
   flex: 1;
   max-height: none;
   overflow: hidden;
 }
 
-.marp-root:fullscreen .marp-aspect {
+.marp-root--fullscreen .marp-aspect {
   flex: 1;
-  height: auto;
+  aspect-ratio: unset;
 }
 
 .marp-counter {

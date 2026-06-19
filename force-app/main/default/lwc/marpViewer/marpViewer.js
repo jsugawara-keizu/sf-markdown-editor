@@ -36,6 +36,7 @@ export default class MarpViewer extends LightningElement {
   @track _slideCount = 0;
   @track _currentSlide = 0;
   @track _isFullscreen = false;
+  _onKeydown = null;
 
   // ── getters ──────────────────────────────────────────────────────────────
 
@@ -67,6 +68,10 @@ export default class MarpViewer extends LightningElement {
     return this._currentSlide >= this._slideCount - 1;
   }
 
+  get rootClass() {
+    return this._isFullscreen ? "marp-root marp-root--fullscreen" : "marp-root";
+  }
+
   get isFullscreen() {
     return this._isFullscreen;
   }
@@ -91,15 +96,15 @@ export default class MarpViewer extends LightningElement {
     // the real top-level window (accessed via window.parent when same-origin)
     // so that postMessage from the VF iframe is reliably received.
     window.addEventListener("message", this._onMessage);
-    this._onFullscreenChange = () => {
-      this._isFullscreen = !!document.fullscreenElement;
+    this._onKeydown = (e) => {
+      if (e.key === "Escape" && this._isFullscreen) this._exitFullscreen();
     };
-    document.addEventListener("fullscreenchange", this._onFullscreenChange);
+    document.addEventListener("keydown", this._onKeydown);
   }
 
   disconnectedCallback() {
     window.removeEventListener("message", this._onMessage);
-    document.removeEventListener("fullscreenchange", this._onFullscreenChange);
+    document.removeEventListener("keydown", this._onKeydown);
     this._detachFrameLoad();
   }
 
@@ -186,12 +191,15 @@ export default class MarpViewer extends LightningElement {
   // ── handlers ──────────────────────────────────────────────────────────────
 
   handleFullscreen() {
-    const el = this.template.querySelector(".marp-root");
-    if (!document.fullscreenElement) {
-      el.requestFullscreen().catch(() => {});
+    if (this._isFullscreen) {
+      this._exitFullscreen();
     } else {
-      document.exitFullscreen();
+      this._isFullscreen = true;
     }
+  }
+
+  _exitFullscreen() {
+    this._isFullscreen = false;
   }
 
   handleToggle() {
