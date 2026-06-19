@@ -29,10 +29,13 @@
           position: relative;
         }
         /* section visibility is controlled solely by marp-style (injected at render time) */
-        /* allow slide content to scroll when it overflows the slide bounds */
+        /* allow slide content to scroll when it overflows the slide bounds.
+           justify-content: flex-start prevents top-clipping when overflow
+           occurs with Marp's default justify-content: center on sections. */
         section {
           overflow-y: auto !important;
           overflow-x: hidden !important;
+          justify-content: flex-start !important;
         }
         .mermaid svg {
           max-width: 100%;
