@@ -28,19 +28,7 @@
           height: 100%;
           position: relative;
         }
-        section {
-          display: none !important;
-          width: 100% !important;
-          height: 100% !important;
-          position: absolute !important;
-          top: 0;
-          left: 0;
-          overflow: hidden;
-        }
-        section.marp-visible {
-          visibility: visible !important;
-          z-index: 1 !important;
-        }
+        /* section visibility is controlled solely by marp-style (injected at render time) */
       </style>
     </head>
     <body>
