@@ -21,10 +21,10 @@ export default class MarpViewer extends LightningElement {
   _forceDocMode = false;
   _pendingRender = false;
   _frameReady = false;
-  _slideCount = 0;
-  _currentSlide = 0;
 
   @track _isSlideMode = false;
+  @track _slideCount = 0;
+  @track _currentSlide = 0;
 
   // ── getters ──────────────────────────────────────────────────────────────
 
