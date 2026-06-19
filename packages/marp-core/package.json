@@ -1,0 +1,16 @@
+{
+  "name": "@sf-markdown-editor/marp-core",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@marp-team/marp-core": "^3.9.1"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0",
+    "vite-plugin-node-polyfills": "^0.22.0",
+    "terser": "^5.0.0"
+  }
+}
