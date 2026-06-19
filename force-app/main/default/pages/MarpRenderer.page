@@ -1,0 +1,156 @@
+<apex:page
+  showHeader="false"
+  sidebar="false"
+  standardStylesheets="false"
+  applyHtmlTag="false"
+  docType="html-5.0"
+  contentType="text/html"
+>
+  <html lang="ja">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <style>
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
+        html,
+        body {
+          width: 100%;
+          height: 100%;
+          overflow: hidden;
+          background: #1a1a2e;
+        }
+        #slide-container {
+          width: 100%;
+          height: 100%;
+          position: relative;
+        }
+        /* section visibility is controlled solely by marp-style (injected at render time) */
+        .mermaid svg {
+          max-width: 100%;
+          height: auto;
+        }
+      </style>
+    </head>
+    <body>
+      <div id="slide-container"></div>
+
+      <script src="{!URLFOR($Resource.marpCore)}"></script>
+      <script src="{!URLFOR($Resource.mermaidJs)}"></script>
+      <script>
+        (function () {
+          var slideCount = 0;
+          var currentSlide = 0;
+          var container = document.getElementById("slide-container");
+
+          function showSlide(index) {
+            // Marp wraps each slide in its own <svg data-marpit-svg>.
+            // Operate on svg elements, not sections (sections are inside foreignObject).
+            var svgs = container.querySelectorAll("svg[data-marpit-svg]");
+            svgs.forEach(function (svg, i) {
+              svg.style.setProperty(
+                "display",
+                i === index ? "block" : "none",
+                "important"
+              );
+            });
+            currentSlide = index;
+            sendMessage({
+              type: "SLIDE_CHANGED",
+              slide: currentSlide,
+              slideCount: slideCount
+            });
+          }
+
+          function renderMarkdown(markdown) {
+            try {
+              var marp = new MarpCore.Marp({ html: false });
+              var result = marp.render(markdown);
+
+              var existing = document.getElementById("marp-style");
+              if (existing) existing.remove();
+              var style = document.createElement("style");
+              style.id = "marp-style";
+              // Stack SVGs absolutely so only the visible one shows.
+              style.textContent =
+                result.css +
+                "\n#slide-container svg[data-marpit-svg]{position:absolute;top:0;left:0;width:100%;height:100%;display:none}";
+              document.head.appendChild(style);
+
+              container.innerHTML = result.html;
+
+              // Convert mermaid code blocks to divs.
+              container
+                .querySelectorAll("code.language-mermaid")
+                .forEach(function (code) {
+                  var pre = code.parentNode;
+                  var div = document.createElement("div");
+                  div.className = "mermaid";
+                  div.textContent = code.textContent;
+                  pre.parentNode.replaceChild(div, pre);
+                });
+
+              // Render mermaid diagrams explicitly before hiding slides.
+              // mermaid.render() needs elements to be visible to measure size.
+              var afterMermaid = function () {
+                slideCount = container.querySelectorAll(
+                  "svg[data-marpit-svg]"
+                ).length;
+                currentSlide = 0;
+                showSlide(0);
+                sendMessage({ type: "READY", slideCount: slideCount });
+              };
+              var mermaidDivs = Array.from(
+                container.querySelectorAll(".mermaid")
+              );
+              if (typeof mermaid !== "undefined" && mermaidDivs.length > 0) {
+                mermaid.initialize({ startOnLoad: false, theme: "default" });
+                var promises = mermaidDivs.map(function (div, i) {
+                  var source = div.textContent;
+                  return mermaid
+                    .render("mermaid-diag-" + i, source)
+                    .then(function (result) {
+                      div.innerHTML = result.svg;
+                    });
+                });
+                Promise.all(promises).then(afterMermaid).catch(afterMermaid);
+              } else {
+                afterMermaid();
+              }
+            } catch (e) {
+              sendMessage({ type: "ERROR", message: String(e) });
+            }
+          }
+
+          function sendMessage(data) {
+            window.parent.postMessage(data, "*");
+          }
+
+          window.addEventListener("message", function (event) {
+            var data = event.data;
+            if (!data || !data.type) return;
+            if (data.type === "RENDER") {
+              renderMarkdown(data.markdown);
+            } else if (data.type === "GOTO") {
+              var idx = Math.max(0, Math.min(data.slide, slideCount - 1));
+              showSlide(idx);
+            } else if (data.type === "PREV") {
+              if (currentSlide > 0) showSlide(currentSlide - 1);
+            } else if (data.type === "NEXT") {
+              if (currentSlide < slideCount - 1) showSlide(currentSlide + 1);
+            } else if (data.type === "PING") {
+              sendMessage({ type: "PONG" });
+            }
+          });
+
+          window.addEventListener("load", function () {
+            sendMessage({ type: "PAGE_READY" });
+          });
+        })();
+      </script>
+    </body>
+  </html>
+</apex:page>

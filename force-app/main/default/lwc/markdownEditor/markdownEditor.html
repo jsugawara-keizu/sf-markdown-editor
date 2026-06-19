@@ -241,7 +241,11 @@
           aria-labelledby="md-tab-preview"
           class="md-preview-pane"
         >
-          <c-markdown-viewer value={internalValue}></c-markdown-viewer>
+          <c-marp-viewer value={internalValue}></c-marp-viewer>
+          <template lwc:if={hasMarp}></template>
+          <template lwc:else>
+            <c-markdown-viewer value={internalValue}></c-markdown-viewer>
+          </template>
         </div>
       </template>
 

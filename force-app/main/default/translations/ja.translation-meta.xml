@@ -1,200 +1,215 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <Translations xmlns="http://soap.sforce.com/2006/04/metadata">
-    <language>en_US</language>
     <customLabels>
         <name>MarkdownToolbarAriaLabel</name>
-        <value>Markdown toolbar</value>
+        <label>Markdown ツールバー</label>
     </customLabels>
     <customLabels>
         <name>MarkdownBoldTitle</name>
-        <value>Bold (Ctrl+B)</value>
+        <label>太字 (Ctrl+B)</label>
     </customLabels>
     <customLabels>
         <name>MarkdownBoldLabel</name>
-        <value>Bold</value>
+        <label>太字</label>
     </customLabels>
     <customLabels>
         <name>MarkdownItalicTitle</name>
-        <value>Italic (Ctrl+I)</value>
+        <label>斜体 (Ctrl+I)</label>
     </customLabels>
     <customLabels>
         <name>MarkdownItalicLabel</name>
-        <value>Italic</value>
+        <label>斜体</label>
     </customLabels>
     <customLabels>
         <name>MarkdownHeadingTitle</name>
-        <value>Heading</value>
+        <label>見出し</label>
     </customLabels>
     <customLabels>
         <name>MarkdownHeadingLabel</name>
-        <value>Heading</value>
+        <label>見出し</label>
     </customLabels>
     <customLabels>
         <name>MarkdownCodeTitle</name>
-        <value>Code block</value>
+        <label>コードブロック</label>
     </customLabels>
     <customLabels>
         <name>MarkdownCodeLabel</name>
-        <value>Code</value>
+        <label>コード</label>
     </customLabels>
     <customLabels>
         <name>MarkdownUnorderedListTitle</name>
-        <value>Unordered list</value>
+        <label>箇条書きリスト</label>
     </customLabels>
     <customLabels>
         <name>MarkdownUnorderedListLabel</name>
-        <value>Unordered list</value>
+        <label>箇条書きリスト</label>
     </customLabels>
     <customLabels>
         <name>MarkdownOrderedListTitle</name>
-        <value>Ordered list</value>
+        <label>番号付きリスト</label>
     </customLabels>
     <customLabels>
         <name>MarkdownOrderedListLabel</name>
-        <value>Ordered list</value>
+        <label>番号付きリスト</label>
     </customLabels>
     <customLabels>
         <name>MarkdownLinkTitle</name>
-        <value>Link</value>
+        <label>リンク</label>
     </customLabels>
     <customLabels>
         <name>MarkdownLinkLabel</name>
-        <value>Link</value>
+        <label>リンク</label>
     </customLabels>
     <customLabels>
         <name>MarkdownTableTitle</name>
-        <value>Table</value>
+        <label>テーブル</label>
     </customLabels>
     <customLabels>
         <name>MarkdownTableLabel</name>
-        <value>Table</value>
+        <label>テーブル</label>
     </customLabels>
     <customLabels>
         <name>MarkdownStrikethroughTitle</name>
-        <value>Strikethrough</value>
+        <label>取り消し線</label>
     </customLabels>
     <customLabels>
         <name>MarkdownStrikethroughLabel</name>
-        <value>Strikethrough</value>
+        <label>取り消し線</label>
     </customLabels>
     <customLabels>
         <name>MarkdownBlockquoteTitle</name>
-        <value>Blockquote</value>
+        <label>引用</label>
     </customLabels>
     <customLabels>
         <name>MarkdownBlockquoteLabel</name>
-        <value>Blockquote</value>
+        <label>引用</label>
     </customLabels>
     <customLabels>
         <name>MarkdownImageTitle</name>
-        <value>Image</value>
+        <label>画像</label>
     </customLabels>
     <customLabels>
         <name>MarkdownImageLabel</name>
-        <value>Image</value>
+        <label>画像</label>
     </customLabels>
     <customLabels>
         <name>MarkdownHorizontalRuleTitle</name>
-        <value>Horizontal rule</value>
+        <label>水平線</label>
     </customLabels>
     <customLabels>
         <name>MarkdownHorizontalRuleLabel</name>
-        <value>Horizontal rule</value>
+        <label>水平線</label>
     </customLabels>
     <customLabels>
         <name>MarkdownEditTabLabel</name>
-        <value>Edit</value>
+        <label>編集</label>
     </customLabels>
     <customLabels>
         <name>MarkdownPreviewTabLabel</name>
-        <value>Preview</value>
+        <label>プレビュー</label>
     </customLabels>
     <customLabels>
         <name>MarkdownSaveLabel</name>
-        <value>Save</value>
+        <label>保存</label>
     </customLabels>
     <customLabels>
         <name>MarkdownSavedLabel</name>
-        <value>Saved</value>
+        <label>保存済み</label>
     </customLabels>
     <customLabels>
         <name>MarkdownEditorPlaceholder</name>
-        <value>Enter markdown...</value>
+        <label>Markdown を入力してください...</label>
     </customLabels>
     <customLabels>
         <name>MarkdownEditorAriaLabel</name>
-        <value>Markdown editor</value>
+        <label>Markdown エディタ</label>
     </customLabels>
     <customLabels>
         <name>MarkdownPreviewAriaLabel</name>
-        <value>Markdown preview</value>
+        <label>Markdown プレビュー</label>
     </customLabels>
     <customLabels>
         <name>MarkdownTabsAriaLabel</name>
-        <value>Edit / Preview</value>
+        <label>編集 / プレビュー</label>
     </customLabels>
     <customLabels>
         <name>MarkdownCharacterCountSuffix</name>
-        <value>characters</value>
+        <label>文字</label>
     </customLabels>
     <customLabels>
         <name>MarkdownUnsavedBadge</name>
-        <value>Unsaved</value>
+        <label>未保存</label>
     </customLabels>
     <customLabels>
         <name>MarkdownLoadingAltText</name>
-        <value>Loading markdown library</value>
+        <label>Markdown ライブラリを読み込み中</label>
     </customLabels>
     <customLabels>
         <name>MarkdownViewerErrorText</name>
-        <value>Failed to render markdown.</value>
+        <label>Markdown の表示に失敗しました。</label>
     </customLabels>
     <customLabels>
         <name>MarkdownBoldPlaceholder</name>
-        <value>bold text</value>
+        <label>太字テキスト</label>
     </customLabels>
     <customLabels>
         <name>MarkdownItalicPlaceholder</name>
-        <value>italic text</value>
+        <label>斜体テキスト</label>
     </customLabels>
     <customLabels>
         <name>MarkdownHeadingPlaceholder</name>
-        <value>Heading</value>
+        <label>見出し</label>
     </customLabels>
     <customLabels>
         <name>MarkdownListPlaceholder</name>
-        <value>List item</value>
+        <label>リスト項目</label>
     </customLabels>
     <customLabels>
         <name>MarkdownLinkPlaceholder</name>
-        <value>Link text</value>
+        <label>リンクテキスト</label>
     </customLabels>
     <customLabels>
         <name>MarkdownTableTemplate</name>
-        <value>| Column 1 | Column 2 | Column 3 |\n| --- | --- | --- |\n| </value>
+        <label>| 列1 | 列2 | 列3 |\n| --- | --- | --- |\n| </label>
     </customLabels>
     <customLabels>
         <name>MarkdownTableCellPlaceholder</name>
-        <value>Cell</value>
+        <label>セル</label>
     </customLabels>
     <customLabels>
         <name>MarkdownTextPlaceholder</name>
-        <value>text</value>
+        <label>テキスト</label>
     </customLabels>
     <customLabels>
         <name>MarkdownBlockquotePlaceholder</name>
-        <value>Quote text</value>
+        <label>引用テキスト</label>
     </customLabels>
     <customLabels>
         <name>MarkdownImageDescriptionPlaceholder</name>
-        <value>Image description</value>
+        <label>画像の説明</label>
     </customLabels>
     <customLabels>
         <name>MarkdownSaveSuccessMessage</name>
-        <value>Saved successfully.</value>
+        <label>保存が完了しました。</label>
     </customLabels>
     <customLabels>
         <name>MarkdownSaveErrorMessage</name>
-        <value>Failed to save the markdown.</value>
+        <label>Markdown の保存に失敗しました。</label>
+    </customLabels>
+    <customLabels>
+        <name>MarpPrevSlide</name>
+        <label>前のスライド</label>
+    </customLabels>
+    <customLabels>
+        <name>MarpNextSlide</name>
+        <label>次のスライド</label>
+    </customLabels>
+    <customLabels>
+        <name>MarpToggleSlideView</name>
+        <label>スライド表示</label>
+    </customLabels>
+    <customLabels>
+        <name>MarpToggleDocView</name>
+        <label>ドキュメント表示</label>
     </customLabels>
 </Translations>

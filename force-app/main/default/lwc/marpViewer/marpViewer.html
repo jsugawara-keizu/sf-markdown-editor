@@ -1,0 +1,53 @@
+<template>
+  <template lwc:if={hasMarp}>
+    <div class="marp-root">
+      <!-- view toggle -->
+      <div class="marp-toggle-bar">
+        <lightning-button-icon
+          icon-name={toggleIcon}
+          variant="border-filled"
+          size="small"
+          title={toggleLabel}
+          alternative-text={toggleLabel}
+          onclick={handleToggle}
+        ></lightning-button-icon>
+        <span class="marp-toggle-label">{toggleLabel}</span>
+      </div>
+
+      <template lwc:if={isSlideMode}>
+        <!-- slide wrapper -->
+        <div class="marp-slide-wrapper" onkeydown={handleKeydown} tabindex="0">
+          <div class="marp-aspect">
+            <iframe
+              data-id="marp-frame"
+              class="marp-frame"
+              title="Marp slide viewer"
+              sandbox="allow-scripts allow-same-origin"
+            ></iframe>
+          </div>
+
+          <!-- navigation -->
+          <div class="marp-nav" role="navigation">
+            <lightning-button-icon
+              icon-name="utility:back"
+              variant="border-filled"
+              size="small"
+              disabled={isPrevDisabled}
+              alternative-text={label.MarpPrevSlide}
+              onclick={handlePrev}
+            ></lightning-button-icon>
+            <span class="marp-counter" aria-live="polite">{slideCounter}</span>
+            <lightning-button-icon
+              icon-name="utility:forward"
+              variant="border-filled"
+              size="small"
+              disabled={isNextDisabled}
+              alternative-text={label.MarpNextSlide}
+              onclick={handleNext}
+            ></lightning-button-icon>
+          </div>
+        </div>
+      </template>
+    </div>
+  </template>
+</template>
