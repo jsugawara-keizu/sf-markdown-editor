@@ -48,6 +48,9 @@
           </div>
         </div>
       </template>
+      <template lwc:else>
+        <c-markdown-viewer value={value}></c-markdown-viewer>
+      </template>
     </div>
   </template>
 </template>
