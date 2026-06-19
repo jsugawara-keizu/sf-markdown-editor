@@ -207,6 +207,8 @@ export default class MarpViewer extends LightningElement {
     this._isSlideMode = !this._forceDocMode && this._hasMarp;
     if (this._isSlideMode) {
       this._pendingRender = true;
+    } else {
+      this._isFullscreen = false;
     }
   }
 
