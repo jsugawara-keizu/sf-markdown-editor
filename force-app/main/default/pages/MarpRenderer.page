@@ -26,6 +26,7 @@
         #slide-container {
           width: 100%;
           height: 100%;
+          position: relative;
         }
         section {
           display: none !important;
@@ -39,60 +40,14 @@
         section.active {
           display: flex !important;
         }
-        #status {
-          color: #fff;
-          font-family: sans-serif;
-          font-size: 14px;
-          padding: 20px;
-        }
       </style>
     </head>
     <body>
-      <div id="slide-container">
-        <div id="status">Loading Marp...</div>
-      </div>
-      <div
-        id="debug"
-        style="
-          position: fixed;
-          bottom: 0;
-          left: 0;
-          right: 0;
-          background: rgba(0, 0, 0, 0.85);
-          color: #0f0;
-          font: 11px monospace;
-          padding: 4px 8px;
-          z-index: 9999;
-          white-space: pre-wrap;
-          max-height: 120px;
-          overflow-y: auto;
-        "
-      ></div>
+      <div id="slide-container"></div>
 
-      <script>
-        window.onerror = function (msg, src, line, col, err) {
-          var el = document.getElementById("debug");
-          if (el)
-            el.textContent +=
-              "[onerror] " + msg + " @ " + src + ":" + line + "\n";
-        };
-      </script>
-      <script
-        src="{!URLFOR($Resource.marpCore)}"
-        onerror="
-          document.getElementById('debug').textContent +=
-            '[script onerror] marpCore.js failed to load\n'
-        "
-      ></script>
+      <script src="{!URLFOR($Resource.marpCore)}"></script>
       <script>
         (function () {
-          var debugEl = document.getElementById("debug");
-          function dbg(msg) {
-            debugEl.textContent += msg + "\n";
-          }
-          dbg("[1] inline script start");
-          dbg("[marpCore] typeof MarpCore=" + typeof MarpCore);
-          var ALLOWED_ORIGIN = "{!$CurrentPage.URL}".replace(/\/apex\/.*/, "");
           var slideCount = 0;
           var currentSlide = 0;
           var container = document.getElementById("slide-container");
@@ -111,40 +66,26 @@
           }
 
           function renderMarkdown(markdown) {
-            dbg("[render] called, md length=" + (markdown || "").length);
             try {
-              dbg(
-                "[render] MarpCore=" +
-                  typeof MarpCore +
-                  " .Marp=" +
-                  (typeof MarpCore !== "undefined"
-                    ? typeof MarpCore.Marp
-                    : "n/a")
-              );
               var marp = new MarpCore.Marp({ html: false });
               var result = marp.render(markdown);
-              var html = result.html;
-              var css = result.css;
 
-              // inject CSS
               var existing = document.getElementById("marp-style");
               if (existing) existing.remove();
               var style = document.createElement("style");
               style.id = "marp-style";
               style.textContent =
-                css +
+                result.css +
                 "\nsection{display:none!important;width:100%!important;height:100%!important;position:absolute!important;top:0;left:0;overflow:hidden}" +
                 "\nsection.active{display:flex!important}";
               document.head.appendChild(style);
 
-              container.innerHTML = html;
+              container.innerHTML = result.html;
               slideCount = container.querySelectorAll("section").length;
               currentSlide = 0;
               showSlide(0);
               sendMessage({ type: "READY", slideCount: slideCount });
-              dbg("[render] ok slides=" + slideCount);
             } catch (e) {
-              dbg("[render] ERROR: " + e);
               sendMessage({ type: "ERROR", message: String(e) });
             }
           }
@@ -171,24 +112,7 @@
           });
 
           window.addEventListener("load", function () {
-            dbg("[load] window.name=" + window.name.substring(0, 80));
             sendMessage({ type: "PAGE_READY" });
-            try {
-              var nameData = JSON.parse(window.name || "{}");
-              dbg(
-                "[load] nameData.markdown length=" +
-                  (nameData.markdown || "").length
-              );
-              if (nameData.markdown) {
-                renderMarkdown(nameData.markdown);
-              } else {
-                dbg(
-                  "[load] no markdown in window.name, waiting for postMessage"
-                );
-              }
-            } catch (ignore) {
-              dbg("[load] window.name parse error: " + ignore);
-            }
           });
         })();
       </script>
