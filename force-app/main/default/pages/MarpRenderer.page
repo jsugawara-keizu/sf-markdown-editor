@@ -69,7 +69,21 @@
         "
       ></div>
 
-      <script src="{!URLFOR($Resource.marpCore)}"></script>
+      <script>
+        window.onerror = function (msg, src, line, col, err) {
+          var el = document.getElementById("debug");
+          if (el)
+            el.textContent +=
+              "[onerror] " + msg + " @ " + src + ":" + line + "\n";
+        };
+      </script>
+      <script
+        src="{!URLFOR($Resource.marpCore)}"
+        onerror="
+          document.getElementById('debug').textContent +=
+            '[script onerror] marpCore.js failed to load\n'
+        "
+      ></script>
       <script>
         (function () {
           var debugEl = document.getElementById("debug");
