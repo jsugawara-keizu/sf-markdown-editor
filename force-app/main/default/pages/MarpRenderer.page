@@ -122,9 +122,18 @@
             }
           });
 
-          // Notify parent that the page is ready to receive RENDER
           window.addEventListener("load", function () {
             sendMessage({ type: "PAGE_READY" });
+            // Primary channel: window.name is set by the LWC before src is
+            // assigned, bypassing LWS postMessage proxy restrictions.
+            try {
+              var nameData = JSON.parse(window.name || "{}");
+              if (nameData.markdown) {
+                renderMarkdown(nameData.markdown);
+              }
+            } catch (ignore) {
+              // window.name was not JSON; wait for RENDER via postMessage
+            }
           });
         })();
       </script>

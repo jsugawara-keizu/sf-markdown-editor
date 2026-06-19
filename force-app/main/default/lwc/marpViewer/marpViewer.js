@@ -91,13 +91,20 @@ export default class MarpViewer extends LightningElement {
       this._pendingRender = true;
       return;
     }
-    if (iframe.src && iframe.src.endsWith(this._vfUrl)) {
+    const alreadyMounted =
+      iframe.src &&
+      (iframe.src.endsWith(this._vfUrl) ||
+        iframe.src.endsWith(this._vfUrl + "?r=1"));
+    if (alreadyMounted) {
       if (this._frameReady) {
         this._postMessage({ type: "RENDER", markdown: this._value });
       }
       return;
     }
     this._frameReady = false;
+    // Pass markdown via window.name so the VF page can render on load
+    // without relying on postMessage (LWS may proxy contentWindow).
+    iframe.name = JSON.stringify({ markdown: this._value });
     this._attachFrameLoad(iframe);
     iframe.src = this._vfUrl;
   }
@@ -106,6 +113,7 @@ export default class MarpViewer extends LightningElement {
     this._detachFrameLoad();
     this._onFrameLoad = () => {
       this._frameReady = true;
+      // Also try postMessage as a secondary channel for re-renders.
       this._postMessage({ type: "RENDER", markdown: this._value });
     };
     this._frameEl = iframe;
