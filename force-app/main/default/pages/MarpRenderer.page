@@ -37,6 +37,16 @@
           overflow-x: hidden !important;
           justify-content: flex-start !important;
         }
+        /* restore table row heights broken by flex-start override */
+        section table {
+          height: auto !important;
+          width: 100% !important;
+        }
+        section tr,
+        section td,
+        section th {
+          height: auto !important;
+        }
         .mermaid svg {
           max-width: 100%;
           height: auto;
