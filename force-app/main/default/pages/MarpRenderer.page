@@ -29,6 +29,11 @@
           position: relative;
         }
         /* section visibility is controlled solely by marp-style (injected at render time) */
+        /* allow slide content to scroll when it overflows the slide bounds */
+        section {
+          overflow-y: auto !important;
+          overflow-x: hidden !important;
+        }
         .mermaid svg {
           max-width: 100%;
           height: auto;
