@@ -114,6 +114,27 @@ sf project deploy start --source-dir force-app
 sf project deploy start --source-dir force-app --target-org <alias>
 ```
 
+## 権限セット運用方針
+
+`MarkdownEditorViewer` 権限セットはパッケージとして複数環境にデプロイされるため、**環境固有のリソースへの権限を含めてはならない**。
+
+### パッケージ権限セットに含めてよいもの
+
+- パッケージ同梱の Apex クラスへのアクセス（`MarkdownImageHandler`）
+- パッケージ同梱の Visualforce ページへのアクセス（`MarpRenderer`）
+- パッケージ同梱のカスタム権限（`MarkdownEditorViewerAccess`）
+- `LightningExperienceUser`・`ApiEnabled` など汎用ユーザー権限
+
+### パッケージ権限セットに含めてはならないもの
+
+- デプロイ先オブジェクト・項目への FLS（`fieldPermissions`）
+- デプロイ先オブジェクトへのオブジェクト権限（`objectPermissions`）
+
+### 環境固有 FLS の付与方法
+
+各デプロイ先環境で、プロファイルまたは環境専用の権限セットを用意して FLS を付与すること。
+パッケージ権限セットにデプロイ先固有の FLS を追加すると、次回デプロイ時に他環境の設定を上書き・消去するリスクがある。
+
 ## API バージョン
 
 `sfdx-project.json` の `sourceApiVersion: "66.0"` を維持すること。

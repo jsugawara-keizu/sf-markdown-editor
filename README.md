@@ -59,6 +59,33 @@ npm test
 
 `npm test` では `sfdx-lwc-jest` を使って LWC コンポーネントのテストを実行します。
 
+### Org 設定（デプロイ後に必要な手動設定）
+
+#### 1. 権限セットの割り当て
+
+`MarkdownEditorViewer` 権限セットをコンポーネントを使用するユーザーに割り当てる。
+
+#### 2. Lightning レコードページへのコンポーネント配置
+
+Lightning App Builder でコンポーネントを配置し、`fieldApiName` に対象オブジェクトの Long Text Area 項目 API 名を設定する。
+
+#### 3. インラインフレームの信頼済みドメイン設定（Marp スライド表示に必要）
+
+`marpViewer` は Visualforce ページ（`MarpRenderer`）を iframe で読み込むため、Lightning ドメインを信頼済みドメインとして登録する必要がある。
+
+Setup > **Security** > **Session Settings** > **インラインフレームの信頼済みドメイン** に環境の Lightning ドメインを追加する。
+
+| 環境                | 追加するドメイン                                 |
+| ------------------- | ------------------------------------------------ |
+| Developer / Sandbox | `https://<org-name>.sandbox.lightning.force.com` |
+| Production          | `https://<my-domain>.lightning.force.com`        |
+
+> **注意**: VF ドメイン（`*.vf.force.com`）ではなく **Lightning ドメイン**（`*.lightning.force.com`）を登録すること。誤って VF ドメインを登録しても効果がない。
+
+#### 4. 項目レベルセキュリティ（FLS）の付与
+
+`MarkdownEditorViewer` 権限セットには環境固有のオブジェクト・項目への FLS は含まれていない。プロファイルまたは環境専用の権限セットで、対象項目（例: `Subject__c.Markdown__c`）への読み取り・編集権限を付与すること。
+
 ### Salesforce へのデプロイ
 
 ```bash
