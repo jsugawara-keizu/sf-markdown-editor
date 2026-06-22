@@ -88,9 +88,27 @@ Setup > **Security** > **Session Settings** > **インラインフレームの�
 
 ### Salesforce へのデプロイ
 
+2段階構成でデプロイする。
+
+**ステップ 1：通常デプロイ（全環境共通）**
+
 ```bash
-sfdx force:source:deploy -p force-app/main/default/lwc/markdownEditor,force-app/main/default/lwc/markdownViewer,force-app/main/default/labels,force-app/main/default/translations,force-app/main/default/classes,force-app/main/default/customPermissions,force-app/main/default/permissionsets,force-app/main/default/staticresources
+sf project deploy start --manifest manifest/package.xml --target-org <alias>
 ```
+
+**ステップ 2：翻訳デプロイ（Translation Workbench が有効な環境のみ）**
+
+環境の言語設定に合わせていずれかを実行する。
+
+```bash
+# 日本語
+sf project deploy start --manifest manifest/package_lang-ja.xml --target-org <alias>
+
+# 英語
+sf project deploy start --manifest manifest/package_lang-en_US.xml --target-org <alias>
+```
+
+> **注意**: Translation Workbench が無効な環境でステップ 2 を実行するとエラーになる。ステップ 1 のみで動作自体は問題ない（ラベルはデフォルト言語の英語で表示される）。
 
 ## 実装上の注意
 
