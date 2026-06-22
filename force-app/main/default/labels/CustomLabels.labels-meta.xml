@@ -468,4 +468,18 @@
         <shortDescription>Marp toggle to document view</shortDescription>
         <value>Document view</value>
     </labels>
+    <labels>
+        <fullName>MarpEnterFullscreen</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Marp enter fullscreen</shortDescription>
+        <value>Fullscreen</value>
+    </labels>
+    <labels>
+        <fullName>MarpExitFullscreen</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Marp exit fullscreen</shortDescription>
+        <value>Exit fullscreen</value>
+    </labels>
 </CustomLabels>

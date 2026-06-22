@@ -213,4 +213,12 @@
         <name>MarpToggleDocView</name>
         <label>Document view</label>
     </customLabels>
+    <customLabels>
+        <name>MarpEnterFullscreen</name>
+        <label>Fullscreen</label>
+    </customLabels>
+    <customLabels>
+        <name>MarpExitFullscreen</name>
+        <label>Exit fullscreen</label>
+    </customLabels>
 </Translations>

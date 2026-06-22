@@ -3,6 +3,8 @@ import MarpPrevSlide from "@salesforce/label/c.MarpPrevSlide";
 import MarpNextSlide from "@salesforce/label/c.MarpNextSlide";
 import MarpToggleSlideView from "@salesforce/label/c.MarpToggleSlideView";
 import MarpToggleDocView from "@salesforce/label/c.MarpToggleDocView";
+import MarpEnterFullscreen from "@salesforce/label/c.MarpEnterFullscreen";
+import MarpExitFullscreen from "@salesforce/label/c.MarpExitFullscreen";
 
 const MARP_FRONTMATTER_RE = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/;
 const MARP_DIRECTIVE_RE = /^\s*marp\s*:\s*true\s*$/m;
@@ -81,7 +83,7 @@ export default class MarpViewer extends LightningElement {
   }
 
   get fullscreenLabel() {
-    return this._isFullscreen ? "全画面を終了" : "全画面表示";
+    return this._isFullscreen ? MarpExitFullscreen : MarpEnterFullscreen;
   }
 
   get _vfUrl() {
