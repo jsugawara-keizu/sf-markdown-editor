@@ -33,10 +33,5 @@
         <members>mermaidJs</members>
         <name>StaticResource</name>
     </types>
-    <types>
-        <members>en_US</members>
-        <members>ja</members>
-        <name>Translations</name>
-    </types>
-    <version>66.0</version>
+<version>66.0</version>
 </Package>

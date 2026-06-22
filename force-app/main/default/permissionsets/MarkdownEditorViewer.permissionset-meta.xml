@@ -1,26 +1,27 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
-    <label>Markdown Editor Viewer User</label>
-    <description
-  >Grants access to MarkdownEditor and MarkdownViewer components, including Apex access and Lightning Experience usage.</description>
-    <customPermissions>
-        <enabled>true</enabled>
-        <name>MarkdownEditorViewerAccess</name>
-    </customPermissions>
-    <userPermissions>
-        <enabled>true</enabled>
-        <name>LightningExperienceUser</name>
-    </userPermissions>
-    <userPermissions>
-        <enabled>true</enabled>
-        <name>ApiEnabled</name>
-    </userPermissions>
     <classAccesses>
         <apexClass>MarkdownImageHandler</apexClass>
         <enabled>true</enabled>
     </classAccesses>
+    <customPermissions>
+        <enabled>true</enabled>
+        <name>MarkdownEditorViewerAccess</name>
+    </customPermissions>
+    <description
+  >Grants access to MarkdownEditor and MarkdownViewer components, including Apex access and Lightning Experience usage.</description>
+    <hasActivationRequired>false</hasActivationRequired>
+    <label>Markdown Editor Viewer User</label>
     <pageAccesses>
         <apexPage>MarpRenderer</apexPage>
         <enabled>true</enabled>
     </pageAccesses>
+    <userPermissions>
+        <enabled>true</enabled>
+        <name>ApiEnabled</name>
+    </userPermissions>
+    <userPermissions>
+        <enabled>true</enabled>
+        <name>LightningExperienceUser</name>
+    </userPermissions>
 </PermissionSet>
