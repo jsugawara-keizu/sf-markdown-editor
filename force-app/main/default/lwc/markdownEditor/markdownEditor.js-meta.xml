@@ -7,6 +7,10 @@
     </targets>
     <targetConfigs>
         <targetConfig targets="lightning__RecordPage">
+            <supportedFormFactors>
+                <supportedFormFactor type="Large" />
+                <supportedFormFactor type="Small" />
+            </supportedFormFactors>
             <property
         name="fieldApiName"
         type="String"
