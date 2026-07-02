@@ -469,6 +469,15 @@
         <value>Document view</value>
     </labels>
     <labels>
+        <fullName>MarpMobileUnsupportedNotice</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription
+    >Notice shown when Marp slide view is unavailable on mobile</shortDescription>
+        <value
+    >Slide view is not available on mobile. Showing document view instead.</value>
+    </labels>
+    <labels>
         <fullName>MarpEnterFullscreen</fullName>
         <language>en_US</language>
         <protected>false</protected>

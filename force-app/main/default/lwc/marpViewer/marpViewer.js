@@ -1,20 +1,27 @@
 import { LightningElement, api, track } from "lwc";
+import FORM_FACTOR from "@salesforce/client/formFactor";
 import MarpPrevSlide from "@salesforce/label/c.MarpPrevSlide";
 import MarpNextSlide from "@salesforce/label/c.MarpNextSlide";
 import MarpToggleSlideView from "@salesforce/label/c.MarpToggleSlideView";
 import MarpToggleDocView from "@salesforce/label/c.MarpToggleDocView";
 import MarpEnterFullscreen from "@salesforce/label/c.MarpEnterFullscreen";
 import MarpExitFullscreen from "@salesforce/label/c.MarpExitFullscreen";
+import MarpMobileUnsupportedNotice from "@salesforce/label/c.MarpMobileUnsupportedNotice";
 
 const MARP_FRONTMATTER_RE = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/;
 const MARP_DIRECTIVE_RE = /^\s*marp\s*:\s*true\s*$/m;
+
+// Marp slide view relies on a Visualforce iframe, which is unreliable inside
+// the Salesforce Mobile App's embedded browser. Fall back to document view.
+const IS_MOBILE = FORM_FACTOR !== "Large";
 
 export default class MarpViewer extends LightningElement {
   label = {
     MarpPrevSlide,
     MarpNextSlide,
     MarpToggleSlideView,
-    MarpToggleDocView
+    MarpToggleDocView,
+    MarpMobileUnsupportedNotice
   };
   @api
   get value() {
@@ -30,9 +37,10 @@ export default class MarpViewer extends LightningElement {
 
   _value = "";
   _hasMarp = false;
-  _forceDocMode = false;
+  _forceDocMode = IS_MOBILE;
   _pendingRender = false;
   _frameReady = false;
+  isMobile = IS_MOBILE;
 
   @track _isSlideMode = false;
   @track _slideCount = 0;
@@ -205,6 +213,9 @@ export default class MarpViewer extends LightningElement {
   }
 
   handleToggle() {
+    if (this.isMobile) {
+      return;
+    }
     this._forceDocMode = !this._forceDocMode;
     this._isSlideMode = !this._forceDocMode && this._hasMarp;
     if (this._isSlideMode) {

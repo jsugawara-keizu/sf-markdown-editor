@@ -1,28 +1,33 @@
 <template>
   <template lwc:if={hasMarp}>
     <div class={rootClass}>
-      <!-- view toggle -->
-      <div class="marp-toggle-bar">
-        <lightning-button-icon
-          icon-name={toggleIcon}
-          variant="border-filled"
-          size="small"
-          title={toggleLabel}
-          alternative-text={toggleLabel}
-          onclick={handleToggle}
-        ></lightning-button-icon>
-        <span class="marp-toggle-label">{toggleLabel}</span>
-        <template lwc:if={isSlideMode}>
+      <template lwc:if={isMobile}>
+        <p class="marp-mobile-notice">{label.MarpMobileUnsupportedNotice}</p>
+      </template>
+      <template lwc:else>
+        <!-- view toggle -->
+        <div class="marp-toggle-bar">
           <lightning-button-icon
-            icon-name={fullscreenIcon}
+            icon-name={toggleIcon}
             variant="border-filled"
             size="small"
-            title={fullscreenLabel}
-            alternative-text={fullscreenLabel}
-            onclick={handleFullscreen}
+            title={toggleLabel}
+            alternative-text={toggleLabel}
+            onclick={handleToggle}
           ></lightning-button-icon>
-        </template>
-      </div>
+          <span class="marp-toggle-label">{toggleLabel}</span>
+          <template lwc:if={isSlideMode}>
+            <lightning-button-icon
+              icon-name={fullscreenIcon}
+              variant="border-filled"
+              size="small"
+              title={fullscreenLabel}
+              alternative-text={fullscreenLabel}
+              onclick={handleFullscreen}
+            ></lightning-button-icon>
+          </template>
+        </div>
+      </template>
 
       <template lwc:if={isSlideMode}>
         <!-- slide wrapper -->

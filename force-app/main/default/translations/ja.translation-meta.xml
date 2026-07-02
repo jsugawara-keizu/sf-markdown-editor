@@ -213,6 +213,11 @@
         <label>ドキュメント表示</label>
     </customLabels>
     <customLabels>
+        <name>MarpMobileUnsupportedNotice</name>
+        <label
+    >モバイルではスライド表示は利用できません。ドキュメント表示で表示しています。</label>
+    </customLabels>
+    <customLabels>
         <name>MarpEnterFullscreen</name>
         <label>全画面表示</label>
     </customLabels>
