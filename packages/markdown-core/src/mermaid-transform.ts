@@ -81,35 +81,45 @@ export async function transformMermaidCodeBlocks(
 
   if (!candidates.length) return;
 
-  await Promise.all(
-    candidates.map(async ({ node, index, parent }, seq) => {
-      const id = `mermaid-${Date.now()}-${seq}`;
-      const source = String(node.value || '');
-      debugLog('compile:start', {
+  // Mermaid's render() does synchronous, expensive DOM work (worse still under
+  // Lightning Web Security's Proxy membrane). Compiling all diagrams via
+  // Promise.all chains that work back-to-back on microtasks with no point at
+  // which the browser can paint or handle input, which reads as a full page
+  // freeze once a document has more than a couple of diagrams. Compile one at
+  // a time and yield back to the event loop between diagrams so the browser
+  // stays responsive regardless of diagram count.
+  for (let seq = 0; seq < candidates.length; seq++) {
+    const { node, index, parent } = candidates[seq];
+    if (seq > 0) {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    }
+
+    const id = `mermaid-${Date.now()}-${seq}`;
+    const source = String(node.value || '');
+    debugLog('compile:start', {
+      id,
+      index,
+      lang: node.lang || '',
+      sourcePreview: preview(source),
+      sourceLength: source.length
+    });
+    try {
+      const rawSvg = await compiler.compile(source, id);
+      debugLog('compile:success', {
         id,
-        index,
-        lang: node.lang || '',
-        sourcePreview: preview(source),
-        sourceLength: source.length
+        rawSvgLength: rawSvg.length,
+        rawSvgPreview: preview(rawSvg)
       });
-      try {
-        const rawSvg = await compiler.compile(source, id);
-        debugLog('compile:success', {
-          id,
-          rawSvgLength: rawSvg.length,
-          rawSvgPreview: preview(rawSvg)
-        });
-        parent.children[index] = {
-          type: 'html',
-          value: `<div class="mermaid-wrapper">${rawSvg}</div>`
-        };
-      } catch {
-        const hint = source.split('\n')[0] || '';
-        debugLog('compile:error', { id, hint });
-        parent.children[index] = toErrorNode(
-          hint ? `Mermaid compile error (${hint})` : 'Mermaid compile error'
-        );
-      }
-    })
-  );
+      parent.children[index] = {
+        type: 'html',
+        value: `<div class="mermaid-wrapper">${rawSvg}</div>`
+      };
+    } catch {
+      const hint = source.split('\n')[0] || '';
+      debugLog('compile:error', { id, hint });
+      parent.children[index] = toErrorNode(
+        hint ? `Mermaid compile error (${hint})` : 'Mermaid compile error'
+      );
+    }
+  }
 }

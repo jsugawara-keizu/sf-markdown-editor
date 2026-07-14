@@ -47,6 +47,13 @@
           var slideCount = 0;
           var currentSlide = 0;
           var container = document.getElementById("slide-container");
+          var renderGeneration = 0;
+          // Defense in depth alongside marpViewer.js's own in-flight guard:
+          // if a RENDER for markdown identical to what's already rendering
+          // arrives again (e.g. a duplicate/delayed postMessage), ignore it
+          // instead of restarting marp.render() + mermaid from scratch.
+          var isRendering = false;
+          var lastRequestedMarkdown = null;
 
           function showSlide(index) {
             // Marp wraps each slide in its own <svg data-marpit-svg>.
@@ -68,6 +75,7 @@
           }
 
           function renderMarkdown(markdown) {
+            var myGeneration = ++renderGeneration;
             try {
               var marp = new MarpCore.Marp({ html: false });
               var result = marp.render(markdown);
@@ -109,6 +117,10 @@
               // Render mermaid diagrams explicitly before hiding slides.
               // mermaid.render() needs elements to be visible to measure size.
               var afterMermaid = function () {
+                // A newer renderMarkdown() call has already replaced
+                // #slide-container; this generation's work is moot.
+                if (myGeneration !== renderGeneration) return;
+                isRendering = false;
                 slideCount = container.querySelectorAll(
                   "svg[data-marpit-svg]"
                 ).length;
@@ -121,19 +133,44 @@
               );
               if (typeof mermaid !== "undefined" && mermaidDivs.length > 0) {
                 mermaid.initialize({ startOnLoad: false, theme: "default" });
-                var promises = mermaidDivs.map(function (div, i) {
+                // Compile diagrams one at a time and yield to the event loop
+                // between each. mermaid.render() does synchronous DOM work
+                // that's far more expensive under Lightning Web Security's
+                // Proxy membrane; running every diagram back-to-back via
+                // Promise.all blocks the frame until all of them finish,
+                // which is what reads as the browser freezing when a deck
+                // has more than a couple of diagrams. Ids are scoped to this
+                // generation so two overlapping renders (e.g. the initial
+                // PAGE_READY/iframe-load race) never fight over the same id.
+                var renderNext = function (i) {
+                  if (myGeneration !== renderGeneration) return;
+                  if (i >= mermaidDivs.length) {
+                    afterMermaid();
+                    return;
+                  }
+                  var div = mermaidDivs[i];
                   var source = div.textContent;
-                  return mermaid
-                    .render("mermaid-diag-" + i, source)
+                  mermaid
+                    .render("mermaid-diag-" + myGeneration + "-" + i, source)
                     .then(function (result) {
+                      if (myGeneration !== renderGeneration) return;
                       div.innerHTML = result.svg;
+                    })
+                    .catch(function () {
+                      // Leave the source text visible; move on to the rest.
+                    })
+                    .then(function () {
+                      setTimeout(function () {
+                        renderNext(i + 1);
+                      }, 0);
                     });
-                });
-                Promise.all(promises).then(afterMermaid).catch(afterMermaid);
+                };
+                renderNext(0);
               } else {
                 afterMermaid();
               }
             } catch (e) {
+              isRendering = false;
               sendMessage({ type: "ERROR", message: String(e) });
             }
           }
@@ -146,6 +183,11 @@
             var data = event.data;
             if (!data || !data.type) return;
             if (data.type === "RENDER") {
+              if (isRendering && data.markdown === lastRequestedMarkdown) {
+                return;
+              }
+              isRendering = true;
+              lastRequestedMarkdown = data.markdown;
               renderMarkdown(data.markdown);
             } else if (data.type === "GOTO") {
               var idx = Math.max(0, Math.min(data.slide, slideCount - 1));

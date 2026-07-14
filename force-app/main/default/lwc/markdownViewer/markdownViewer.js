@@ -199,6 +199,7 @@ export default class MarkdownViewer extends LightningElement {
   }
 
   connectedCallback() {
+    this._connected = true;
     const markdownCoreUrl = `${MARKDOWN_CORE}/markdown-core.iife.js`;
 
     const resolveMermaidRuntime = () => {
@@ -288,11 +289,17 @@ export default class MarkdownViewer extends LightningElement {
           });
       })
       .then(() => {
+        if (!this._connected) {
+          return;
+        }
         this.libraryLoaded = true;
         this.state = "ready";
         this.scheduleRender();
       })
       .catch((err) => {
+        if (!this._connected) {
+          return;
+        }
         console.error(
           "[markdownViewer] markdown-core script load failed:",
           err
@@ -303,6 +310,12 @@ export default class MarkdownViewer extends LightningElement {
   }
 
   disconnectedCallback() {
+    // This component can be mounted only transiently (e.g. c-marp-viewer
+    // renders it for a single frame before switching to its VF iframe). The
+    // script-load chain and any in-flight mermaid render are plain promises
+    // with no cancellation, so without this flag they'd keep running full
+    // mermaid.render() work under Lightning Web Security after unmount.
+    this._connected = false;
     if (this._debounceTimer) {
       clearTimeout(this._debounceTimer);
       this._debounceTimer = null;

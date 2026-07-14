@@ -32,6 +32,15 @@ export default class MarpViewer extends LightningElement {
     this._hasMarp = this._detectMarp(this._value);
     if (this._hasMarp && !this._forceDocMode) {
       this._pendingRender = true;
+      // Set eagerly (not just inside renderedCallback) so the template never
+      // has a render frame where hasMarp is true but isSlideMode is still
+      // false. That frame used to fall through to the <c-markdown-viewer>
+      // branch below, which mounts a SECOND, independent Mermaid renderer
+      // that runs directly under Lightning Web Security instead of inside
+      // the VF iframe — full mermaid.render() work under LWS's Proxy
+      // membrane is dramatically slower than in a plain VF page, and this is
+      // what read as the preview freezing.
+      this._isSlideMode = true;
     }
   }
 
@@ -40,6 +49,18 @@ export default class MarpViewer extends LightningElement {
   _forceDocMode = IS_MOBILE;
   _pendingRender = false;
   _frameReady = false;
+  // Both the iframe's own "load" event and the VF page's PAGE_READY message
+  // fire for the same initial mount, so without this guard the first render
+  // is sent twice — the VF page then runs two concurrent mermaid.render()
+  // passes against the same fixed diagram ids, racing each other.
+  _initialRenderSent = false;
+  // Guards against re-sending RENDER for content the VF page is already
+  // rendering. Without this, any extra ready/render-trigger signal (e.g. a
+  // duplicate or delayed postMessage under LWS's iframe/message instrumentation)
+  // restarts marp.render() + the mermaid pass from scratch before the prior
+  // pass ever finishes, which looks exactly like a frozen preview.
+  _renderInFlight = false;
+  _lastSentMarkdown = null;
   isMobile = IS_MOBILE;
 
   @track _isSlideMode = false;
@@ -140,11 +161,14 @@ export default class MarpViewer extends LightningElement {
         iframe.src.endsWith(this._vfUrl + "?r=1"));
     if (alreadyMounted) {
       if (this._frameReady) {
-        this._postMessage({ type: "RENDER", markdown: this._value });
+        this._sendRender();
       }
       return;
     }
     this._frameReady = false;
+    this._initialRenderSent = false;
+    this._renderInFlight = false;
+    this._lastSentMarkdown = null;
     // Pass markdown via window.name so the VF page can render on load
     // without relying on postMessage (LWS may proxy contentWindow).
     iframe.name = JSON.stringify({ markdown: this._value });
@@ -156,8 +180,14 @@ export default class MarpViewer extends LightningElement {
     this._detachFrameLoad();
     this._onFrameLoad = () => {
       this._frameReady = true;
+      // The VF page's own PAGE_READY message may have already triggered the
+      // initial render (see _handleMessage) — don't send it twice.
+      if (this._initialRenderSent) {
+        return;
+      }
+      this._initialRenderSent = true;
       // Also try postMessage as a secondary channel for re-renders.
-      this._postMessage({ type: "RENDER", markdown: this._value });
+      this._sendRender();
     };
     this._frameEl = iframe;
     iframe.addEventListener("load", this._onFrameLoad);
@@ -180,21 +210,43 @@ export default class MarpViewer extends LightningElement {
     }
   }
 
+  // Sends RENDER unless the VF page is already rendering this exact content.
+  // Any ready/render-trigger signal that arrives while a render is still in
+  // flight (duplicate postMessage, delayed load event, etc.) is a no-op
+  // instead of restarting marp.render()/mermaid from scratch.
+  _sendRender() {
+    if (this._renderInFlight && this._lastSentMarkdown === this._value) {
+      return;
+    }
+    this._renderInFlight = true;
+    this._lastSentMarkdown = this._value;
+    this._postMessage({ type: "RENDER", markdown: this._value });
+  }
+
   _handleMessage(event) {
     const data = event.data;
     if (!data || !data.type) return;
 
     if (data.type === "PAGE_READY" || data.type === "PONG") {
       this._frameReady = true;
-      this._postMessage({ type: "RENDER", markdown: this._value });
+      // See _onFrameLoad: guard against sending the initial render twice.
+      if (data.type === "PAGE_READY" && this._initialRenderSent) {
+        return;
+      }
+      if (data.type === "PAGE_READY") {
+        this._initialRenderSent = true;
+      }
+      this._sendRender();
     } else if (data.type === "READY") {
       this._slideCount = data.slideCount || 0;
       this._currentSlide = 0;
+      this._renderInFlight = false;
     } else if (data.type === "SLIDE_CHANGED") {
       this._currentSlide = data.slide || 0;
       this._slideCount = data.slideCount || this._slideCount;
     } else if (data.type === "ERROR") {
       console.error("[marpViewer] render error:", data.message);
+      this._renderInFlight = false;
     }
   }
 

@@ -34,6 +34,53 @@ interface MermaidGlobalLike {
 
 let mermaidInitialized = false;
 
+// Compiling a diagram is expensive (more so under Lightning Web Security's
+// Proxy membrane), and the editor re-renders the whole document on every
+// keystroke (debounced). Caching by source text means unchanged diagrams are
+// never recompiled, which keeps re-renders cheap regardless of document size.
+//
+// Mermaid bakes the `id` passed to render() into the SVG's own id plus every
+// internal marker/clipPath id it generates. We key the cache by source only,
+// so a cache hit's SVG carries the *original* render's id, not the one this
+// call was asked for. If the same diagram appears twice in one document,
+// reusing the raw cached markup verbatim would give both copies identical
+// internal ids, and a browser only honors the first id for url(#id)
+// references — the second diagram's arrowheads/clip-paths would silently
+// break. Rewrite the baked-in id on every hit so each copy stays unique.
+const MERMAID_SVG_CACHE_LIMIT = 50;
+interface MermaidSvgCacheEntry {
+  id: string;
+  svg: string;
+}
+const mermaidSvgCache = new Map<string, MermaidSvgCacheEntry>();
+
+function rewriteMermaidSvgId(svg: string, oldId: string, newId: string): string {
+  if (oldId === newId) return svg;
+  return svg.split(oldId).join(newId);
+}
+
+function getCachedMermaidSvg(source: string, id: string): string | undefined {
+  const cached = mermaidSvgCache.get(source);
+  if (cached === undefined) {
+    return undefined;
+  }
+  // Refresh recency for simple LRU eviction.
+  mermaidSvgCache.delete(source);
+  mermaidSvgCache.set(source, cached);
+  return rewriteMermaidSvgId(cached.svg, cached.id, id);
+}
+
+function setCachedMermaidSvg(source: string, id: string, svg: string): void {
+  mermaidSvgCache.delete(source);
+  mermaidSvgCache.set(source, { id, svg });
+  if (mermaidSvgCache.size > MERMAID_SVG_CACHE_LIMIT) {
+    const oldestKey = mermaidSvgCache.keys().next().value;
+    if (oldestKey !== undefined) {
+      mermaidSvgCache.delete(oldestKey);
+    }
+  }
+}
+
 function resolveRuntimeGlobals(): Record<string, unknown>[] {
   const globals: Record<string, unknown>[] = [];
 
@@ -71,6 +118,11 @@ function resolveGlobalMermaidCompiler(): MermaidCompiler | null {
 
   return {
     async compile(definition: string, id: string): Promise<string> {
+      const cached = getCachedMermaidSvg(definition, id);
+      if (cached !== undefined) {
+        debugLog('compiler:cache-hit', { id, svgLength: cached.length });
+        return cached;
+      }
       if (!mermaidInitialized) {
         // LWS still breaks Mermaid's HTML-label path in several diagram types,
         // so keep plain SVG labels and avoid DOMPurify's NodeIterator path.
@@ -99,6 +151,7 @@ function resolveGlobalMermaidCompiler(): MermaidCompiler | null {
           svgLength: svg.length,
           svgPreview: preview(svg)
         });
+        setCachedMermaidSvg(definition, id, svg);
         return svg;
       } catch (error) {
         const errMsg = error instanceof Error ? error.message : String(error);
