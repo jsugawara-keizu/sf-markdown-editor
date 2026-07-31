@@ -172,7 +172,12 @@
             onclick={handleTabClick}
             disabled={isEditTabDisabled}
           >
-            {labels.editTab}
+            <lightning-icon
+              class="md-tab__icon"
+              icon-name="utility:edit_form"
+              size="x-small"
+            ></lightning-icon>
+            <span>{labels.editTab}</span>
           </button>
           <button
             class={previewTabClass}
@@ -183,9 +188,26 @@
             id="md-tab-preview"
             onclick={handleTabClick}
           >
-            {labels.previewTab}
+            <lightning-icon
+              class="md-tab__icon"
+              icon-name="utility:preview"
+              size="x-small"
+            ></lightning-icon>
+            <span>{labels.previewTab}</span>
           </button>
         </div>
+
+        <template lwc:if={isPreviewMode}>
+          <lightning-button-icon
+            class="md-maximize-btn"
+            icon-name={maximizeIcon}
+            variant="border-filled"
+            size="small"
+            title={maximizeLabel}
+            alternative-text={maximizeLabel}
+            onclick={handleMaximizeToggle}
+          ></lightning-button-icon>
+        </template>
 
         <template lwc:if={isEditMode}>
           <lightning-button-stateful

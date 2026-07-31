@@ -23,6 +23,28 @@
   background: transparent;
 }
 
+/* CSS-based fullscreen overlay (LWS blocks requestFullscreen) */
+.md-editor-root--maximized {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  padding: var(--slds-g-spacing-3, 0.75rem);
+  background: var(--slds-g-color-surface-1, #ffffff);
+  border: none;
+  border-radius: 0;
+  overflow: auto;
+}
+
+.md-editor-root--maximized .md-preview-pane {
+  flex: 1;
+}
+
+.md-maximize-btn {
+  margin-left: 0.25rem;
+}
+
 /* ---- Toolbar ---- */
 .md-toolbar {
   display: flex;
@@ -87,20 +109,34 @@
 .md-tabs {
   display: flex;
   gap: 0.125rem;
+  padding: 0.1875rem;
+  background: var(--slds-g-color-surface-2, #f3f2f2);
+  border-radius: 999px;
 }
 
 .md-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
   padding: 0.25rem 0.75rem;
   border: 1px solid transparent;
-  border-radius: 0.25rem;
+  border-radius: 999px;
   background: transparent;
-  color: var(--slds-g-color-on-surface, #080707);
+  color: var(--slds-g-color-on-surface, #3e3e3c);
   font-size: var(--slds-g-font-size-3, 0.875rem);
   cursor: pointer;
+  transition:
+    background-color 0.1s ease-out,
+    color 0.1s ease-out,
+    box-shadow 0.1s ease-out;
+}
+
+.md-tab__icon {
+  pointer-events: none;
 }
 
 .md-tab:hover {
-  background: var(--slds-g-color-surface-2, #f3f2f2);
+  background: var(--slds-g-color-surface-3, #e5e5e5);
 }
 
 .md-tab--disabled {
@@ -111,8 +147,14 @@
 .md-tab--active {
   background: var(--slds-g-color-surface-1, #ffffff);
   border-color: var(--slds-g-color-border-1, #dddbda);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--slds-g-color-brand-1, #0070d2);
+  box-shadow: var(--slds-g-shadow-1, 0 1px 2px 0 rgba(0, 0, 0, 0.16));
+  --slds-c-icon-color-foreground: var(--slds-g-color-brand-1, #0070d2);
+}
+
+.md-tab--active:hover {
+  background: var(--slds-g-color-surface-1, #ffffff);
 }
 
 .md-tab:focus-visible {

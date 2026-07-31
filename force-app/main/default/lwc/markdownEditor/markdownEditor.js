@@ -63,6 +63,8 @@ import MARKDOWN_RECORD_ID_MISSING_ERROR from "@salesforce/label/c.MarkdownRecord
 import MARKDOWN_OBJECT_API_NAME_MISSING_ERROR from "@salesforce/label/c.MarkdownObjectApiNameMissingError";
 import MARKDOWN_FIELD_API_NAME_MISSING_ERROR from "@salesforce/label/c.MarkdownFieldApiNameMissingError";
 import MARKDOWN_FIELD_ACCESS_SUMMARY from "@salesforce/label/c.MarkdownFieldAccessSummary";
+import MARKDOWN_ENTER_FULLSCREEN from "@salesforce/label/c.MarkdownEnterFullscreen";
+import MARKDOWN_EXIT_FULLSCREEN from "@salesforce/label/c.MarkdownExitFullscreen";
 
 const LABELS = {
   toolbarAria: MARKDOWN_TOOLBAR_ARIA_LABEL,
@@ -124,7 +126,9 @@ const LABELS = {
   recordIdMissingError: MARKDOWN_RECORD_ID_MISSING_ERROR,
   objectApiNameMissingError: MARKDOWN_OBJECT_API_NAME_MISSING_ERROR,
   fieldApiNameMissingError: MARKDOWN_FIELD_API_NAME_MISSING_ERROR,
-  fieldAccessSummary: MARKDOWN_FIELD_ACCESS_SUMMARY
+  fieldAccessSummary: MARKDOWN_FIELD_ACCESS_SUMMARY,
+  enterFullscreen: MARKDOWN_ENTER_FULLSCREEN,
+  exitFullscreen: MARKDOWN_EXIT_FULLSCREEN
 };
 
 // ---------------------------------------------------------------------------
@@ -277,14 +281,26 @@ export default class MarkdownEditor extends LightningElement {
   @track fieldMaxLength = null;
   @track fieldIsUpdateable = true;
   @track fieldIsReadable = true;
+  @track isMaximized = false;
   history = [];
   historyIndex = -1;
   labels = LABELS;
   isDirty = false;
   editStartValue = null;
+  _onKeydown = null;
 
   connectedCallback() {
     this.activeTab = normalizeDefaultMode(this.defaultMode);
+    this._onKeydown = (event) => {
+      if (event.key === "Escape" && this.isMaximized) {
+        this.isMaximized = false;
+      }
+    };
+    document.addEventListener("keydown", this._onKeydown);
+  }
+
+  disconnectedCallback() {
+    document.removeEventListener("keydown", this._onKeydown);
   }
 
   get normalizedFieldApiName() {
@@ -358,10 +374,23 @@ export default class MarkdownEditor extends LightningElement {
   }
 
   get rootClass() {
-    if (this.isPreviewMode) {
-      return "md-editor-root md-editor-root--preview";
+    let cls = this.isPreviewMode
+      ? "md-editor-root md-editor-root--preview"
+      : "md-editor-root";
+    if (this.isMaximized) {
+      cls += " md-editor-root--maximized";
     }
-    return "md-editor-root";
+    return cls;
+  }
+
+  get maximizeIcon() {
+    return this.isMaximized ? "utility:contract" : "utility:expand";
+  }
+
+  get maximizeLabel() {
+    return this.isMaximized
+      ? this.labels.exitFullscreen
+      : this.labels.enterFullscreen;
   }
 
   get editTabClass() {
@@ -429,6 +458,10 @@ export default class MarkdownEditor extends LightningElement {
         ta.value = this.internalValue;
       }
     }
+  }
+
+  handleMaximizeToggle() {
+    this.isMaximized = !this.isMaximized;
   }
 
   handleTabClick(event) {

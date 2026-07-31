@@ -441,6 +441,20 @@
     >objectApiName={0} | fieldApiName={1} | readable={2} | updateable={3}</value>
     </labels>
     <labels>
+        <fullName>MarkdownEnterFullscreen</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Markdown preview enter fullscreen</shortDescription>
+        <value>Fullscreen</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownExitFullscreen</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Markdown preview exit fullscreen</shortDescription>
+        <value>Exit fullscreen</value>
+    </labels>
+    <labels>
         <fullName>MarpPrevSlide</fullName>
         <language>en_US</language>
         <protected>false</protected>
