@@ -42,6 +42,7 @@
 
 - `docs/markdown-components.md`
 - `docs/markdown-component-tests.md`
+- `docs/feature-requests.md`
 
 ## 開発とセットアップ
 
