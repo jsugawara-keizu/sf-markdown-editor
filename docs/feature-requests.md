@@ -95,3 +95,27 @@
   - `packages/markdown-core` の `sanitize.ts` で `details` / `summary` タグ・属性が許可されているか確認する。
   - 許可されている場合、`markdownViewer` 側のスタイル（`<summary>` の開閉インジケーター、例えば `::marker` やカーソル形状）が既存 SLDS と整合し、開閉可能であることが視覚的に伝わるか確認する。
   - 不足していれば `markdownViewer` の CSS（または `sanitize.ts` の許可属性）を調整する。
+
+### 4. プレビュー画面からのブロック単位直接編集
+
+- **状態**: 実装案検討済み
+- **内容**:
+  - `MarkdownViewer`（プレビュー表示）上でブロック（段落・見出し・リスト・コードブロック・表等）をクリックすると、その場で該当ブロックの Markdown 原文を編集できるようにしたい。
+  - 現状はプレビューが完全に読み取り専用で、編集は `MarkdownEditor` の編集タブ（textarea）に切り替える必要がある。
+- **検討した代替案**:
+  - contentEditable によるレンダリング済み HTML の直接編集（WYSIWYG）は不採用。レンダリング済み HTML → Markdown の逆変換が必要になり、`sanitize.ts` の許可スキーマとの整合を都度取る必要が生じるため、実装量・リスクが大きい。
+- **確定した実装方針（ブロック単位クリック編集）**:
+  1. `packages/markdown-core`: remark→rehype 変換時に mdast の `node.position.start.line` / `end.line` を保持し、段落・見出し・リスト・コードブロック・表・引用等のトップレベルブロック要素に `data-src-start` / `data-src-end` 属性として付与する rehype プラグインを追加。`sanitize.ts` に `data-src-*` を許可属性として追加。
+     - 要望2（チェックボックス On/Off）の `data-md-line` 付与プラグインと仕組みが類似するため、共通化できるか実装時に検討する。
+  2. `markdownViewer.js`: 新規 `@api editable = false`（既定は無効。単体配置での意図しない編集可能化を防ぐ）。プレビューコンテナに delegated click listener を追加し、`closest('[data-src-start]')` でクリックされたブロックを特定 → 保持している原文（raw markdown）から該当行範囲を切り出し、その場で素の `<textarea>`（`MarkdownEditor` と同じ実装方針）に差し替えてフォーカスする。
+  3. 確定（blur / Ctrl+Enter）で編集後テキストを元の行範囲に差し込み、`markdown-core` で全体を再レンダリング（キー入力毎ではなく確定時のみ）。変更後の全文を `CustomEvent('markdownchange', {detail: {value}})` で dispatch。Escape で編集をキャンセルし元表示に戻す。
+  4. `markdownEditor.js`: `markdownchange` イベントを受け取り `state.value` を更新、既存の Undo/Redo 履歴（`pushHistory`）にも積む。編集タブの内容とプレビュー編集内容を単一の状態として同期する。
+  5. 単体配置（レコードページ等）の `MarkdownViewer` で編集を有効化する場合は、要望2の (b) と同様にソース文字列をサーバーから取得・保存する経路が別途必要（このスコープでは未確定）。
+- **スコープ外**:
+  - `marpViewer`（VF iframe + postMessage によるスライドプレビュー）は対象外。
+  - v1 ではブロック単位までとし、リスト項目内・表セル内などのインライン単位編集は将来拡張とする。
+- **段階的実装ステップ**:
+  1. `markdown-core`: `data-src-*` 付与プラグイン + サニタイズ許可（Vitest）
+  2. `markdownViewer`: `editable` プロパティ + クリック編集 UI（単体で動作確認、Jest）
+  3. `markdownEditor`: イベント連携・履歴統合
+  4. Mermaid・コードブロック・表など境界ケースの手動 QA
