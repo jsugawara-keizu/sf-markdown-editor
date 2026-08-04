@@ -9,3 +9,19 @@
 .vscode
 
 coverage/
+
+# force-app 配下のメタデータは一括retrieveの度にPrettierが全ファイル走査しCPU高負荷となるため自動フォーマット対象外
+# (lint-staged の prettier --write 対象拡張子と同じ範囲を force-app 配下のみ除外)
+force-app/main/default/**/*.cls
+force-app/main/default/**/*.cmp
+force-app/main/default/**/*.component
+force-app/main/default/**/*.css
+force-app/main/default/**/*.html
+force-app/main/default/**/*.js
+force-app/main/default/**/*.json
+force-app/main/default/**/*.md
+force-app/main/default/**/*.page
+force-app/main/default/**/*.trigger
+force-app/main/default/**/*.xml
+force-app/main/default/**/*.yaml
+force-app/main/default/**/*.yml
