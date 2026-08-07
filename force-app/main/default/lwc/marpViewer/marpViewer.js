@@ -4,8 +4,6 @@ import MarpPrevSlide from "@salesforce/label/c.MarpPrevSlide";
 import MarpNextSlide from "@salesforce/label/c.MarpNextSlide";
 import MarpToggleSlideView from "@salesforce/label/c.MarpToggleSlideView";
 import MarpToggleDocView from "@salesforce/label/c.MarpToggleDocView";
-import MarpEnterFullscreen from "@salesforce/label/c.MarpEnterFullscreen";
-import MarpExitFullscreen from "@salesforce/label/c.MarpExitFullscreen";
 import MarpMobileUnsupportedNotice from "@salesforce/label/c.MarpMobileUnsupportedNotice";
 
 const MARP_FRONTMATTER_RE = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/;
@@ -63,11 +61,11 @@ export default class MarpViewer extends LightningElement {
   _lastSentMarkdown = null;
   isMobile = IS_MOBILE;
 
+  @api isFullscreen = false;
+
   @track _isSlideMode = false;
   @track _slideCount = 0;
   @track _currentSlide = 0;
-  @track _isFullscreen = false;
-  _onKeydown = null;
 
   // ── getters ──────────────────────────────────────────────────────────────
 
@@ -100,19 +98,7 @@ export default class MarpViewer extends LightningElement {
   }
 
   get rootClass() {
-    return this._isFullscreen ? "marp-root marp-root--fullscreen" : "marp-root";
-  }
-
-  get isFullscreen() {
-    return this._isFullscreen;
-  }
-
-  get fullscreenIcon() {
-    return this._isFullscreen ? "utility:contract" : "utility:expand";
-  }
-
-  get fullscreenLabel() {
-    return this._isFullscreen ? MarpExitFullscreen : MarpEnterFullscreen;
+    return this.isFullscreen ? "marp-root marp-root--fullscreen" : "marp-root";
   }
 
   get _vfUrl() {
@@ -127,15 +113,10 @@ export default class MarpViewer extends LightningElement {
     // the real top-level window (accessed via window.parent when same-origin)
     // so that postMessage from the VF iframe is reliably received.
     window.addEventListener("message", this._onMessage);
-    this._onKeydown = (e) => {
-      if (e.key === "Escape" && this._isFullscreen) this._exitFullscreen();
-    };
-    document.addEventListener("keydown", this._onKeydown);
   }
 
   disconnectedCallback() {
     window.removeEventListener("message", this._onMessage);
-    document.removeEventListener("keydown", this._onKeydown);
     this._detachFrameLoad();
   }
 
@@ -252,18 +233,6 @@ export default class MarpViewer extends LightningElement {
 
   // ── handlers ──────────────────────────────────────────────────────────────
 
-  handleFullscreen() {
-    if (this._isFullscreen) {
-      this._exitFullscreen();
-    } else {
-      this._isFullscreen = true;
-    }
-  }
-
-  _exitFullscreen() {
-    this._isFullscreen = false;
-  }
-
   handleToggle() {
     if (this.isMobile) {
       return;
@@ -272,8 +241,6 @@ export default class MarpViewer extends LightningElement {
     this._isSlideMode = !this._forceDocMode && this._hasMarp;
     if (this._isSlideMode) {
       this._pendingRender = true;
-    } else {
-      this._isFullscreen = false;
     }
   }
 

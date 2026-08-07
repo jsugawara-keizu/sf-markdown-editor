@@ -221,12 +221,4 @@
         <name>MarkdownExitFullscreen</name>
         <label>Exit fullscreen</label>
     </customLabels>
-    <customLabels>
-        <name>MarpEnterFullscreen</name>
-        <label>Fullscreen</label>
-    </customLabels>
-    <customLabels>
-        <name>MarpExitFullscreen</name>
-        <label>Exit fullscreen</label>
-    </customLabels>
 </Translations>
