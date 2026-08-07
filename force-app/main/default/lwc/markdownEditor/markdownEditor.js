@@ -1,4 +1,5 @@
 import { LightningElement, api, track, wire } from "lwc";
+import FORM_FACTOR from "@salesforce/client/formFactor";
 import { ShowToastEvent } from "lightning/platformShowToastEvent";
 import { getRecord, getRecordNotifyChange } from "lightning/uiRecordApi";
 import { getObjectInfo } from "lightning/uiObjectInfoApi";
@@ -141,6 +142,9 @@ const RE_TRAIL_NL = /\r?\n$/u;
 const RE_FENCE_DELIM = /^\s*(```|~~~)/u;
 const DEFAULT_MODE_EDIT = "edit";
 const DEFAULT_MODE_PREVIEW = "preview";
+// Mirrors marpViewer's own mobile fallback so our initial guess at its
+// slide/doc sub-mode matches before the first slidemodechange event arrives.
+const MARP_DEFAULT_SLIDE_MODE = FORM_FACTOR === "Large";
 
 const normalizeDefaultMode = (mode) => {
   if (typeof mode !== "string") {
@@ -282,6 +286,7 @@ export default class MarkdownEditor extends LightningElement {
   @track fieldIsUpdateable = true;
   @track fieldIsReadable = true;
   @track isMaximized = false;
+  @track _marpSlideMode = MARP_DEFAULT_SLIDE_MODE;
   history = [];
   historyIndex = -1;
   labels = LABELS;
@@ -381,6 +386,18 @@ export default class MarkdownEditor extends LightningElement {
       cls += " md-editor-root--maximized";
     }
     return cls;
+  }
+
+  get showMaximizeButton() {
+    // marpViewer shows its own fullscreen toggle only while displaying the
+    // Marp doc as slides; showing ours too would render two overlapping
+    // maximize controls. In every other case (plain markdown, or a Marp doc
+    // switched to its document sub-view) ours is the only one available.
+    return this.isPreviewMode && !(this.hasMarp && this._marpSlideMode);
+  }
+
+  handleMarpSlideModeChange(event) {
+    this._marpSlideMode = event.detail.isSlideMode;
   }
 
   get maximizeIcon() {

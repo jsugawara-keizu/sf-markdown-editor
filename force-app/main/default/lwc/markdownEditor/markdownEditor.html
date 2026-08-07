@@ -197,7 +197,7 @@
           </button>
         </div>
 
-        <template lwc:if={isPreviewMode}>
+        <template lwc:if={showMaximizeButton}>
           <lightning-button-icon
             class="md-maximize-btn"
             icon-name={maximizeIcon}
@@ -265,7 +265,7 @@
         >
           <c-marp-viewer
             value={internalValue}
-            is-fullscreen={isMaximized}
+            onslidemodechange={handleMarpSlideModeChange}
           ></c-marp-viewer>
           <template lwc:if={hasMarp}></template>
           <template lwc:else>

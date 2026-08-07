@@ -225,4 +225,12 @@
         <name>MarkdownExitFullscreen</name>
         <label>全画面を終了</label>
     </customLabels>
+    <customLabels>
+        <name>MarpEnterFullscreen</name>
+        <label>全画面表示</label>
+    </customLabels>
+    <customLabels>
+        <name>MarpExitFullscreen</name>
+        <label>全画面を終了</label>
+    </customLabels>
 </Translations>

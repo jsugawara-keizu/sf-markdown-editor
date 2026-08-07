@@ -4,6 +4,8 @@ import MarpPrevSlide from "@salesforce/label/c.MarpPrevSlide";
 import MarpNextSlide from "@salesforce/label/c.MarpNextSlide";
 import MarpToggleSlideView from "@salesforce/label/c.MarpToggleSlideView";
 import MarpToggleDocView from "@salesforce/label/c.MarpToggleDocView";
+import MarpEnterFullscreen from "@salesforce/label/c.MarpEnterFullscreen";
+import MarpExitFullscreen from "@salesforce/label/c.MarpExitFullscreen";
 import MarpMobileUnsupportedNotice from "@salesforce/label/c.MarpMobileUnsupportedNotice";
 
 const MARP_FRONTMATTER_RE = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/;
@@ -38,7 +40,7 @@ export default class MarpViewer extends LightningElement {
       // the VF iframe — full mermaid.render() work under LWS's Proxy
       // membrane is dramatically slower than in a plain VF page, and this is
       // what read as the preview freezing.
-      this._isSlideMode = true;
+      this._setSlideMode(true);
     }
   }
 
@@ -61,11 +63,11 @@ export default class MarpViewer extends LightningElement {
   _lastSentMarkdown = null;
   isMobile = IS_MOBILE;
 
-  @api isFullscreen = false;
-
   @track _isSlideMode = false;
   @track _slideCount = 0;
   @track _currentSlide = 0;
+  @track _isFullscreen = false;
+  _onKeydown = null;
 
   // ── getters ──────────────────────────────────────────────────────────────
 
@@ -75,6 +77,19 @@ export default class MarpViewer extends LightningElement {
 
   get isSlideMode() {
     return this._isSlideMode;
+  }
+
+  // Lets markdownEditor know whether our own fullscreen button is currently
+  // shown, so it can avoid rendering its redundant maximize button on top of
+  // ours (only relevant while a Marp doc is in slide view).
+  _setSlideMode(value) {
+    const changed = this._isSlideMode !== value;
+    this._isSlideMode = value;
+    if (changed) {
+      this.dispatchEvent(
+        new CustomEvent("slidemodechange", { detail: { isSlideMode: value } })
+      );
+    }
   }
 
   get toggleLabel() {
@@ -98,7 +113,19 @@ export default class MarpViewer extends LightningElement {
   }
 
   get rootClass() {
-    return this.isFullscreen ? "marp-root marp-root--fullscreen" : "marp-root";
+    return this._isFullscreen ? "marp-root marp-root--fullscreen" : "marp-root";
+  }
+
+  get isFullscreen() {
+    return this._isFullscreen;
+  }
+
+  get fullscreenIcon() {
+    return this._isFullscreen ? "utility:contract" : "utility:expand";
+  }
+
+  get fullscreenLabel() {
+    return this._isFullscreen ? MarpExitFullscreen : MarpEnterFullscreen;
   }
 
   get _vfUrl() {
@@ -113,17 +140,22 @@ export default class MarpViewer extends LightningElement {
     // the real top-level window (accessed via window.parent when same-origin)
     // so that postMessage from the VF iframe is reliably received.
     window.addEventListener("message", this._onMessage);
+    this._onKeydown = (e) => {
+      if (e.key === "Escape" && this._isFullscreen) this._exitFullscreen();
+    };
+    document.addEventListener("keydown", this._onKeydown);
   }
 
   disconnectedCallback() {
     window.removeEventListener("message", this._onMessage);
+    document.removeEventListener("keydown", this._onKeydown);
     this._detachFrameLoad();
   }
 
   renderedCallback() {
     if (this._pendingRender && this._hasMarp && !this._forceDocMode) {
       this._pendingRender = false;
-      this._isSlideMode = true;
+      this._setSlideMode(true);
       this._mountFrame();
     }
   }
@@ -233,14 +265,28 @@ export default class MarpViewer extends LightningElement {
 
   // ── handlers ──────────────────────────────────────────────────────────────
 
+  handleFullscreen() {
+    if (this._isFullscreen) {
+      this._exitFullscreen();
+    } else {
+      this._isFullscreen = true;
+    }
+  }
+
+  _exitFullscreen() {
+    this._isFullscreen = false;
+  }
+
   handleToggle() {
     if (this.isMobile) {
       return;
     }
     this._forceDocMode = !this._forceDocMode;
-    this._isSlideMode = !this._forceDocMode && this._hasMarp;
+    this._setSlideMode(!this._forceDocMode && this._hasMarp);
     if (this._isSlideMode) {
       this._pendingRender = true;
+    } else {
+      this._isFullscreen = false;
     }
   }
 
