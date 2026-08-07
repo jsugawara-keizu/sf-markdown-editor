@@ -229,6 +229,27 @@ export default class MarkdownViewer extends LightningElement {
           throw new Error("MarkdownCore global not found after script load");
         }
 
+        // Mermaid diagrams are compiled inside a hidden Visualforce iframe
+        // instead of directly under Lightning Web Security: mermaid.render()'s
+        // synchronous DOM/layout work is dramatically slower under LWS's Proxy
+        // membrane, which is what previously read as the preview freezing for
+        // diagram-heavy docs (marpViewer.js already does this for Marp decks;
+        // this generalizes it to plain Markdown). window.MarkdownCore is a
+        // page-wide static-resource global, so this registration only needs
+        // to happen once regardless of how many markdownViewer/markdownEditor
+        // instances are on the page.
+        if (
+          !window.__mermaidFrameCompilerReady &&
+          typeof window.MarkdownCore.createMermaidFrameCompiler === "function" &&
+          typeof window.MarkdownCore.setExternalMermaidCompiler === "function"
+        ) {
+          window.__mermaidFrameCompilerReady = true;
+          const frameCompiler = window.MarkdownCore.createMermaidFrameCompiler({
+            vfPageUrl: "/apex/MermaidRenderer"
+          });
+          window.MarkdownCore.setExternalMermaidCompiler(frameCompiler);
+        }
+
         return mermaidUrls
           .reduce(async (prev, url) => {
             const loaded = await prev;

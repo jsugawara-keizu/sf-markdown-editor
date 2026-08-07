@@ -107,7 +107,20 @@ function resolveRuntimeMermaidGlobal(): MermaidGlobalLike | undefined {
   return undefined;
 }
 
-function resolveGlobalMermaidCompiler(): MermaidCompiler | null {
+type RawMermaidCompileFn = (definition: string, id: string) => Promise<string>;
+
+// Set by the host environment (e.g. markdownViewer.js) to delegate rendering
+// to a hidden iframe outside Lightning Web Security instead of the direct
+// `window.mermaid` global below — see mermaid-frame-compiler.ts for why. Null
+// by default so environments that never call this (tests, non-browser use)
+// behave exactly as before.
+let externalCompileFn: RawMermaidCompileFn | null = null;
+
+export function setExternalMermaidCompiler(fn: RawMermaidCompileFn | null): void {
+  externalCompileFn = fn;
+}
+
+function resolveDirectCompileFn(): RawMermaidCompileFn | null {
   const m = resolveRuntimeMermaidGlobal();
   if (!m || typeof m.render !== 'function' || typeof m.initialize !== 'function') {
     debugLog('compiler:global-missing', { hasMermaid: Boolean(m) });
@@ -116,6 +129,39 @@ function resolveGlobalMermaidCompiler(): MermaidCompiler | null {
 
   debugLog('compiler:global-found', { hasRender: true, hasInitialize: true });
 
+  return async (definition: string, id: string): Promise<string> => {
+    if (!mermaidInitialized) {
+      // LWS still breaks Mermaid's HTML-label path in several diagram types,
+      // so keep plain SVG labels and avoid DOMPurify's NodeIterator path.
+      m.initialize({
+        startOnLoad: false,
+        securityLevel: 'strict',
+        htmlLabels: false,
+        flowchart: { htmlLabels: false }
+      });
+      mermaidInitialized = true;
+      debugLog('compiler:initialized', { id });
+    }
+    debugLog('compiler:render-start', {
+      id,
+      definitionLength: definition.length,
+      definitionPreview: preview(definition)
+    });
+    const result = await m.render(id, definition);
+    const svg = typeof result === 'string' ? result : result?.svg || '';
+    if (!svg) {
+      throw new Error(`render() returned empty: ${JSON.stringify(result)}`);
+    }
+    return svg;
+  };
+}
+
+function resolveGlobalMermaidCompiler(): MermaidCompiler | null {
+  const direct = resolveDirectCompileFn();
+  if (!externalCompileFn && !direct) {
+    return null;
+  }
+
   return {
     async compile(definition: string, id: string): Promise<string> {
       const cached = getCachedMermaidSvg(definition, id);
@@ -123,33 +169,37 @@ function resolveGlobalMermaidCompiler(): MermaidCompiler | null {
         debugLog('compiler:cache-hit', { id, svgLength: cached.length });
         return cached;
       }
-      if (!mermaidInitialized) {
-        // LWS still breaks Mermaid's HTML-label path in several diagram types,
-        // so keep plain SVG labels and avoid DOMPurify's NodeIterator path.
-        m.initialize({
-          startOnLoad: false,
-          securityLevel: 'strict',
-          htmlLabels: false,
-          flowchart: { htmlLabels: false }
-        });
-        mermaidInitialized = true;
-        debugLog('compiler:initialized', { id });
-      }
-      debugLog('compiler:render-start', {
-        id,
-        definitionLength: definition.length,
-        definitionPreview: preview(definition)
-      });
-      try {
-        const result = await m.render(id, definition);
-        const svg = typeof result === 'string' ? result : result?.svg || '';
-        if (!svg) {
-          throw new Error(`render() returned empty: ${JSON.stringify(result)}`);
+
+      if (externalCompileFn) {
+        try {
+          const svg = await externalCompileFn(definition, id);
+          debugLog('compiler:render-success', {
+            id,
+            svgLength: svg.length,
+            svgPreview: preview(svg),
+            via: 'external'
+          });
+          setCachedMermaidSvg(definition, id, svg);
+          return svg;
+        } catch (error) {
+          debugLog('compiler:external-failed', {
+            id,
+            error: error instanceof Error ? error.message : String(error)
+          });
+          if (!direct) {
+            throw error;
+          }
+          // Fall through to the direct `window.mermaid` compiler below.
         }
+      }
+
+      try {
+        const svg = await direct!(definition, id);
         debugLog('compiler:render-success', {
           id,
           svgLength: svg.length,
-          svgPreview: preview(svg)
+          svgPreview: preview(svg),
+          via: 'direct'
         });
         setCachedMermaidSvg(definition, id, svg);
         return svg;
