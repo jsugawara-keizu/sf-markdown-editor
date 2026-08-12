@@ -2,6 +2,7 @@ import { createElement } from "lwc";
 import { fixMarkdownTables, toggleCheckboxAtLine } from "c/markdownEditor";
 import MarkdownEditor from "c/markdownEditor";
 import getTasksForField from "@salesforce/apex/MarkdownTaskSync.getTasksForField";
+import saveMarkdownWithImages from "@salesforce/apex/MarkdownImageHandler.saveMarkdownWithImages";
 
 jest.mock(
   "@salesforce/apex/MarkdownTaskSync.getTasksForField",
@@ -15,6 +16,12 @@ jest.mock(
   { virtual: true }
 );
 
+jest.mock(
+  "@salesforce/apex/MarkdownImageHandler.saveMarkdownWithImages",
+  () => ({ default: jest.fn((args) => Promise.resolve(args.markdownContent)) }),
+  { virtual: true }
+);
+
 jest.mock("@salesforce/user/Id", () => ({ default: "005000000000001AAA" }), {
   virtual: true
 });
@@ -22,6 +29,7 @@ jest.mock("@salesforce/user/Id", () => ({ default: "005000000000001AAA" }), {
 describe("c-markdown-editor", () => {
   beforeEach(() => {
     getTasksForField.mockClear();
+    saveMarkdownWithImages.mockClear();
   });
 
 
@@ -119,8 +127,17 @@ describe("c-markdown-editor", () => {
     });
   });
 
-  it("toggles the source line and marks dirty when the preview dispatches mdcheckboxtoggle", async () => {
+  it("toggles the source line and persists immediately when the preview dispatches mdcheckboxtoggle", async () => {
+    // Regression test: a checkbox click in the preview is a discrete,
+    // deliberate action — like markdownChecklistPanel's "Create Task" — so
+    // it must persist right away rather than only marking the editor dirty
+    // and waiting on a manual Save. Otherwise the checkbox's corresponding
+    // Task never gets its Status synced (MarkdownTaskSync only runs from
+    // the actual save path) until the user remembers to click Save.
     const el = createElement("c-markdown-editor", { is: MarkdownEditor });
+    el.recordId = "001000000000001AAA";
+    el.objectApiName = "Account";
+    el.fieldApiName = "Description";
     document.body.appendChild(el);
 
     const textarea = el.shadowRoot.querySelector("textarea");
@@ -138,6 +155,17 @@ describe("c-markdown-editor", () => {
       })
     );
     await Promise.resolve();
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(saveMarkdownWithImages).toHaveBeenCalledWith(
+      expect.objectContaining({
+        recordId: "001000000000001AAA",
+        objectApiName: "Account",
+        fieldApiName: "Description",
+        markdownContent: "- [ ] item one\n- [x] item two"
+      })
+    );
 
     el.shadowRoot.querySelector('[data-tab="edit"]').click();
     await Promise.resolve();
@@ -145,7 +173,7 @@ describe("c-markdown-editor", () => {
     expect(el.shadowRoot.querySelector("textarea").value).toBe(
       "- [ ] item one\n- [x] item two"
     );
-    expect(el.shadowRoot.querySelector(".md-dirty-badge")).not.toBeNull();
+    expect(el.shadowRoot.querySelector(".md-dirty-badge")).toBeNull();
   });
 
   it("adopts the checklist panel's already-saved markdown without marking dirty", async () => {

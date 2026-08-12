@@ -598,7 +598,7 @@ export default class MarkdownEditor extends LightningElement {
   }
 
   handleCheckboxToggle(event) {
-    if (!this.fieldIsUpdateable) {
+    if (!this.fieldIsUpdateable || this.isSaving) {
       return;
     }
     const { line, checked } = event.detail;
@@ -607,8 +607,16 @@ export default class MarkdownEditor extends LightningElement {
       return;
     }
     this.internalValue = updated;
-    this.isDirty = true;
     this.recordHistory(this.internalValue, 0, 0);
+    // Persisted immediately, matching markdownChecklistPanel's "Create
+    // Task" — clicking a checkbox in the preview is a discrete, deliberate
+    // action (like the standalone MarkdownViewer's own toggleCheckboxLine
+    // round trip), not a keystroke mid-edit that should wait on a manual
+    // Save. Deferring persistence here also meant the corresponding Task's
+    // Status (synced from the saved Markdown, see
+    // MarkdownTaskSync.syncCheckboxStatesFromMarkdown) never actually
+    // updated until the user remembered to click Save.
+    this.handleSave();
   }
 
   handleChecklistTaskCreated(event) {
