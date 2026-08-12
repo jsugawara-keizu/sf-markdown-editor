@@ -1,0 +1,24 @@
+:host {
+  display: block;
+}
+
+.md-task-preview {
+  position: fixed;
+  z-index: 9010;
+  background: var(--slds-g-color-surface-1, #fff);
+  border: 1px solid var(--slds-g-color-border-1, #dddbda);
+  border-radius: 4px;
+  box-shadow: var(--slds-g-shadow-2, 0 2px 8px rgb(0 0 0 / 15%));
+  padding: 8px 12px;
+}
+
+.md-task-preview-header {
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media print {
+  .md-task-preview {
+    display: none !important;
+  }
+}

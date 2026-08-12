@@ -233,6 +233,117 @@ describe("c-markdown-checklist-panel", () => {
     ).not.toBeNull();
   });
 
+  describe("task hover preview", () => {
+    async function renderWithLinkedTask(el) {
+      getTasksForField.mockResolvedValue([
+        {
+          id: "00T000000000001AAA",
+          subject: "done item",
+          status: "Completed",
+          isClosed: true,
+          ownerId: "005000000000001AAA",
+          ownerName: "Jane Doe",
+          markdownMarkerId: "abc123"
+        }
+      ]);
+      el.recordId = "001000000000001AAA";
+      el.objectApiName = "Account";
+      el.fieldApiName = "Description";
+      el.markdownText = "- [x] done item ^[todo:abc123]";
+      document.body.appendChild(el);
+      await flushPromises();
+    }
+
+    it("shows the preview subcomponent's popover when hovering the task link", async () => {
+      const el = createElement("c-markdown-checklist-panel", {
+        is: MarkdownChecklistPanel
+      });
+      await renderWithLinkedTask(el);
+
+      const link = el.shadowRoot.querySelector(
+        'button[data-task-id="00T000000000001AAA"]'
+      );
+      link.getBoundingClientRect = () => ({
+        top: 100,
+        left: 100,
+        right: 200,
+        bottom: 120
+      });
+      link.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
+      await flushPromises();
+
+      const preview = el.shadowRoot.querySelector("c-markdown-task-preview");
+      expect(
+        preview.shadowRoot.querySelector(".md-task-preview")
+      ).not.toBeNull();
+    });
+
+    it("hides the popover on mouseleave (after the hover-hide delay)", async () => {
+      const el = createElement("c-markdown-checklist-panel", {
+        is: MarkdownChecklistPanel
+      });
+      await renderWithLinkedTask(el);
+
+      const link = el.shadowRoot.querySelector(
+        'button[data-task-id="00T000000000001AAA"]'
+      );
+      link.getBoundingClientRect = () => ({
+        top: 100,
+        left: 100,
+        right: 200,
+        bottom: 120
+      });
+      link.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
+      await flushPromises();
+
+      jest.useFakeTimers();
+      link.dispatchEvent(new MouseEvent("mouseleave", { bubbles: true }));
+      jest.advanceTimersByTime(500);
+      jest.useRealTimers();
+      await flushPromises();
+
+      const preview = el.shadowRoot.querySelector("c-markdown-task-preview");
+      expect(preview.shadowRoot.querySelector(".md-task-preview")).toBeNull();
+    });
+
+    it("refetches tasks when the preview's inline edit succeeds", async () => {
+      const el = createElement("c-markdown-checklist-panel", {
+        is: MarkdownChecklistPanel
+      });
+      await renderWithLinkedTask(el);
+      getTasksForField.mockClear();
+
+      const preview = el.shadowRoot.querySelector("c-markdown-task-preview");
+      preview.dispatchEvent(
+        new CustomEvent("previeweditsuccess", { detail: {} })
+      );
+      await flushPromises();
+
+      expect(getTasksForField).toHaveBeenCalledTimes(1);
+    });
+
+    it("restores focus to the task link when the preview asks to on Escape", async () => {
+      const el = createElement("c-markdown-checklist-panel", {
+        is: MarkdownChecklistPanel
+      });
+      await renderWithLinkedTask(el);
+
+      const link = el.shadowRoot.querySelector(
+        'button[data-task-id="00T000000000001AAA"]'
+      );
+      const focusSpy = jest.spyOn(link, "focus");
+
+      const preview = el.shadowRoot.querySelector("c-markdown-task-preview");
+      preview.dispatchEvent(
+        new CustomEvent("restorefocus", {
+          detail: { taskId: "00T000000000001AAA" }
+        })
+      );
+
+      expect(focusSpy).toHaveBeenCalledTimes(1);
+    });
+  });
+
   it("shows an orphan row for a task whose checkbox line was removed", async () => {
     getTasksForField.mockResolvedValue([
       {

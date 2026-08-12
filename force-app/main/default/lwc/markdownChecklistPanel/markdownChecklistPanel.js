@@ -1,7 +1,11 @@
 import { LightningElement, api, track, wire } from "lwc";
 import { NavigationMixin } from "lightning/navigation";
 import { ShowToastEvent } from "lightning/platformShowToastEvent";
-import { getRecord, getRecordNotifyChange } from "lightning/uiRecordApi";
+import {
+  getRecord,
+  getRecordNotifyChange,
+  getRecordUi
+} from "lightning/uiRecordApi";
 import { loadScript } from "lightning/platformResourceLoader";
 import MARKDOWN_CORE from "@salesforce/resourceUrl/markdownCore";
 import USER_ID from "@salesforce/user/Id";
@@ -19,6 +23,8 @@ import EMPTY_STATE_LABEL from "@salesforce/label/c.MarkdownChecklistEmptyStateLa
 import CREATE_ERROR_TITLE from "@salesforce/label/c.MarkdownChecklistCreateErrorTitle";
 import CREATE_SUCCESS_TITLE from "@salesforce/label/c.MarkdownChecklistCreateSuccessTitle";
 import LOAD_ERROR_LABEL from "@salesforce/label/c.MarkdownChecklistLoadErrorLabel";
+import OPEN_RECORD_LABEL from "@salesforce/label/c.MarkdownChecklistOpenRecordLabel";
+import SAVE_LABEL from "@salesforce/label/c.MarkdownSaveLabel";
 
 const LABELS = {
   panelTitle: PANEL_TITLE,
@@ -32,6 +38,13 @@ const LABELS = {
   createErrorTitle: CREATE_ERROR_TITLE,
   createSuccessTitle: CREATE_SUCCESS_TITLE,
   loadErrorLabel: LOAD_ERROR_LABEL
+};
+
+// Handed to c-markdown-task-preview as its `label` prop — same convention
+// sf-gantt-lwc's ganttChart uses for ganttTaskPreview.
+const PREVIEW_LABELS = {
+  openRecord: OPEN_RECORD_LABEL,
+  save: SAVE_LABEL
 };
 
 function randomMarkerId() {
@@ -82,6 +95,13 @@ export default class MarkdownChecklistPanel extends NavigationMixin(
   @track _coreReady = false;
   _selectedOwnerByLine = new Map();
   _corePollTimer = null;
+
+  // Hover/focus preview (ported from sf-gantt-lwc's ganttChart +
+  // ganttTaskPreview): hoveredTaskId drives the getRecordUi wire below;
+  // fetched Compact Layout fields are cached per record so re-hovering an
+  // already-fetched Task doesn't re-fetch.
+  @track hoveredTaskId;
+  hoverPreviewFieldsByRecordId = {};
 
   connectedCallback() {
     // This component reads window.MarkdownCore directly (see `rows` below)
@@ -199,6 +219,60 @@ export default class MarkdownChecklistPanel extends NavigationMixin(
     return !!this.tasksError;
   }
 
+  get hoveredRecordIds() {
+    return this.hoveredTaskId ? [this.hoveredTaskId] : undefined;
+  }
+
+  @wire(getRecordUi, {
+    recordIds: "$hoveredRecordIds",
+    layoutTypes: ["Compact"],
+    modes: ["View"]
+  })
+  wiredRecordUi({ data }) {
+    const recordId = this.hoveredTaskId;
+    if (!data || !recordId) {
+      return;
+    }
+    this.hoverPreviewFieldsByRecordId = {
+      ...this.hoverPreviewFieldsByRecordId,
+      [recordId]: this.parseCompactLayoutFields(data, recordId)
+    };
+  }
+
+  parseCompactLayoutFields(recordUi, recordId) {
+    const record = recordUi.records[recordId];
+    if (!record) {
+      return [];
+    }
+    const layout =
+      recordUi.layouts?.[record.apiName]?.[record.recordTypeId]?.Compact
+        ?.View;
+    if (!layout) {
+      return [];
+    }
+    const fields = [];
+    layout.sections.forEach((section) => {
+      section.layoutRows.forEach((row) => {
+        row.layoutItems.forEach((item) => {
+          item.layoutComponents.forEach((component) => {
+            if (component.apiName) {
+              fields.push({ apiName: component.apiName });
+            }
+          });
+        });
+      });
+    });
+    return fields;
+  }
+
+  get previewFields() {
+    return this.hoveredTaskId
+      ? this.hoverPreviewFieldsByRecordId[this.hoveredTaskId] || []
+      : [];
+  }
+
+  previewLabels = PREVIEW_LABELS;
+
   get rows() {
     // `this._coreReady` is read here (not just checked via the module-level
     // window.MarkdownCore global) so LWC's reactive dependency tracking
@@ -309,6 +383,57 @@ export default class MarkdownChecklistPanel extends NavigationMixin(
       type: "standard__recordPage",
       attributes: { recordId: taskId, objectApiName: "Task", actionName: "view" }
     });
+  }
+
+  handleTaskMouseEnter(event) {
+    const taskId = event.currentTarget.dataset.taskId;
+    if (!taskId) {
+      return;
+    }
+    this.hoveredTaskId = taskId;
+    if (!this.hoverPreviewFieldsByRecordId[taskId]) {
+      this.hoverPreviewFieldsByRecordId = {
+        ...this.hoverPreviewFieldsByRecordId,
+        [taskId]: []
+      };
+    }
+    const preview = this.template.querySelector("c-markdown-task-preview");
+    if (preview) {
+      preview.showPreviewFor(
+        taskId,
+        event.currentTarget.getBoundingClientRect(),
+        window.innerWidth,
+        window.innerHeight
+      );
+    }
+  }
+
+  handleTaskMouseLeave() {
+    const preview = this.template.querySelector("c-markdown-task-preview");
+    if (preview) {
+      preview.hidePreview();
+    }
+  }
+
+  handlePreviewEditSuccess() {
+    // Re-fetch rather than trust the edit form's own optimistic UI — a
+    // Status edit here needs the checklist row's badge (Open/Done) to
+    // reflect the new value, which lives on `tasks`, not on the preview
+    // form itself.
+    this.loadTasks();
+  }
+
+  handlePreviewRestoreFocus(event) {
+    const taskId = event.detail?.taskId;
+    if (!taskId) {
+      return;
+    }
+    const trigger = this.template.querySelector(
+      `[data-task-id="${taskId}"]`
+    );
+    if (trigger) {
+      trigger.focus();
+    }
   }
 
   handleCreateTask(event) {

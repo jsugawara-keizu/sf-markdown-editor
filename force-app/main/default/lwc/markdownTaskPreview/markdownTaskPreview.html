@@ -1,0 +1,43 @@
+<template>
+  <template lwc:if={showPreview}>
+    <div
+      class="md-task-preview"
+      style={previewStyle}
+      onmouseenter={handleMouseEnter}
+      onmouseleave={handleMouseLeave}
+      onfocusin={handleFocusIn}
+      onfocusout={handleFocusOut}
+      onkeydown={handleKeyDown}
+    >
+      <div class="md-task-preview-header">
+        <lightning-button-icon
+          icon-name="utility:new_window"
+          alternative-text={label.openRecord}
+          title={label.openRecord}
+          variant="bare"
+          size="medium"
+          onclick={handleOpenRecord}
+        ></lightning-button-icon>
+      </div>
+      <lightning-record-edit-form
+        record-id={hoveredTaskId}
+        object-api-name="Task"
+        onsuccess={handleEditSuccess}
+      >
+        <lightning-messages></lightning-messages>
+        <template for:each={previewFields} for:item="f">
+          <lightning-input-field
+            key={f.apiName}
+            field-name={f.apiName}
+          ></lightning-input-field>
+        </template>
+        <lightning-button
+          variant="brand"
+          type="submit"
+          label={label.save}
+          class="slds-m-top_small"
+        ></lightning-button>
+      </lightning-record-edit-form>
+    </div>
+  </template>
+</template>

@@ -3,7 +3,7 @@ import { parseMarkdownAst, extractHeadings, buildToc } from './parser';
 import { createSanitizer, sanitizeHtml, sanitizeSvg } from './sanitize';
 import { setMermaidDebugEnabled, isMermaidDebugEnabled } from './debug';
 import { createMermaidFrameCompiler } from './mermaid-frame-compiler';
-import { extractCheckboxItems, insertCheckboxMarker } from './checklist';
+import { extractCheckboxItems, insertCheckboxMarker, PRESERVE_MARKER_NOTICE_TEXT } from './checklist';
 import type { Heading } from './parser';
 import type { Sanitizer, SanitizerOptions } from './sanitize';
 import type { MermaidCompiler } from './mermaid-transform';
@@ -25,6 +25,7 @@ export {
   createMermaidFrameCompiler,
   extractCheckboxItems,
   insertCheckboxMarker,
+  PRESERVE_MARKER_NOTICE_TEXT,
 };
 
 export type {

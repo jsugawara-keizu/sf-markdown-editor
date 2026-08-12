@@ -582,4 +582,11 @@
         <shortDescription>Checklist: failed to load tasks</shortDescription>
         <value>Failed to load tasks</value>
     </labels>
+    <labels>
+        <fullName>MarkdownChecklistOpenRecordLabel</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Checklist: task hover preview "open record" icon button</shortDescription>
+        <value>Open Record</value>
+    </labels>
 </CustomLabels>

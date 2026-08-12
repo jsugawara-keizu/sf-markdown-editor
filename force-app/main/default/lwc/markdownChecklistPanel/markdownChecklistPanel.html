@@ -38,6 +38,8 @@
                   class="md-checklist-row-link"
                   data-task-id={row.task.id}
                   onclick={handleTaskClick}
+                  onmouseenter={handleTaskMouseEnter}
+                  onmouseleave={handleTaskMouseLeave}
                 >
                   {row.task.ownerName}
                 </button>
@@ -73,5 +75,12 @@
     <template lwc:else>
       <p class="md-checklist-empty">{labels.emptyState}</p>
     </template>
+
+    <c-markdown-task-preview
+      label={previewLabels}
+      preview-fields={previewFields}
+      onprevieweditsuccess={handlePreviewEditSuccess}
+      onrestorefocus={handlePreviewRestoreFocus}
+    ></c-markdown-task-preview>
   </div>
 </template>
