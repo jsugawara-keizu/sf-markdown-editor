@@ -239,6 +239,41 @@ describe("c-markdown-viewer", () => {
       });
     });
 
+    it("translates the dispatched line number back through stripped YAML frontmatter", async () => {
+      // Regression test: frontmatter is stripped from the string handed to
+      // markdown-core purely for display, so data-md-line comes back
+      // relative to that *stripped* text. Every consumer of the dispatched
+      // event (markdownEditor.js's toggleCheckboxAtLine, this component's
+      // own standalone toggleCheckboxLine call) operates on the raw stored
+      // field value, which still has the frontmatter — so the emitted line
+      // must be translated back, or every write silently targets the wrong
+      // line (finds no checkbox there, no-ops) while the browser's own
+      // untouched checkbox visually toggles anyway, masking the failure.
+      global.MarkdownCore = {
+        renderAndSanitizeAsync: jest.fn(
+          async () =>
+            '<ul><li><input type="checkbox" data-md-line="1"></li></ul>'
+        )
+      };
+      window.MarkdownCore = global.MarkdownCore;
+      const el = createElement("c-markdown-viewer", { is: MarkdownViewer });
+      el.value = '---\nsf_id: "x"\nsources: []\n---\n- [ ] item';
+      const handler = jest.fn();
+      el.addEventListener("mdcheckboxtoggle", handler);
+      await renderWithCheckbox(el);
+
+      expect(
+        global.MarkdownCore.renderAndSanitizeAsync
+      ).toHaveBeenLastCalledWith("- [ ] item");
+
+      const checkbox = el.shadowRoot.querySelector(
+        'input[type="checkbox"][data-md-line]'
+      );
+      checkbox.click();
+
+      expect(handler.mock.calls[0][0].detail.line).toBe(5);
+    });
+
     it("calls toggleCheckboxLine and re-renders when used standalone with recordId/fieldApiName", async () => {
       global.MarkdownCore = markdownCoreMockWithCheckbox();
       window.MarkdownCore = global.MarkdownCore;

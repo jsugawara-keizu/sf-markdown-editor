@@ -137,6 +137,7 @@ export default class MarkdownViewer extends LightningElement {
   _directValue = "";
   _lastRenderedMarkdown = null;
   _renderVersion = 0;
+  _checkboxLineOffset = 0;
   _debounceTimer = null;
   labels = LABELS;
 
@@ -408,7 +409,21 @@ export default class MarkdownViewer extends LightningElement {
     }
 
     try {
-      const strippedMarkdown = markdown.replace(/^---\n[\s\S]*?\n---\n?/, "");
+      const frontmatterMatch = /^---\n[\s\S]*?\n---\n?/.exec(markdown);
+      const strippedMarkdown = frontmatterMatch
+        ? markdown.slice(frontmatterMatch[0].length)
+        : markdown;
+      // data-md-line (see checkbox-transform.ts) is computed from the AST
+      // of strippedMarkdown, not the original markdown, since the
+      // frontmatter block is only hidden here for display and never
+      // touches the rendering pipeline itself. Writing a checkbox toggle
+      // back to the *original* text (still frontmatter-and-all — that's
+      // what's actually stored) needs the line number restored to what it
+      // would be in that original text, or every line is off by the
+      // frontmatter's line count and toggles silently hit the wrong line.
+      this._checkboxLineOffset = frontmatterMatch
+        ? frontmatterMatch[0].split("\n").length - 1
+        : 0;
       const safeHtml =
         await window.MarkdownCore.renderAndSanitizeAsync(strippedMarkdown);
       if (this._renderVersion !== version) {
@@ -447,10 +462,17 @@ export default class MarkdownViewer extends LightningElement {
         e.preventDefault();
         return;
       }
-      const line = Number(checkbox.dataset.mdLine);
-      if (!Number.isFinite(line)) {
+      const renderedLine = Number(checkbox.dataset.mdLine);
+      if (!Number.isFinite(renderedLine)) {
         return;
       }
+      // data-md-line is relative to the frontmatter-stripped text that was
+      // actually rendered; every consumer of this event (this component's
+      // own standalone toggleCheckboxLine call below, and
+      // markdownEditor.js's handleCheckboxToggle) operates on the raw
+      // stored field value, which still has the frontmatter — so the line
+      // number has to be translated back before it leaves this handler.
+      const line = renderedLine + this._checkboxLineOffset;
       const checked = checkbox.checked;
       this.dispatchEvent(
         new CustomEvent("mdcheckboxtoggle", {
