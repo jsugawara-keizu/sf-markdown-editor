@@ -59,9 +59,13 @@
 
 ## ドキュメント
 
-- `docs/markdown-components.md`
-- `docs/markdown-component-tests.md`
-- `docs/feature-requests.md`
+要件・設計・開発・導入・運用を以下の5ドキュメントに分けて管理する。現在の実装を根拠に記載しており、実装変更時は該当ドキュメントも都度更新する。
+
+- [`docs/requirements.md`](docs/requirements.md) — 要件定義（機能要件・非機能要件・バックログ）
+- [`docs/design.md`](docs/design.md) — 設計（アーキテクチャ、データフロー、markdown-core内部設計、セキュリティ設計）
+- [`docs/development.md`](docs/development.md) — 開発（セットアップ・ビルド・テスト・コーディング規約）
+- [`docs/deployment.md`](docs/deployment.md) — 導入・デプロイ（デプロイ手順・org設定・複数Sandbox展開）
+- [`docs/operations.md`](docs/operations.md) — 運用（既知の制約・トラブルシューティング・監視事項）
 
 ## 開発とセットアップ
 
