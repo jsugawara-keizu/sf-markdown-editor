@@ -3,28 +3,46 @@
     <types>
         <members>MarkdownImageHandler</members>
         <members>MarkdownImageHandlerTest</members>
+        <members>MarkdownRecordFieldAccessor</members>
+        <members>MarkdownTaskSync</members>
+        <members>MarkdownTaskSyncTest</members>
+        <members>MarkdownTaskTriggerHandler</members>
+        <members>MarkdownTaskTriggerHandlerTest</members>
         <name>ApexClass</name>
+    </types>
+    <types>
+        <members>MarpRenderer</members>
+        <members>MermaidRenderer</members>
+        <name>ApexPage</name>
+    </types>
+    <types>
+        <members>MarkdownTaskTrigger</members>
+        <name>ApexTrigger</name>
     </types>
     <types>
         <members>MarkdownEditorViewerAccess</members>
         <name>CustomPermission</name>
     </types>
     <types>
+        <members>Activity.MarkdownFieldApiName__c</members>
+        <members>Activity.MarkdownMarkerId__c</members>
+        <name>CustomField</name>
+    </types>
+    <types>
         <members>CustomLabels</members>
         <name>CustomLabels</name>
     </types>
     <types>
+        <members>markdownChecklistPanel</members>
         <members>markdownEditor</members>
+        <members>markdownTaskPreview</members>
         <members>markdownViewer</members>
         <members>marpViewer</members>
         <name>LightningComponentBundle</name>
     </types>
     <types>
-        <members>MarpRenderer</members>
-        <name>ApexPage</name>
-    </types>
-    <types>
         <members>MarkdownEditorViewer</members>
+        <members>MarkdownTaskSync</members>
         <name>PermissionSet</name>
     </types>
     <types>
@@ -33,5 +51,10 @@
         <members>mermaidJs</members>
         <name>StaticResource</name>
     </types>
-<version>66.0</version>
+    <types>
+        <members>en_US</members>
+        <members>ja</members>
+        <name>Translations</name>
+    </types>
+    <version>66.0</version>
 </Package>
