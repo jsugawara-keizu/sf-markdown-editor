@@ -589,4 +589,18 @@
         <shortDescription>Checklist: task hover preview "open record" icon button</shortDescription>
         <value>Open Record</value>
     </labels>
+    <labels>
+        <fullName>MarkdownChecklistDetailsTabLabel</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Checklist: task hover preview "Details" tab</shortDescription>
+        <value>Details</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownChecklistEditTabLabel</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Checklist: task hover preview "Edit" tab</shortDescription>
+        <value>Edit</value>
+    </labels>
 </CustomLabels>

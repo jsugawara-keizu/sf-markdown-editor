@@ -24,6 +24,8 @@ import CREATE_ERROR_TITLE from "@salesforce/label/c.MarkdownChecklistCreateError
 import CREATE_SUCCESS_TITLE from "@salesforce/label/c.MarkdownChecklistCreateSuccessTitle";
 import LOAD_ERROR_LABEL from "@salesforce/label/c.MarkdownChecklistLoadErrorLabel";
 import OPEN_RECORD_LABEL from "@salesforce/label/c.MarkdownChecklistOpenRecordLabel";
+import DETAILS_TAB_LABEL from "@salesforce/label/c.MarkdownChecklistDetailsTabLabel";
+import EDIT_TAB_LABEL from "@salesforce/label/c.MarkdownChecklistEditTabLabel";
 import SAVE_LABEL from "@salesforce/label/c.MarkdownSaveLabel";
 
 const LABELS = {
@@ -44,7 +46,9 @@ const LABELS = {
 // sf-gantt-lwc's ganttChart uses for ganttTaskPreview.
 const PREVIEW_LABELS = {
   openRecord: OPEN_RECORD_LABEL,
-  save: SAVE_LABEL
+  save: SAVE_LABEL,
+  detailsTab: DETAILS_TAB_LABEL,
+  editTab: EDIT_TAB_LABEL
 };
 
 function randomMarkerId() {
@@ -61,6 +65,17 @@ export default class MarkdownChecklistPanel extends NavigationMixin(
   @api recordId;
   @api objectApiName;
   @api fieldApiName;
+  // Comma-separated Task field API names, configured in App Builder — same
+  // convention as sf-gantt-lwc's ganttChart.editableFieldsConfig. Passed down
+  // to markdownTaskPreview so its hover popover gets an "Edit" tab for these.
+  @api editableFieldsConfig;
+
+  get editableFieldApiNames() {
+    return (this.editableFieldsConfig || "")
+      .split(",")
+      .map((f) => f.trim())
+      .filter(Boolean);
+  }
 
   // The host bumps this after every successful save (Save button, checkbox
   // toggle, its own checklisttaskcreated handling) so this panel knows to

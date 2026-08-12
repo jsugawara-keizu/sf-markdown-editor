@@ -214,4 +214,61 @@ describe("c-markdown-task-preview", () => {
     expect(handler).toHaveBeenCalledTimes(1);
     expect(handler.mock.calls[0][0].detail).toEqual({ id: "task-1" });
   });
+
+  describe("Edit tab (editableFieldApiNames)", () => {
+    it("renders one lightning-input-field per configured field, in a second form", async () => {
+      const element = createElement("c-markdown-task-preview", {
+        is: MarkdownTaskPreview
+      });
+      element.editableFieldApiNames = ["Priority", "OwnerId"];
+      document.body.appendChild(element);
+
+      element.showPreviewFor(
+        "task-1",
+        { top: 100, left: 100, right: 200, bottom: 120 },
+        1024,
+        768
+      );
+      await Promise.resolve();
+
+      const forms = element.shadowRoot.querySelectorAll(
+        "lightning-record-edit-form"
+      );
+      expect(forms).toHaveLength(2);
+
+      const editFields = forms[1].querySelectorAll("lightning-input-field");
+      expect(Array.from(editFields).map((f) => f.fieldName)).toEqual([
+        "Priority",
+        "OwnerId"
+      ]);
+    });
+
+    it("re-dispatches the Edit tab form's success as previeweditsuccess", async () => {
+      const element = createElement("c-markdown-task-preview", {
+        is: MarkdownTaskPreview
+      });
+      element.editableFieldApiNames = ["Priority"];
+      const handler = jest.fn();
+      element.addEventListener("previeweditsuccess", handler);
+      document.body.appendChild(element);
+
+      element.showPreviewFor(
+        "task-1",
+        { top: 100, left: 100, right: 200, bottom: 120 },
+        1024,
+        768
+      );
+      await Promise.resolve();
+
+      const forms = element.shadowRoot.querySelectorAll(
+        "lightning-record-edit-form"
+      );
+      forms[1].dispatchEvent(
+        new CustomEvent("success", { detail: { id: "task-1" } })
+      );
+
+      expect(handler).toHaveBeenCalledTimes(1);
+      expect(handler.mock.calls[0][0].detail).toEqual({ id: "task-1" });
+    });
+  });
 });

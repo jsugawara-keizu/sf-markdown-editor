@@ -342,6 +342,21 @@ describe("c-markdown-checklist-panel", () => {
 
       expect(focusSpy).toHaveBeenCalledTimes(1);
     });
+
+    it("parses editableFieldsConfig into editableFieldApiNames and passes it to the preview", async () => {
+      const el = createElement("c-markdown-checklist-panel", {
+        is: MarkdownChecklistPanel
+      });
+      el.editableFieldsConfig = " Priority , OwnerId,,Subject ";
+      await renderWithLinkedTask(el);
+
+      const preview = el.shadowRoot.querySelector("c-markdown-task-preview");
+      expect(preview.editableFieldApiNames).toEqual([
+        "Priority",
+        "OwnerId",
+        "Subject"
+      ]);
+    });
   });
 
   it("shows an orphan row for a task whose checkbox line was removed", async () => {

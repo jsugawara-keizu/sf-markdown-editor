@@ -1,9 +1,5 @@
 // Ported from sf-gantt-lwc's ganttTaskPreview (private hover/focus preview
-// subcomponent for its own kanban-style record cards). markdownChecklistPanel
-// only ever previews a single record type (Task) with a single dataset
-// (Compact Layout fields), so the second "Edit" tab present in the gantt
-// version — driven by an App Builder-configurable extra field list that has
-// no equivalent config surface here — is intentionally left out.
+// subcomponent for its own kanban-style record cards).
 import { LightningElement, api } from "lwc";
 import { NavigationMixin } from "lightning/navigation";
 
@@ -16,6 +12,7 @@ export default class MarkdownTaskPreview extends NavigationMixin(
   LightningElement
 ) {
   @api previewFields = [];
+  @api editableFieldApiNames = [];
   @api label = {};
 
   _hoverTaskId = undefined;

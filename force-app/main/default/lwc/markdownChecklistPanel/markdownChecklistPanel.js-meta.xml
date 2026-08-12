@@ -19,6 +19,12 @@
         default="Markdown__c"
         required="true"
       />
+            <property
+        name="editableFieldsConfig"
+        type="String"
+        label="ホバープレビューの編集項目（カンマ区切り、任意）"
+        description="ホバープレビューの「編集」タブで変更可能にする項目のAPI名をカンマ区切りで指定する（例: Priority,OwnerId）"
+      />
         </targetConfig>
     </targetConfigs>
 </LightningComponentBundle>
