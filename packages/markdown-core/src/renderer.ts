@@ -11,6 +11,7 @@ import rehypeKatex from 'rehype-katex';
 import rehypeSanitize from 'rehype-sanitize';
 import rehypeStringify from 'rehype-stringify';
 import { rehypeSanitizeStyleContent } from './sanitize';
+import { rehypeMakeCheckboxesInteractive } from './checkbox-transform';
 import type { Root as MdastRoot } from 'mdast';
 import { visit } from 'unist-util-visit';
 import type { Code, Html } from 'mdast';
@@ -228,6 +229,7 @@ const markdownToHtmlProcessor = unified()
   .use(rehypeHighlight as any, { ignoreMissing: true })
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   .use(rehypeKatex as any, { output: 'mathml' })
+  .use(rehypeMakeCheckboxesInteractive)
   .use(rehypeSanitize, markdownSanitizeSchema)
   .use(rehypeSanitizeStyleContent)
   .use(rehypeStringify)
@@ -241,6 +243,7 @@ const mdastToHtmlProcessor = unified()
   .use(rehypeHighlight as any, { ignoreMissing: true })
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   .use(rehypeKatex as any, { output: 'mathml' })
+  .use(rehypeMakeCheckboxesInteractive)
   .use(rehypeSanitize, markdownSanitizeSchema)
   .use(rehypeSanitizeStyleContent)
   .use(rehypeStringify)

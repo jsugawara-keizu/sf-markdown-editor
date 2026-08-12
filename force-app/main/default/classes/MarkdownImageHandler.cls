@@ -120,6 +120,98 @@ public with sharing class MarkdownImageHandler {
     }
   }
 
+  @AuraEnabled
+  public static String toggleCheckboxLine(
+    Id recordId,
+    String objectApiName,
+    String fieldApiName,
+    Integer line,
+    Boolean checked
+  ) {
+    try {
+      if (recordId == null) {
+        throw new MarkdownImageHandlerException('recordId is required.');
+      }
+      if (String.isBlank(fieldApiName)) {
+        throw new MarkdownImageHandlerException('fieldApiName is required.');
+      }
+      if (line == null || line < 1) {
+        throw new MarkdownImageHandlerException('line must be a positive integer.');
+      }
+
+      Schema.SObjectType sObjType = recordId.getSObjectType();
+      if (
+        String.isNotBlank(objectApiName) &&
+        sObjType != null &&
+        !sObjType.getDescribe().getName().equalsIgnoreCase(objectApiName)
+      ) {
+        throw new MarkdownImageHandlerException(
+          'recordId does not belong to the specified objectApiName: ' +
+          objectApiName
+        );
+      }
+
+      String currentValue = MarkdownRecordFieldAccessor.queryFieldValue(
+        recordId,
+        fieldApiName
+      );
+      String updatedValue = toggleCheckboxAtLine(currentValue, line, checked);
+      updateRecordField(recordId, fieldApiName, updatedValue);
+      return updatedValue;
+    } catch (MarkdownImageHandlerException mie) {
+      throw new AuraHandledException(mie.getMessage());
+    } catch (MarkdownRecordFieldAccessor.FieldAccessException fae) {
+      throw new AuraHandledException(fae.getMessage());
+    } catch (Exception e) {
+      throw new AuraHandledException(
+        'Failed to toggle checkbox: ' + e.getMessage()
+      );
+    }
+  }
+
+  // line は1始まり（markdown-core の data-md-line、mdast/hast の
+  // position.start.line に対応）。split/join を使うと Apex の split() が
+  // 末尾の空行を落とすため、対象行の範囲だけを文字列操作で置換する。
+  @TestVisible
+  private static String toggleCheckboxAtLine(
+    String text,
+    Integer line,
+    Boolean checked
+  ) {
+    if (String.isBlank(text)) {
+      return text;
+    }
+
+    Integer currentLine = 1;
+    Integer searchFrom = 0;
+    while (currentLine < line) {
+      Integer nlIdx = text.indexOf('\n', searchFrom);
+      if (nlIdx < 0) {
+        return text;
+      }
+      searchFrom = nlIdx + 1;
+      currentLine++;
+    }
+
+    Integer lineStart = searchFrom;
+    Integer lineEnd = text.indexOf('\n', lineStart);
+    if (lineEnd < 0) {
+      lineEnd = text.length();
+    }
+
+    String lineText = text.substring(lineStart, lineEnd);
+    Pattern taskListMarker = Pattern.compile('^(\\s*[-*+]\\s+)\\[[ xX]\\]');
+    Matcher m = taskListMarker.matcher(lineText);
+    if (!m.find()) {
+      return text;
+    }
+
+    String prefix = m.group(1);
+    String mark = checked ? 'x' : ' ';
+    String newLineText = prefix + '[' + mark + ']' + lineText.substring(m.end());
+    return text.substring(0, lineStart) + newLineText + text.substring(lineEnd);
+  }
+
   private static void checkRuntimeLimits() {
     Integer cpuTime = Limits.getCpuTime();
     if (cpuTime > CPU_TIME_THRESHOLD_MS) {
@@ -272,41 +364,17 @@ public with sharing class MarkdownImageHandler {
       base64Data.length() > 0;
   }
 
-  @TestVisible
+  // Centralizes the write path for every caller (save w/ or w/o images,
+  // checkbox toggle) so the Markdown -> Task status sync always runs
+  // wherever the field actually ends up being persisted, regardless of
+  // which entry point wrote it.
   private static void updateRecordField(
     Id recordId,
     String fieldApiName,
     String value
   ) {
-    Schema.SObjectType sObjType = recordId.getSObjectType();
-    if (sObjType == null) {
-      throw new MarkdownImageHandlerException(
-        'Cannot resolve SObjectType from recordId.'
-      );
-    }
-    Map<String, Schema.SObjectField> fieldMap = sObjType.getDescribe()
-      .fields.getMap();
-    Schema.SObjectField field = null;
-    for (String fieldNameKey : fieldMap.keySet()) {
-      if (fieldNameKey.equalsIgnoreCase(fieldApiName)) {
-        field = fieldMap.get(fieldNameKey);
-        break;
-      }
-    }
-    if (field == null) {
-      throw new MarkdownImageHandlerException(
-        'Field not found: ' + fieldApiName
-      );
-    }
-    Schema.DescribeFieldResult dfr = field.getDescribe();
-    if (!dfr.isUpdateable()) {
-      throw new MarkdownImageHandlerException(
-        'Field is not updateable: ' + fieldApiName
-      );
-    }
-    SObject record = sObjType.newSObject(recordId);
-    record.put(fieldApiName, value);
-    update as user record;
+    MarkdownRecordFieldAccessor.updateRecordField(recordId, fieldApiName, value);
+    MarkdownTaskSync.syncCheckboxStatesFromMarkdown(recordId, fieldApiName, value);
   }
 
   @TestVisible

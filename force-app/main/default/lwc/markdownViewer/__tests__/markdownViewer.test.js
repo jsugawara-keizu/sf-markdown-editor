@@ -15,7 +15,31 @@ jest.mock("@salesforce/resourceUrl/mermaidJs", () => "/mermaidJs", {
   virtual: true
 });
 
+jest.mock(
+  "@salesforce/apex/MarkdownImageHandler.toggleCheckboxLine",
+  () => ({ default: jest.fn() }),
+  { virtual: true }
+);
+
+jest.mock("lightning/uiRecordApi", () => {
+  const actual = jest.requireActual("lightning/uiRecordApi");
+  return { ...actual, getRecordNotifyChange: jest.fn() };
+});
+
 const { loadScript } = require("lightning/platformResourceLoader");
+const toggleCheckboxLine = require("@salesforce/apex/MarkdownImageHandler.toggleCheckboxLine").default;
+const { getRecord, getRecordNotifyChange } = require("lightning/uiRecordApi");
+const { getObjectInfo } = require("lightning/uiObjectInfoApi");
+
+function emitFieldUpdateable(fieldApiName, updateable) {
+  getObjectInfo.emit({
+    fields: { [fieldApiName]: { isAccessible: true, updateable } }
+  });
+}
+
+function emitRecordFieldValue(fieldApiName, value) {
+  getRecord.emit({ fields: { [fieldApiName]: { value } } });
+}
 
 function makeMarkdownCoreMock() {
   return {
@@ -170,5 +194,141 @@ describe("c-markdown-viewer", () => {
     expect(global.MarkdownCore.renderAndSanitizeAsync).toHaveBeenLastCalledWith(
       "\n# Hello"
     );
+  });
+
+  describe("checkbox toggle", () => {
+    function markdownCoreMockWithCheckbox() {
+      return {
+        renderAndSanitizeAsync: jest.fn(
+          async () =>
+            '<ul><li><input type="checkbox" data-md-line="1"></li></ul>'
+        )
+      };
+    }
+
+    async function renderWithCheckbox(el) {
+      document.body.appendChild(el);
+      await flushPromises();
+      jest.advanceTimersByTime(100);
+      await flushPromises();
+      await flushPromises();
+    }
+
+    it("dispatches mdcheckboxtoggle with line and checked state on click", async () => {
+      global.MarkdownCore = markdownCoreMockWithCheckbox();
+      window.MarkdownCore = global.MarkdownCore;
+      const el = createElement("c-markdown-viewer", { is: MarkdownViewer });
+      el.value = "- [ ] item";
+      const handler = jest.fn();
+      el.addEventListener("mdcheckboxtoggle", handler);
+      await renderWithCheckbox(el);
+
+      const checkbox = el.shadowRoot.querySelector(
+        'input[type="checkbox"][data-md-line]'
+      );
+      expect(checkbox).not.toBeNull();
+      // .click() (not a synthetic dispatchEvent) so jsdom runs the checkbox's
+      // native toggle-on-click activation behavior once, the same as a real
+      // user click — starts unchecked, ends checked.
+      checkbox.click();
+
+      expect(handler).toHaveBeenCalledTimes(1);
+      expect(handler.mock.calls[0][0].detail).toEqual({
+        line: 1,
+        checked: true
+      });
+    });
+
+    it("calls toggleCheckboxLine and re-renders when used standalone with recordId/fieldApiName", async () => {
+      global.MarkdownCore = markdownCoreMockWithCheckbox();
+      window.MarkdownCore = global.MarkdownCore;
+      toggleCheckboxLine.mockReset();
+      toggleCheckboxLine.mockResolvedValue("- [x] item");
+
+      const el = createElement("c-markdown-viewer", { is: MarkdownViewer });
+      el.recordId = "001000000000001AAA";
+      el.objectApiName = "Account";
+      el.fieldApiName = "Description";
+      document.body.appendChild(el);
+      emitRecordFieldValue("Description", "- [ ] item");
+      emitFieldUpdateable("Description", true);
+      await flushPromises();
+      jest.advanceTimersByTime(100);
+      await flushPromises();
+      await flushPromises();
+
+      const checkbox = el.shadowRoot.querySelector(
+        'input[type="checkbox"][data-md-line]'
+      );
+      expect(checkbox).not.toBeNull();
+      checkbox.click();
+      await flushPromises();
+
+      expect(toggleCheckboxLine).toHaveBeenCalledWith({
+        recordId: "001000000000001AAA",
+        objectApiName: "Account",
+        fieldApiName: "Description",
+        line: 1,
+        checked: true
+      });
+      await flushPromises();
+      expect(getRecordNotifyChange).toHaveBeenCalledWith([
+        { recordId: "001000000000001AAA" }
+      ]);
+    });
+
+    it("does not dispatch or persist when readOnly is true", async () => {
+      global.MarkdownCore = markdownCoreMockWithCheckbox();
+      window.MarkdownCore = global.MarkdownCore;
+      toggleCheckboxLine.mockReset();
+
+      const el = createElement("c-markdown-viewer", { is: MarkdownViewer });
+      el.value = "- [ ] item";
+      el.readOnly = true;
+      const handler = jest.fn();
+      el.addEventListener("mdcheckboxtoggle", handler);
+      await renderWithCheckbox(el);
+
+      const checkbox = el.shadowRoot.querySelector(
+        'input[type="checkbox"][data-md-line]'
+      );
+      checkbox.click();
+
+      expect(handler).not.toHaveBeenCalled();
+      expect(toggleCheckboxLine).not.toHaveBeenCalled();
+      expect(checkbox.checked).toBe(false);
+    });
+
+    it("reverts the checkbox and logs an error when the server toggle fails", async () => {
+      global.MarkdownCore = markdownCoreMockWithCheckbox();
+      window.MarkdownCore = global.MarkdownCore;
+      toggleCheckboxLine.mockReset();
+      toggleCheckboxLine.mockRejectedValue(new Error("boom"));
+      const errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+
+      const el = createElement("c-markdown-viewer", { is: MarkdownViewer });
+      el.recordId = "001000000000001AAA";
+      el.objectApiName = "Account";
+      el.fieldApiName = "Description";
+      document.body.appendChild(el);
+      emitRecordFieldValue("Description", "- [ ] item");
+      emitFieldUpdateable("Description", true);
+      await flushPromises();
+      jest.advanceTimersByTime(100);
+      await flushPromises();
+      await flushPromises();
+
+      const checkbox = el.shadowRoot.querySelector(
+        'input[type="checkbox"][data-md-line]'
+      );
+      expect(checkbox).not.toBeNull();
+      checkbox.click();
+      await flushPromises();
+      await flushPromises();
+
+      expect(checkbox.checked).toBe(false);
+      expect(errorSpy).toHaveBeenCalled();
+      errorSpy.mockRestore();
+    });
   });
 });

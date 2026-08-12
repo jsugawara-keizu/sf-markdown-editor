@@ -1,7 +1,8 @@
 import { loadScript } from "lightning/platformResourceLoader";
-import { getRecord } from "lightning/uiRecordApi";
+import { getRecord, getRecordNotifyChange } from "lightning/uiRecordApi";
 import { LightningElement, api, track, wire } from "lwc";
 import { getObjectInfo } from "lightning/uiObjectInfoApi";
+import toggleCheckboxLine from "@salesforce/apex/MarkdownImageHandler.toggleCheckboxLine";
 import MARKDOWN_CORE from "@salesforce/resourceUrl/markdownCore";
 import MERMAID_JS from "@salesforce/resourceUrl/mermaidJs";
 import MARKDOWN_PREVIEW_ARIA_LABEL from "@salesforce/label/c.MarkdownPreviewAriaLabel";
@@ -56,6 +57,7 @@ const MD_CONTENT_STYLES = `
 .md-content .contains-task-list{list-style:none;padding-left:.5rem}
 .md-content .task-list-item{display:flex;align-items:flex-start;gap:.4rem;margin-bottom:.25rem}
 .md-content .task-list-item input[type="checkbox"]{margin-top:.2rem;flex-shrink:0}
+.md-content .task-list-item input[type="checkbox"]:not(:disabled){cursor:pointer}
 .md-content .mermaid-wrapper{background:#f4f6f9;border-radius:4px;padding:1rem;margin:0 0 .75rem;text-align:center;overflow-x:auto}
 .md-content .mermaid-wrapper svg{display:block;margin:0 auto;max-width:100%;height:auto}
 .md-content .mermaid-error{color:#c23934;background:#fef1f1;border:1px solid #f6acaa;border-radius:4px;padding:.5rem .75rem;font-size:.875em}
@@ -78,6 +80,12 @@ export default class MarkdownViewer extends LightningElement {
   @api recordId;
   @api objectApiName;
   @api fieldApiName;
+
+  // Preview checkboxes are clickable by default (that's the point of this
+  // property). Hosts that know better than the wired field-level permission
+  // check below — e.g. markdownEditor, which already gates its own Save
+  // button on field updateability — pass this explicitly.
+  @api readOnly = false;
 
   _markdownText = "";
   @track fieldIsReadable = true;
@@ -144,6 +152,21 @@ export default class MarkdownViewer extends LightningElement {
 
   get isFlowMode() {
     return !!this._markdownText;
+  }
+
+  // Standalone record-page usage is the only mode where this component has
+  // its own FLS signal (fieldIsUpdateable, from wiredObjectInfo). In the
+  // direct-value modes (markdownEditor's `value` prop, Flow's `markdownText`
+  // prop) that wire is short-circuited to fieldIsUpdateable=false regardless
+  // of real access, so defer entirely to the host via `readOnly`.
+  get checkboxesReadOnly() {
+    if (this.readOnly) {
+      return true;
+    }
+    if (this.isFlowMode || this._directValue !== "") {
+      return false;
+    }
+    return !this.fieldIsUpdateable;
   }
 
   @wire(getRecord, { recordId: "$recordId", fields: "$qualifiedFields" })
@@ -399,9 +422,73 @@ export default class MarkdownViewer extends LightningElement {
 
       appendHtml(container, safeHtml);
       this.bindAnchorLinks(container);
+      this.bindCheckboxToggle(container);
     } catch (err) {
       console.error("[markdownViewer] render failed:", err);
     }
+  }
+
+  bindCheckboxToggle(container) {
+    // The container div persists across renders (only its children are
+    // replaced via appendHtml/clearChildren), so a single delegated listener
+    // bound once covers every future render.
+    if (this._checkboxToggleBound) {
+      return;
+    }
+    this._checkboxToggleBound = true;
+    container.addEventListener("click", (e) => {
+      const checkbox = e.target.closest(
+        'input[type="checkbox"][data-md-line]'
+      );
+      if (!checkbox || !container.contains(checkbox)) {
+        return;
+      }
+      if (this.checkboxesReadOnly) {
+        e.preventDefault();
+        return;
+      }
+      const line = Number(checkbox.dataset.mdLine);
+      if (!Number.isFinite(line)) {
+        return;
+      }
+      const checked = checkbox.checked;
+      this.dispatchEvent(
+        new CustomEvent("mdcheckboxtoggle", {
+          detail: { line, checked },
+          bubbles: true,
+          composed: true
+        })
+      );
+      // Standalone usage (record page) has no host listening for the event
+      // above to persist the change, so this component owns its own
+      // immediate-save round trip in that mode only. Embedded usage
+      // (markdownEditor's `value` prop, Flow's `markdownText` prop) leaves
+      // persistence to whichever host is listening for the event instead.
+      if (!this.isFlowMode && this._directValue === "") {
+        this.persistCheckboxToggle(line, checked, checkbox);
+      }
+    });
+  }
+
+  persistCheckboxToggle(line, checked, checkboxEl) {
+    toggleCheckboxLine({
+      recordId: this.recordId,
+      objectApiName: this.objectApiName,
+      fieldApiName: this.normalizedFieldApiName,
+      line,
+      checked
+    })
+      .then((updated) => {
+        this.markdownValue = updated;
+        this.scheduleRender();
+        getRecordNotifyChange([{ recordId: this.recordId }]);
+      })
+      .catch((err) => {
+        // Revert the optimistic native toggle so the UI doesn't drift from
+        // the still-unpersisted server value.
+        checkboxEl.checked = !checked;
+        console.error("[markdownViewer] checkbox toggle failed:", err);
+      });
   }
 
   bindAnchorLinks(container) {

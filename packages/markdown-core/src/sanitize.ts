@@ -102,6 +102,15 @@ export const markdownSanitizeSchema: Schema = {
   // Keep original ids so Mermaid's internal CSS selectors and url(#id) links
   // remain consistent after sanitize.
   clobberPrefix: '',
+  // defaultSchema.required.input force-sets disabled:true on every <input>
+  // regardless of the source markup, which is what silently re-disables task
+  // list checkboxes even after checkbox-transform.ts removes the attribute.
+  // Keep the type:checkbox requirement (still the only input type allowed)
+  // but drop the forced disabled.
+  required: {
+    ...(defaultSchema.required || {}),
+    input: { type: 'checkbox' },
+  },
   tagNames: [...(defaultSchema.tagNames || []), ...SVG_TAGS, 'div', 'span'],
   attributes: mergeAttributes(defaultSchema.attributes, {
     '*': [
@@ -115,6 +124,7 @@ export const markdownSanitizeSchema: Schema = {
     code: [['className']],
     a: [['href'], ['target'], ['rel']],
     img: [['src'], ['alt'], ['title']],
+    input: [['dataMdLine']],
     th: [['align']],
     td: [['align']],
     div: [['className']],

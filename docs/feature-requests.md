@@ -6,13 +6,19 @@
 
 ### 1. チェックボックスと ToDo（Task）レコードの双方向同期
 
-- **状態**: 実装案検討済み
+- **状態**: 実装済み（フェーズ1〜3すべて完了・hk.issue にデプロイ済み）
+  - `packages/markdown-core/src/checklist.ts`（`extractCheckboxItems` / `insertCheckboxMarker`）
+  - `force-app/main/default/lwc/markdownChecklistPanel`
+  - `force-app/main/default/classes/MarkdownTaskSync.cls`（Markdown → Task 同期を含む）
+  - `force-app/main/default/classes/MarkdownTaskTriggerHandler.cls` / `triggers/MarkdownTaskTrigger.trigger`（Task → Markdown 同期）
+  - `force-app/main/default/objects/Activity/fields/MarkdownMarkerId__c.field-meta.xml` / `MarkdownFieldApiName__c.field-meta.xml`（Task ではなく Activity エンティティ経由で追加。理由は下記「現状の関連実装」参照）
+  - `force-app/main/default/permissionsets/MarkdownTaskSync.permissionset-meta.xml`（FLS 付与、利用ユーザーへのアサインが別途必要）
 - **内容**:
   - Markdown 内のチェックボックス表記（`- [ ]` / `- [x]`）から ToDo（Task）レコードを自動的に作成できるようにしたい。
   - Markdown 側のチェック ON/OFF と ToDo レコードの完了状態（`Status`）が双方向で同期するようにしたい。
 - **現状の関連実装**:
   - `packages/markdown-core/src/renderer.ts` の `remark-gfm` が `- [ ]` / `- [x]` を既にタスクリストとして解釈済み。`sanitize.ts` も `input[type=checkbox][disabled]` を許可済み（ただし `disabled` 固定で操作不可）。
-  - Task/ToDo に相当するオブジェクトはこのリポジトリに存在せず、新規に対応が必要。
+  - 標準 `Task` オブジェクトを利用する（新規カスタムオブジェクトは作らない）方針で実装したが、実装時に判明した制約として、**hk.issue org では `Task`/`Event` への直接的なカスタム項目追加が Metadata API・Tooling API 双方で `INVALID_OR_NULL_FOR_RESTRICTED_PICKLIST` エラーにより拒否される**。Object Manager 上の「活動」（API 参照名: `Activity`。Task/Event 両方に共通のカスタム項目を追加するための専用エンティティ）経由で `fullName` を `Activity.フィールド名__c` として追加することで解決した（Apex 側のコードは `Task.フィールド名__c` という書き方のままでよい）。詳細は hk.issue リポジトリの `docs/devops/hk-issue-management.md` を参照。
 - **確定した実装方針（改訂: 自動作成 → 明示的な UI 操作に変更）**:
   - 当初案（保存時に全チェックボックスを自動で Task 化）ではなく、**LWC 上に「タスク作成」ボタンを持つチェックリストパネルを追加**し、ユーザーが行ごとに明示的に Task 化する UI に変更する。
   - **チェックリストパネル**（新規コンポーネント、例: `markdownChecklistPanel`。`MarkdownEditor` のプレビュー領域および単体配置の `MarkdownViewer` の両方から利用できる形で切り出す）:
@@ -60,7 +66,7 @@
 
 ### 2. プレビュー画面からのチェックボックス On/Off 切り替え
 
-- **状態**: 実装案検討済み
+- **状態**: 実装済み（`packages/markdown-core/src/checkbox-transform.ts`、`markdownViewer.js`/`markdownEditor.js`、`MarkdownImageHandler.toggleCheckboxLine`）
 - **内容**:
   - `MarkdownViewer`（プレビュー表示）のチェックボックスをクリックするだけで On/Off を切り替えられるようにしたい。
   - 現状はレンダリングされたチェックボックスが読み取り専用。

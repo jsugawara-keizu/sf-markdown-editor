@@ -505,4 +505,81 @@
         <shortDescription>Marp exit fullscreen</shortDescription>
         <value>Exit fullscreen</value>
     </labels>
+    <labels>
+        <fullName>MarkdownChecklistPanelTitle</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Checklist panel title</shortDescription>
+        <value>Checklist</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownChecklistUntodoLabel</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Checklist: not yet turned into a task</shortDescription>
+        <value>Not tracked</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownChecklistDoneLabel</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Checklist: task done</shortDescription>
+        <value>Done</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownChecklistOpenLabel</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Checklist: task open</shortDescription>
+        <value>Open</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownChecklistOrphanLabel</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Checklist: task with no matching checkbox line</shortDescription>
+        <value>No matching checkbox</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownChecklistCreateTaskButtonLabel</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Checklist: create task button</shortDescription>
+        <value>Create Task</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownChecklistAssigneeLabel</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Checklist: assignee picker label</shortDescription>
+        <value>Assignee</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownChecklistEmptyStateLabel</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Checklist: empty state</shortDescription>
+        <value>No checkboxes found in this document.</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownChecklistCreateErrorTitle</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Checklist: task creation error toast title</shortDescription>
+        <value>Failed to create task</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownChecklistCreateSuccessTitle</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Checklist: task creation success toast title</shortDescription>
+        <value>Task created</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownChecklistLoadErrorLabel</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Checklist: failed to load tasks</shortDescription>
+        <value>Failed to load tasks</value>
+    </labels>
 </CustomLabels>

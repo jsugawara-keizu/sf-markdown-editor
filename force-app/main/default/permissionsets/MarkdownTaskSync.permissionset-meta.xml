@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
+    <label>Markdown Task Sync</label>
+    <description>markdownChecklistPanel（sf-markdown-editor）のチェックリスト機能を使うユーザーに割り当てる。Task の Markdown 連携用カスタム項目（MarkdownMarkerId__c / MarkdownFieldApiName__c）への読み書きアクセスと、MarkdownTaskSync Apex クラスへのアクセスを許可する。</description>
+    <classAccesses>
+        <apexClass>MarkdownTaskSync</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <fieldPermissions>
+        <field>Task.MarkdownMarkerId__c</field>
+        <readable>true</readable>
+        <editable>true</editable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <field>Task.MarkdownFieldApiName__c</field>
+        <readable>true</readable>
+        <editable>true</editable>
+    </fieldPermissions>
+</PermissionSet>

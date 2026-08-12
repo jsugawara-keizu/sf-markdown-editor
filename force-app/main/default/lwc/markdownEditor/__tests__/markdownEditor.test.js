@@ -1,8 +1,30 @@
 import { createElement } from "lwc";
-import { fixMarkdownTables } from "c/markdownEditor";
+import { fixMarkdownTables, toggleCheckboxAtLine } from "c/markdownEditor";
 import MarkdownEditor from "c/markdownEditor";
+import getTasksForField from "@salesforce/apex/MarkdownTaskSync.getTasksForField";
+
+jest.mock(
+  "@salesforce/apex/MarkdownTaskSync.getTasksForField",
+  () => ({ default: jest.fn(() => Promise.resolve([])) }),
+  { virtual: true }
+);
+
+jest.mock(
+  "@salesforce/apex/MarkdownTaskSync.createTaskForCheckbox",
+  () => ({ default: jest.fn() }),
+  { virtual: true }
+);
+
+jest.mock("@salesforce/user/Id", () => ({ default: "005000000000001AAA" }), {
+  virtual: true
+});
 
 describe("c-markdown-editor", () => {
+  beforeEach(() => {
+    getTasksForField.mockClear();
+  });
+
+
   afterEach(() => {
     while (document.body.firstChild) {
       document.body.removeChild(document.body.firstChild);
@@ -70,5 +92,59 @@ describe("c-markdown-editor", () => {
   it("does not merge fenced code block lines containing pipes", () => {
     const input = "```\n| foo |\n| bar |\n```\n\n| col1 |\n| --- |\n| val |";
     expect(fixMarkdownTables(input)).toBe(input);
+  });
+
+  describe("toggleCheckboxAtLine", () => {
+    it("checks an unchecked box on the target line only", () => {
+      const input = "- [ ] a\n- [ ] b\n- [ ] c";
+      expect(toggleCheckboxAtLine(input, 2, true)).toBe(
+        "- [ ] a\n- [x] b\n- [ ] c"
+      );
+    });
+
+    it("unchecks a checked box", () => {
+      expect(toggleCheckboxAtLine("- [x] only", 1, false)).toBe(
+        "- [ ] only"
+      );
+    });
+
+    it("returns the text unchanged when the line has no checkbox", () => {
+      const input = "# Heading\nplain text";
+      expect(toggleCheckboxAtLine(input, 1, true)).toBe(input);
+    });
+
+    it("returns the text unchanged when the line is out of range", () => {
+      const input = "- [ ] only line";
+      expect(toggleCheckboxAtLine(input, 5, true)).toBe(input);
+    });
+  });
+
+  it("toggles the source line and marks dirty when the preview dispatches mdcheckboxtoggle", async () => {
+    const el = createElement("c-markdown-editor", { is: MarkdownEditor });
+    document.body.appendChild(el);
+
+    const textarea = el.shadowRoot.querySelector("textarea");
+    textarea.value = "- [ ] item one\n- [ ] item two";
+    textarea.dispatchEvent(new CustomEvent("input"));
+    await Promise.resolve();
+
+    el.shadowRoot.querySelector('[data-tab="preview"]').click();
+    await Promise.resolve();
+
+    const viewer = el.shadowRoot.querySelector("c-markdown-viewer");
+    viewer.dispatchEvent(
+      new CustomEvent("mdcheckboxtoggle", {
+        detail: { line: 2, checked: true }
+      })
+    );
+    await Promise.resolve();
+
+    el.shadowRoot.querySelector('[data-tab="edit"]').click();
+    await Promise.resolve();
+
+    expect(el.shadowRoot.querySelector("textarea").value).toBe(
+      "- [ ] item one\n- [x] item two"
+    );
+    expect(el.shadowRoot.querySelector(".md-dirty-badge")).not.toBeNull();
   });
 });

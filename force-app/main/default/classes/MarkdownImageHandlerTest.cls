@@ -352,4 +352,167 @@ private class MarkdownImageHandlerTest {
       MarkdownImageHandler.replaceFirst('hello', null, 'b')
     );
   }
+
+  @IsTest
+  static void toggleCheckboxLine_togglesTargetLineAndPersists() {
+    Account a = makeAccount();
+    String md = '# Title\n- [ ] first\n- [x] second\n- [ ] third';
+    update new Account(Id = a.Id, Description = md);
+
+    Test.startTest();
+    String result = MarkdownImageHandler.toggleCheckboxLine(
+      a.Id,
+      'Account',
+      'Description',
+      2,
+      true
+    );
+    Test.stopTest();
+
+    System.assertEquals(
+      '# Title\n- [x] first\n- [x] second\n- [ ] third',
+      result,
+      '対象行のみチェック状態が反転しているべき'
+    );
+    Account reloaded = [SELECT Description FROM Account WHERE Id = :a.Id];
+    System.assertEquals(result, reloaded.Description, '即時保存されているべき');
+  }
+
+  @IsTest
+  static void toggleCheckboxLine_uncheckTogglesBack() {
+    Account a = makeAccount();
+    update new Account(Id = a.Id, Description = '- [x] only item');
+
+    Test.startTest();
+    String result = MarkdownImageHandler.toggleCheckboxLine(
+      a.Id,
+      'Account',
+      'Description',
+      1,
+      false
+    );
+    Test.stopTest();
+
+    System.assertEquals('- [ ] only item', result);
+  }
+
+  @IsTest
+  static void toggleCheckboxLine_withNonCheckboxLine_returnsUnchanged() {
+    Account a = makeAccount();
+    String md = '# Not a checkbox line';
+    update new Account(Id = a.Id, Description = md);
+
+    Test.startTest();
+    String result = MarkdownImageHandler.toggleCheckboxLine(
+      a.Id,
+      'Account',
+      'Description',
+      1,
+      true
+    );
+    Test.stopTest();
+
+    System.assertEquals(md, result, '対象行がチェックボックスでなければ変更しない');
+  }
+
+  @IsTest
+  static void toggleCheckboxLine_withNullLine_throwsAuraHandledException() {
+    Account a = makeAccount();
+    Boolean threw = false;
+    try {
+      MarkdownImageHandler.toggleCheckboxLine(a.Id, 'Account', 'Description', null, true);
+    } catch (AuraHandledException e) {
+      threw = true;
+    }
+    System.assert(threw, 'line が null なら例外を投げる');
+  }
+
+  @IsTest
+  static void toggleCheckboxAtLine_preservesTrailingNewline() {
+    String md = '- [ ] a\n- [ ] b\n\n';
+    String result = MarkdownImageHandler.toggleCheckboxAtLine(md, 2, true);
+    System.assertEquals(
+      '- [ ] a\n- [x] b\n\n',
+      result,
+      '末尾の改行・空行は維持されるべき'
+    );
+  }
+
+  @IsTest
+  static void toggleCheckboxAtLine_withOutOfRangeLine_returnsUnchanged() {
+    String md = '- [ ] only line';
+    System.assertEquals(
+      md,
+      MarkdownImageHandler.toggleCheckboxAtLine(md, 5, true)
+    );
+  }
+
+  @IsTest
+  static void queryFieldValue_withInaccessibleField_throwsAuraHandledException() {
+    Account a = makeAccount();
+    Boolean threw = false;
+    try {
+      MarkdownImageHandler.toggleCheckboxLine(a.Id, 'Account', 'NotARealField__c', 1, true);
+    } catch (AuraHandledException e) {
+      threw = true;
+    }
+    System.assert(threw, '存在しないフィールドなら例外を投げる');
+  }
+
+  @IsTest
+  static void saveMarkdownWithImages_syncsTaskStatusForCheckedMarker() {
+    Account a = makeAccount();
+    MarkdownTaskSync.TaskRow row = MarkdownTaskSync.createTaskForCheckbox(
+      a.Id,
+      'Description',
+      'ab12cd',
+      'review docs',
+      false,
+      UserInfo.getUserId()
+    );
+
+    Test.startTest();
+    MarkdownImageHandler.saveMarkdownWithImages(
+      a.Id,
+      'Account',
+      'Description',
+      '- [x] review docs ^[todo:ab12cd]'
+    );
+    Test.stopTest();
+
+    Task reloaded = [SELECT IsClosed FROM Task WHERE Id = :row.id];
+    System.assertEquals(
+      true,
+      reloaded.IsClosed,
+      'saveMarkdownWithImages の保存後、対応する Task が Sync されるべき'
+    );
+  }
+
+  @IsTest
+  static void toggleCheckboxLine_syncsTaskStatusForCheckedMarker() {
+    Account a = makeAccount();
+    update new Account(
+      Id = a.Id,
+      Description = '- [ ] review docs ^[todo:ab12ce]'
+    );
+    MarkdownTaskSync.TaskRow row = MarkdownTaskSync.createTaskForCheckbox(
+      a.Id,
+      'Description',
+      'ab12ce',
+      'review docs',
+      false,
+      UserInfo.getUserId()
+    );
+
+    Test.startTest();
+    MarkdownImageHandler.toggleCheckboxLine(a.Id, 'Account', 'Description', 1, true);
+    Test.stopTest();
+
+    Task reloaded = [SELECT IsClosed FROM Task WHERE Id = :row.id];
+    System.assertEquals(
+      true,
+      reloaded.IsClosed,
+      'toggleCheckboxLine の保存後、対応する Task が Sync されるべき'
+    );
+  }
 }

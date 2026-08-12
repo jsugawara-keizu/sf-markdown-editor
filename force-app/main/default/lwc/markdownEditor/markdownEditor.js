@@ -267,7 +267,30 @@ const fixMarkdownTables = (text) => {
   return result.join("\n");
 };
 
-export { fixMarkdownTables };
+// ---------------------------------------------------------------------------
+// チェックボックス On/Off 切り替え（プレビュー由来）
+// ---------------------------------------------------------------------------
+
+const RE_TASK_LIST_MARKER = /^(\s*[-*+]\s+)\[[ xX]\]/;
+
+// `line` is 1-based (matches markdown-core's data-md-line, itself taken from
+// mdast/hast `position.start.line`).
+const toggleCheckboxAtLine = (text, line, checked) => {
+  const lines = text.split("\n");
+  const idx = line - 1;
+  if (idx < 0 || idx >= lines.length) {
+    return text;
+  }
+  const match = RE_TASK_LIST_MARKER.exec(lines[idx]);
+  if (!match) {
+    return text;
+  }
+  const mark = checked ? "x" : " ";
+  lines[idx] = lines[idx].replace(RE_TASK_LIST_MARKER, `${match[1]}[${mark}]`);
+  return lines.join("\n");
+};
+
+export { fixMarkdownTables, toggleCheckboxAtLine };
 export default class MarkdownEditor extends LightningElement {
   /** レコードページから自動注入 */
   @api recordId;
@@ -468,6 +491,10 @@ export default class MarkdownEditor extends LightningElement {
     return !this.isDirty || this.isSaving || !this.fieldIsUpdateable;
   }
 
+  get isCheckboxToggleReadOnly() {
+    return !this.fieldIsUpdateable || this.isSaving;
+  }
+
   renderedCallback() {
     if (this.isEditMode) {
       const ta = this.template.querySelector('[data-id="textarea"]');
@@ -568,6 +595,30 @@ export default class MarkdownEditor extends LightningElement {
         this.restoreFocus(ta, pos + 7, pos + 7, scrollState);
       }
     }
+  }
+
+  handleCheckboxToggle(event) {
+    if (!this.fieldIsUpdateable) {
+      return;
+    }
+    const { line, checked } = event.detail;
+    const updated = toggleCheckboxAtLine(this.internalValue, line, checked);
+    if (updated === this.internalValue) {
+      return;
+    }
+    this.internalValue = updated;
+    this.isDirty = true;
+    this.recordHistory(this.internalValue, 0, 0);
+  }
+
+  handleChecklistTaskCreated(event) {
+    const { updatedMarkdown } = event.detail;
+    if (updatedMarkdown === this.internalValue) {
+      return;
+    }
+    this.internalValue = updatedMarkdown;
+    this.isDirty = true;
+    this.recordHistory(this.internalValue, 0, 0);
   }
 
   handleSave() {

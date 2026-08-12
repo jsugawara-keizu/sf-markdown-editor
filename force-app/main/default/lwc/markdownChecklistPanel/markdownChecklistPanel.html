@@ -1,0 +1,77 @@
+<template>
+  <div class="md-checklist-panel">
+    <div class="md-checklist-header">
+      <h3 class="md-checklist-title">{labels.panelTitle}</h3>
+      <div class="md-checklist-summary">
+        <span class="md-checklist-summary-item"
+          >{labels.untodo}: {untodoCount}</span
+        >
+        <span class="md-checklist-summary-item"
+          >{labels.open}: {openCount}</span
+        >
+        <span class="md-checklist-summary-item"
+          >{labels.done}: {doneCount}</span
+        >
+        <template lwc:if={orphanCount}>
+          <span class="md-checklist-summary-item"
+            >{labels.orphan}: {orphanCount}</span
+          >
+        </template>
+      </div>
+    </div>
+
+    <template lwc:if={hasLoadError}>
+      <p class="md-checklist-error" role="alert">{labels.loadErrorLabel}</p>
+    </template>
+
+    <template lwc:if={hasRows}>
+      <ul class="md-checklist-list">
+        <template for:each={rows} for:item="row">
+          <li key={row.key} class="md-checklist-row">
+            <span class="md-checklist-row-text">{row.text}</span>
+
+            <template lwc:if={row.statusLabel}>
+              <span class={row.statusClass}>{row.statusLabel}</span>
+              <template lwc:if={row.task}>
+                <button
+                  type="button"
+                  class="md-checklist-row-link"
+                  data-task-id={row.task.id}
+                  onclick={handleTaskClick}
+                >
+                  {row.task.ownerName}
+                </button>
+              </template>
+            </template>
+
+            <template lwc:else>
+              <span class="md-checklist-badge md-checklist-badge--untodo"
+                >{labels.untodo}</span
+              >
+              <lightning-record-picker
+                class="md-checklist-owner-picker"
+                object-api-name="User"
+                label={labels.assignee}
+                variant="label-hidden"
+                value={row.ownerId}
+                data-line={row.line}
+                onchange={handleOwnerChange}
+              ></lightning-record-picker>
+              <lightning-button
+                variant="brand"
+                label={labels.createTaskButton}
+                data-line={row.line}
+                disabled={isCreating}
+                onclick={handleCreateTask}
+              ></lightning-button>
+            </template>
+          </li>
+        </template>
+      </ul>
+    </template>
+
+    <template lwc:else>
+      <p class="md-checklist-empty">{labels.emptyState}</p>
+    </template>
+  </div>
+</template>

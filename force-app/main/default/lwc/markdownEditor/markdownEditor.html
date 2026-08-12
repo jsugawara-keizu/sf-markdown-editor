@@ -269,7 +269,18 @@
           ></c-marp-viewer>
           <template lwc:if={hasMarp}></template>
           <template lwc:else>
-            <c-markdown-viewer value={internalValue}></c-markdown-viewer>
+            <c-markdown-viewer
+              value={internalValue}
+              read-only={isCheckboxToggleReadOnly}
+              onmdcheckboxtoggle={handleCheckboxToggle}
+            ></c-markdown-viewer>
+            <c-markdown-checklist-panel
+              record-id={recordId}
+              object-api-name={objectApiName}
+              field-api-name={normalizedFieldApiName}
+              markdown-text={internalValue}
+              onchecklisttaskcreated={handleChecklistTaskCreated}
+            ></c-markdown-checklist-panel>
           </template>
         </div>
       </template>
