@@ -215,6 +215,31 @@ describe("c-markdown-task-preview", () => {
     expect(handler.mock.calls[0][0].detail).toEqual({ id: "task-1" });
   });
 
+  it("closes the popover on successful save, so a save has a visible effect even without a toast", async () => {
+    const element = createElement("c-markdown-task-preview", {
+      is: MarkdownTaskPreview
+    });
+    document.body.appendChild(element);
+
+    element.showPreviewFor(
+      "task-1",
+      { top: 100, left: 100, right: 200, bottom: 120 },
+      1024,
+      768
+    );
+    await Promise.resolve();
+
+    const form = element.shadowRoot.querySelector(
+      "lightning-record-edit-form"
+    );
+    form.dispatchEvent(new CustomEvent("success", { detail: {} }));
+    await Promise.resolve();
+
+    expect(
+      element.shadowRoot.querySelector(".md-task-preview")
+    ).toBeNull();
+  });
+
   describe("Edit tab (editableFieldApiNames)", () => {
     // Details and Edit tabs share a single lightning-record-edit-form (not
     // one each) — two forms bound to the same recordId broke submission

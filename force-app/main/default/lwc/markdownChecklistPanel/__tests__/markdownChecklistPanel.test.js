@@ -306,12 +306,15 @@ describe("c-markdown-checklist-panel", () => {
       expect(preview.shadowRoot.querySelector(".md-task-preview")).toBeNull();
     });
 
-    it("refetches tasks when the preview's inline edit succeeds", async () => {
+    it("refetches tasks and shows a success toast when the preview's inline edit succeeds", async () => {
       const el = createElement("c-markdown-checklist-panel", {
         is: MarkdownChecklistPanel
       });
       await renderWithLinkedTask(el);
       getTasksForField.mockClear();
+
+      const toastHandler = jest.fn();
+      el.addEventListener("lightning__showtoast", toastHandler);
 
       const preview = el.shadowRoot.querySelector("c-markdown-task-preview");
       preview.dispatchEvent(
@@ -320,6 +323,8 @@ describe("c-markdown-checklist-panel", () => {
       await flushPromises();
 
       expect(getTasksForField).toHaveBeenCalledTimes(1);
+      expect(toastHandler).toHaveBeenCalledTimes(1);
+      expect(toastHandler.mock.calls[0][0].detail.variant).toBe("success");
     });
 
     it("restores focus to the task link when the preview asks to on Escape", async () => {

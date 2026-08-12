@@ -27,6 +27,8 @@ import OPEN_RECORD_LABEL from "@salesforce/label/c.MarkdownChecklistOpenRecordLa
 import DETAILS_TAB_LABEL from "@salesforce/label/c.MarkdownChecklistDetailsTabLabel";
 import EDIT_TAB_LABEL from "@salesforce/label/c.MarkdownChecklistEditTabLabel";
 import SAVE_LABEL from "@salesforce/label/c.MarkdownSaveLabel";
+import SAVE_SUCCESS_TITLE from "@salesforce/label/c.MarkdownSaveSuccessTitle";
+import SAVE_SUCCESS_MESSAGE from "@salesforce/label/c.MarkdownSaveSuccessMessage";
 
 const LABELS = {
   panelTitle: PANEL_TITLE,
@@ -39,7 +41,9 @@ const LABELS = {
   emptyState: EMPTY_STATE_LABEL,
   createErrorTitle: CREATE_ERROR_TITLE,
   createSuccessTitle: CREATE_SUCCESS_TITLE,
-  loadErrorLabel: LOAD_ERROR_LABEL
+  loadErrorLabel: LOAD_ERROR_LABEL,
+  saveSuccessTitle: SAVE_SUCCESS_TITLE,
+  saveSuccessMessage: SAVE_SUCCESS_MESSAGE
 };
 
 // Handed to c-markdown-task-preview as its `label` prop — same convention
@@ -436,6 +440,16 @@ export default class MarkdownChecklistPanel extends NavigationMixin(
     // reflect the new value, which lives on `tasks`, not on the preview
     // form itself.
     this.loadTasks();
+    // The popover itself already closes on success (markdownTaskPreview),
+    // but that alone is easy to miss — a save with no visible confirmation
+    // reads as "did this actually work?". The toast is the confirmation.
+    this.dispatchEvent(
+      new ShowToastEvent({
+        title: this.labels.saveSuccessTitle,
+        message: this.labels.saveSuccessMessage,
+        variant: "success"
+      })
+    );
   }
 
   handlePreviewRestoreFocus(event) {

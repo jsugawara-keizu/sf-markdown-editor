@@ -114,6 +114,12 @@ export default class MarkdownTaskPreview extends NavigationMixin(
   }
 
   handleEditSuccess(event) {
+    // Closed immediately (rather than left open) so a successful save has a
+    // visible effect even without a toast — same convention as
+    // sf-kanban-lwc's kanbanBoard.handleRecordEditSuccess. The parent shows
+    // the toast itself (see markdownChecklistPanel.handlePreviewEditSuccess).
+    window.clearTimeout(this._hoverHideTimeoutId);
+    this._hoverTaskId = undefined;
     this.dispatchEvent(
       new CustomEvent("previeweditsuccess", {
         detail: event.detail
