@@ -305,6 +305,7 @@ export default class MarkdownEditor extends LightningElement {
   @track internalValue = "";
   @track activeTab = DEFAULT_MODE_EDIT;
   @track isSaving = false;
+  @track taskRefreshToken = 0;
   @track fieldMaxLength = null;
   @track fieldIsUpdateable = true;
   @track fieldIsReadable = true;
@@ -673,6 +674,12 @@ export default class MarkdownEditor extends LightningElement {
         this.editStartValue = saved;
         this.recordHistory(saved, 0, 0);
         getRecordNotifyChange([{ recordId: this.recordId }]);
+        // Bumped so the checklist panel refetches Task rows — a save here
+        // (Save button or a checkbox toggle) is exactly what triggers
+        // MarkdownTaskSync.syncCheckboxStatesFromMarkdown server-side, and
+        // the panel would otherwise keep showing whatever Status it
+        // fetched at mount time until the page is reloaded.
+        this.taskRefreshToken += 1;
         this.dispatchEvent(
           new ShowToastEvent({
             title: this.labels.saveSuccessTitle,

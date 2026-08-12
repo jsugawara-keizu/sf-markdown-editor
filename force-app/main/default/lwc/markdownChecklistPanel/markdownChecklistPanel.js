@@ -49,6 +49,26 @@ export default class MarkdownChecklistPanel extends NavigationMixin(
   @api objectApiName;
   @api fieldApiName;
 
+  // The host bumps this after every successful save (Save button, checkbox
+  // toggle, its own checklisttaskcreated handling) so this panel knows to
+  // refetch Task rows. Tasks are otherwise only loaded once in
+  // connectedCallback, so without this, a save elsewhere on the page (e.g.
+  // MarkdownTaskSync.syncCheckboxStatesFromMarkdown flipping a Task's
+  // Status server-side) leaves this panel showing the stale status it
+  // fetched at mount time until the whole page is reloaded.
+  _refreshToken;
+  @api
+  get refreshToken() {
+    return this._refreshToken;
+  }
+  set refreshToken(value) {
+    const isFirstSet = this._refreshToken === undefined;
+    this._refreshToken = value;
+    if (!isFirstSet) {
+      this.loadTasks();
+    }
+  }
+
   labels = LABELS;
 
   _providedMarkdownText = null;

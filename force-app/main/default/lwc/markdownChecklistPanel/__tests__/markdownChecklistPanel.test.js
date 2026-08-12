@@ -131,6 +131,61 @@ describe("c-markdown-checklist-panel", () => {
     ).not.toBeNull();
   });
 
+  it("refetches tasks when refreshToken changes, picking up a status flipped elsewhere", async () => {
+    // Regression test: this panel loads Task rows once in
+    // connectedCallback. A checkbox toggle in the sibling preview persists
+    // via markdownEditor's Save path, which runs
+    // MarkdownTaskSync.syncCheckboxStatesFromMarkdown server-side and
+    // flips the Task's Status there — but without an explicit signal, this
+    // panel has no way to know that happened and keeps showing the stale
+    // status it fetched at mount time.
+    getTasksForField.mockResolvedValueOnce([
+      {
+        id: "00T000000000005AAA",
+        subject: "review docs",
+        status: "Not Started",
+        isClosed: false,
+        ownerId: "005000000000001AAA",
+        ownerName: "Jane Doe",
+        markdownMarkerId: "abc123"
+      }
+    ]);
+    const el = createElement("c-markdown-checklist-panel", {
+      is: MarkdownChecklistPanel
+    });
+    el.recordId = "001000000000001AAA";
+    el.objectApiName = "Account";
+    el.fieldApiName = "Description";
+    el.markdownText = "- [ ] review docs ^[todo:abc123]";
+    el.refreshToken = 0;
+    document.body.appendChild(el);
+    await flushPromises();
+
+    expect(getTasksForField).toHaveBeenCalledTimes(1);
+    expect(
+      el.shadowRoot.querySelector(".md-checklist-badge--open")
+    ).not.toBeNull();
+
+    getTasksForField.mockResolvedValueOnce([
+      {
+        id: "00T000000000005AAA",
+        subject: "review docs",
+        status: "Completed",
+        isClosed: true,
+        ownerId: "005000000000001AAA",
+        ownerName: "Jane Doe",
+        markdownMarkerId: "abc123"
+      }
+    ]);
+    el.refreshToken = 1;
+    await flushPromises();
+
+    expect(getTasksForField).toHaveBeenCalledTimes(2);
+    expect(
+      el.shadowRoot.querySelector(".md-checklist-badge--done")
+    ).not.toBeNull();
+  });
+
   it("shows an untodo row with a create-task button for an unmarked checkbox", async () => {
     getTasksForField.mockResolvedValue([]);
     const el = createElement("c-markdown-checklist-panel", {
