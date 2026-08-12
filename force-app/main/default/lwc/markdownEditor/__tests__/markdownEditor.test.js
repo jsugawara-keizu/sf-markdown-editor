@@ -207,4 +207,16 @@ describe("c-markdown-editor", () => {
     );
     expect(el.shadowRoot.querySelector(".md-dirty-badge")).toBeNull();
   });
+
+  it("passes editableFieldsConfig through to the embedded checklist panel", async () => {
+    const el = createElement("c-markdown-editor", { is: MarkdownEditor });
+    el.editableFieldsConfig = "Priority,OwnerId";
+    document.body.appendChild(el);
+
+    el.shadowRoot.querySelector('[data-tab="preview"]').click();
+    await Promise.resolve();
+
+    const panel = el.shadowRoot.querySelector("c-markdown-checklist-panel");
+    expect(panel.editableFieldsConfig).toBe("Priority,OwnerId");
+  });
 });

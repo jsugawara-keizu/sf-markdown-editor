@@ -28,6 +28,12 @@
         datasource="edit,preview"
         required="true"
       />
+            <property
+        name="editableFieldsConfig"
+        type="String"
+        label="チェックリストのホバープレビュー編集項目（カンマ区切り、任意）"
+        description="埋め込まれたチェックリストパネルのホバープレビューの「編集」タブで変更可能にする項目のAPI名をカンマ区切りで指定する（例: Priority,OwnerId）"
+      />
         </targetConfig>
     </targetConfigs>
 </LightningComponentBundle>

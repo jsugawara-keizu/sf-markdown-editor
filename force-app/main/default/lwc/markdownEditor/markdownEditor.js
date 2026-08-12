@@ -302,6 +302,9 @@ export default class MarkdownEditor extends LightningElement {
   /** App Builder で設定する初期モード（edit / preview） */
   @api defaultMode = DEFAULT_MODE_EDIT;
 
+  /** チェックリストパネルへそのまま渡す（ホバー編集項目、カンマ区切り、任意） */
+  @api editableFieldsConfig;
+
   @track internalValue = "";
   @track activeTab = DEFAULT_MODE_EDIT;
   @track isSaving = false;
