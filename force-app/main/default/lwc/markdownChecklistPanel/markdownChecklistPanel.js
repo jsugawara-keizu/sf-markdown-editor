@@ -1,5 +1,4 @@
 import { LightningElement, api, track, wire } from "lwc";
-import { NavigationMixin } from "lightning/navigation";
 import { ShowToastEvent } from "lightning/platformShowToastEvent";
 import {
   getRecord,
@@ -24,6 +23,7 @@ import CREATE_ERROR_TITLE from "@salesforce/label/c.MarkdownChecklistCreateError
 import CREATE_SUCCESS_TITLE from "@salesforce/label/c.MarkdownChecklistCreateSuccessTitle";
 import LOAD_ERROR_LABEL from "@salesforce/label/c.MarkdownChecklistLoadErrorLabel";
 import OPEN_RECORD_LABEL from "@salesforce/label/c.MarkdownChecklistOpenRecordLabel";
+import CLOSE_LABEL from "@salesforce/label/c.MarkdownChecklistCloseLabel";
 import DETAILS_TAB_LABEL from "@salesforce/label/c.MarkdownChecklistDetailsTabLabel";
 import EDIT_TAB_LABEL from "@salesforce/label/c.MarkdownChecklistEditTabLabel";
 import SAVE_LABEL from "@salesforce/label/c.MarkdownSaveLabel";
@@ -50,6 +50,7 @@ const LABELS = {
 // sf-gantt-lwc's ganttChart uses for ganttTaskPreview.
 const PREVIEW_LABELS = {
   openRecord: OPEN_RECORD_LABEL,
+  close: CLOSE_LABEL,
   save: SAVE_LABEL,
   detailsTab: DETAILS_TAB_LABEL,
   editTab: EDIT_TAB_LABEL
@@ -63,9 +64,7 @@ function randomMarkerId() {
   ).join("");
 }
 
-export default class MarkdownChecklistPanel extends NavigationMixin(
-  LightningElement
-) {
+export default class MarkdownChecklistPanel extends LightningElement {
   @api recordId;
   @api objectApiName;
   @api fieldApiName;
@@ -340,6 +339,10 @@ export default class MarkdownChecklistPanel extends NavigationMixin(
           line: item.line,
           text: item.text,
           checked: item.checked,
+          // Set when the line already carries a marker whose Task was
+          // deleted directly (not through this panel) — reused on Create
+          // Task instead of appending a second marker to the same line.
+          markerId: item.markerId,
           ownerId: this._selectedOwnerByLine.get(item.line) || USER_ID
         });
       }
@@ -393,18 +396,20 @@ export default class MarkdownChecklistPanel extends NavigationMixin(
     }
   }
 
+  // Click and hover both open the same preview popover — touch devices never
+  // fire mouseenter, so a click that only navigated away left touch users
+  // with no way to reach the quick-edit popover at all. The popover's own
+  // "open record" icon button still covers the "just take me to the full
+  // record" case for anyone who wants it.
   handleTaskClick(event) {
-    const taskId = event.currentTarget.dataset.taskId;
-    if (!taskId) {
-      return;
-    }
-    this[NavigationMixin.Navigate]({
-      type: "standard__recordPage",
-      attributes: { recordId: taskId, objectApiName: "Task", actionName: "view" }
-    });
+    this._openPreviewFor(event);
   }
 
   handleTaskMouseEnter(event) {
+    this._openPreviewFor(event);
+  }
+
+  _openPreviewFor(event) {
     const taskId = event.currentTarget.dataset.taskId;
     if (!taskId) {
       return;
@@ -475,17 +480,24 @@ export default class MarkdownChecklistPanel extends NavigationMixin(
       return;
     }
 
-    const markerId = randomMarkerId();
+    // row.markerId is set when the line already carries a marker whose Task
+    // was deleted directly (not through this panel) rather than unlinked via
+    // a checkbox-line edit — reuse it instead of inserting a second marker
+    // onto the same line, which insertCheckboxMarker would do blindly.
+    const reusedMarkerId = row.markerId;
+    const markerId = reusedMarkerId || randomMarkerId();
     const markdownCore =
       typeof window !== "undefined" ? window.MarkdownCore : null;
     if (!markdownCore) {
       return;
     }
-    const updatedMarkdown = markdownCore.insertCheckboxMarker(
-      this.effectiveMarkdownText || "",
-      line,
-      markerId
-    );
+    const updatedMarkdown = reusedMarkerId
+      ? this.effectiveMarkdownText || ""
+      : markdownCore.insertCheckboxMarker(
+          this.effectiveMarkdownText || "",
+          line,
+          markerId
+        );
 
     this.isCreating = true;
     let createdTask;

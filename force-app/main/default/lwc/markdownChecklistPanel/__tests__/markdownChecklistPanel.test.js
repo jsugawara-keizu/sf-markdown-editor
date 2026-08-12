@@ -278,6 +278,61 @@ describe("c-markdown-checklist-panel", () => {
       ).not.toBeNull();
     });
 
+    // Touch devices never fire mouseenter, so click has to open the same
+    // popover rather than navigate straight to the record — otherwise touch
+    // users have no way to reach the quick-edit popover at all.
+    it("opens the same popover on click (for touch devices, which never fire mouseenter)", async () => {
+      const el = createElement("c-markdown-checklist-panel", {
+        is: MarkdownChecklistPanel
+      });
+      await renderWithLinkedTask(el);
+
+      const link = el.shadowRoot.querySelector(
+        'button[data-task-id="00T000000000001AAA"]'
+      );
+      link.getBoundingClientRect = () => ({
+        top: 100,
+        left: 100,
+        right: 200,
+        bottom: 120
+      });
+      link.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      await flushPromises();
+
+      const preview = el.shadowRoot.querySelector("c-markdown-task-preview");
+      expect(
+        preview.shadowRoot.querySelector(".md-task-preview")
+      ).not.toBeNull();
+    });
+
+    it("closes the popover immediately when its close button is clicked", async () => {
+      const el = createElement("c-markdown-checklist-panel", {
+        is: MarkdownChecklistPanel
+      });
+      await renderWithLinkedTask(el);
+
+      const link = el.shadowRoot.querySelector(
+        'button[data-task-id="00T000000000001AAA"]'
+      );
+      link.getBoundingClientRect = () => ({
+        top: 100,
+        left: 100,
+        right: 200,
+        bottom: 120
+      });
+      link.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      await flushPromises();
+
+      const preview = el.shadowRoot.querySelector("c-markdown-task-preview");
+      const closeButton = Array.from(
+        preview.shadowRoot.querySelectorAll("lightning-button-icon")
+      ).find((btn) => btn.iconName === "utility:close");
+      closeButton.click();
+      await flushPromises();
+
+      expect(preview.shadowRoot.querySelector(".md-task-preview")).toBeNull();
+    });
+
     it("hides the popover on mouseleave (after the hover-hide delay)", async () => {
       const el = createElement("c-markdown-checklist-panel", {
         is: MarkdownChecklistPanel
@@ -452,6 +507,52 @@ describe("c-markdown-checklist-panel", () => {
     expect(handler).toHaveBeenCalledTimes(1);
     expect(handler.mock.calls[0][0].detail.updatedMarkdown).toMatch(
       /^- \[ \] first item \^\[todo:[0-9a-f]{6}\]$/
+    );
+  });
+
+  it("reuses an orphaned line's existing marker instead of inserting a second one", async () => {
+    // The line already carries a marker (^[todo:aaaaaa]) whose Task was
+    // deleted directly rather than through this panel — extractCheckboxItems
+    // still reports that marker, but with no matching task it renders as
+    // "untodo". Creating a Task from this row must reuse that marker rather
+    // than blindly appending a fresh one, which would leave two markers on
+    // one line.
+    getTasksForField.mockResolvedValue([]);
+    createTaskForCheckbox.mockResolvedValue({
+      id: "00T000000000005AAA",
+      subject: "first item",
+      status: "Not Started",
+      isClosed: false,
+      ownerId: "005000000000001AAA",
+      ownerName: "Jane Doe",
+      markdownMarkerId: "aaaaaa"
+    });
+    saveMarkdownWithImages.mockImplementation(({ markdownContent }) =>
+      Promise.resolve(markdownContent)
+    );
+
+    const el = createElement("c-markdown-checklist-panel", {
+      is: MarkdownChecklistPanel
+    });
+    el.recordId = "001000000000001AAA";
+    el.objectApiName = "Account";
+    el.fieldApiName = "Description";
+    el.markdownText = "- [ ] first item ^[todo:aaaaaa]";
+    document.body.appendChild(el);
+    await flushPromises();
+
+    el.shadowRoot.querySelector('lightning-button[data-line="1"]').click();
+    await flushPromises();
+
+    expect(createTaskForCheckbox).toHaveBeenCalledWith(
+      expect.objectContaining({ markerId: "aaaaaa" })
+    );
+    // insertCheckboxMarker must not have been called with this markdown —
+    // the line's marker is reused as-is, unchanged.
+    expect(saveMarkdownWithImages).toHaveBeenCalledWith(
+      expect.objectContaining({
+        markdownContent: "- [ ] first item ^[todo:aaaaaa]"
+      })
     );
   });
 

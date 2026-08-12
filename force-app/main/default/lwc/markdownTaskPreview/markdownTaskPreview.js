@@ -95,12 +95,24 @@ export default class MarkdownTaskPreview extends NavigationMixin(
   handleKeyDown(event) {
     if (event.key === "Escape") {
       event.preventDefault();
-      const taskId = this._hoverTaskId;
-      this._hoverTaskId = undefined;
-      this.dispatchEvent(
-        new CustomEvent("restorefocus", { detail: { taskId } })
-      );
+      this._closeAndRestoreFocus();
     }
+  }
+
+  // Touch devices never fire mouseleave, so hidePreview()'s hover-based
+  // auto-close (and the Escape key) are both unreachable there — this is
+  // the only way a touch user can dismiss the popover.
+  handleCloseClick() {
+    this._closeAndRestoreFocus();
+  }
+
+  _closeAndRestoreFocus() {
+    window.clearTimeout(this._hoverHideTimeoutId);
+    const taskId = this._hoverTaskId;
+    this._hoverTaskId = undefined;
+    this.dispatchEvent(
+      new CustomEvent("restorefocus", { detail: { taskId } })
+    );
   }
 
   handleOpenRecord() {

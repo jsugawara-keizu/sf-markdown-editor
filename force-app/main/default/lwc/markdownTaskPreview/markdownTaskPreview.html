@@ -18,6 +18,14 @@
           size="medium"
           onclick={handleOpenRecord}
         ></lightning-button-icon>
+        <lightning-button-icon
+          icon-name="utility:close"
+          alternative-text={label.close}
+          title={label.close}
+          variant="bare"
+          size="medium"
+          onclick={handleCloseClick}
+        ></lightning-button-icon>
       </div>
       <lightning-record-edit-form
         record-id={hoveredTaskId}

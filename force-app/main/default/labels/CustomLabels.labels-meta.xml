@@ -590,6 +590,13 @@
         <value>Open Record</value>
     </labels>
     <labels>
+        <fullName>MarkdownChecklistCloseLabel</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Checklist: task hover preview close icon button</shortDescription>
+        <value>Close</value>
+    </labels>
+    <labels>
         <fullName>MarkdownChecklistDetailsTabLabel</fullName>
         <language>en_US</language>
         <protected>false</protected>

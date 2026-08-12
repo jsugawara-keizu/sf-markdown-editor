@@ -189,12 +189,76 @@
         <label>画像の説明</label>
     </customLabels>
     <customLabels>
+        <name>MarkdownSaveSuccessTitle</name>
+        <label>保存完了</label>
+    </customLabels>
+    <customLabels>
         <name>MarkdownSaveSuccessMessage</name>
         <label>保存が完了しました。</label>
     </customLabels>
     <customLabels>
         <name>MarkdownSaveErrorMessage</name>
         <label>Markdown の保存に失敗しました。</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownChecklistPanelTitle</name>
+        <label>チェックリスト</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownChecklistUntodoLabel</name>
+        <label>未ToDo化</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownChecklistDoneLabel</name>
+        <label>完了</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownChecklistOpenLabel</name>
+        <label>未完了</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownChecklistOrphanLabel</name>
+        <label>関連チェックボックスなし</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownChecklistCreateTaskButtonLabel</name>
+        <label>タスク作成</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownChecklistAssigneeLabel</name>
+        <label>担当者</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownChecklistEmptyStateLabel</name>
+        <label>この文書にチェックボックスが見つかりません。</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownChecklistCreateErrorTitle</name>
+        <label>タスクの作成に失敗しました</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownChecklistCreateSuccessTitle</name>
+        <label>タスクを作成しました</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownChecklistLoadErrorLabel</name>
+        <label>タスクの取得に失敗しました</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownChecklistOpenRecordLabel</name>
+        <label>レコードを開く</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownChecklistCloseLabel</name>
+        <label>閉じる</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownChecklistDetailsTabLabel</name>
+        <label>詳細</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownChecklistEditTabLabel</name>
+        <label>編集</label>
     </customLabels>
     <customLabels>
         <name>MarpPrevSlide</name>
