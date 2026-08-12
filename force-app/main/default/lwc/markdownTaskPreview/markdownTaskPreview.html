@@ -19,50 +19,37 @@
           onclick={handleOpenRecord}
         ></lightning-button-icon>
       </div>
-      <lightning-tabset variant="scoped">
-        <lightning-tab label={label.detailsTab}>
-          <lightning-record-edit-form
-            record-id={hoveredTaskId}
-            object-api-name="Task"
-            onsuccess={handleEditSuccess}
-          >
-            <lightning-messages></lightning-messages>
+      <lightning-record-edit-form
+        record-id={hoveredTaskId}
+        object-api-name="Task"
+        onsuccess={handleEditSuccess}
+      >
+        <lightning-messages></lightning-messages>
+        <lightning-tabset variant="scoped">
+          <lightning-tab label={label.detailsTab}>
             <template for:each={previewFields} for:item="f">
               <lightning-input-field
                 key={f.apiName}
                 field-name={f.apiName}
               ></lightning-input-field>
             </template>
-            <lightning-button
-              variant="brand"
-              type="submit"
-              label={label.save}
-              class="slds-m-top_small"
-            ></lightning-button>
-          </lightning-record-edit-form>
-        </lightning-tab>
-        <lightning-tab label={label.editTab}>
-          <lightning-record-edit-form
-            record-id={hoveredTaskId}
-            object-api-name="Task"
-            onsuccess={handleEditSuccess}
-          >
-            <lightning-messages></lightning-messages>
+          </lightning-tab>
+          <lightning-tab label={label.editTab}>
             <template for:each={editableFieldApiNames} for:item="f">
               <lightning-input-field
                 key={f}
                 field-name={f}
               ></lightning-input-field>
             </template>
-            <lightning-button
-              variant="brand"
-              type="submit"
-              label={label.save}
-              class="slds-m-top_small"
-            ></lightning-button>
-          </lightning-record-edit-form>
-        </lightning-tab>
-      </lightning-tabset>
+          </lightning-tab>
+        </lightning-tabset>
+        <lightning-button
+          variant="brand"
+          type="submit"
+          label={label.save}
+          class="slds-m-top_small"
+        ></lightning-button>
+      </lightning-record-edit-form>
     </div>
   </template>
 </template>

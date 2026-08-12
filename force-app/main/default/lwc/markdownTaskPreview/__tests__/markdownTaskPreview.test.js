@@ -216,10 +216,17 @@ describe("c-markdown-task-preview", () => {
   });
 
   describe("Edit tab (editableFieldApiNames)", () => {
-    it("renders one lightning-input-field per configured field, in a second form", async () => {
+    // Details and Edit tabs share a single lightning-record-edit-form (not
+    // one each) — two forms bound to the same recordId broke submission
+    // entirely (silently: no error, no network call, nothing persisted).
+    // Confirmed live against hk.issue: Details-tab saves stopped working too
+    // as soon as the second per-tab form was added, and reverting to one
+    // shared form fixed both.
+    it("renders both tabs' fields inside the same lightning-record-edit-form", async () => {
       const element = createElement("c-markdown-task-preview", {
         is: MarkdownTaskPreview
       });
+      element.previewFields = [{ apiName: "Status" }];
       element.editableFieldApiNames = ["Priority", "OwnerId"];
       document.body.appendChild(element);
 
@@ -234,22 +241,21 @@ describe("c-markdown-task-preview", () => {
       const forms = element.shadowRoot.querySelectorAll(
         "lightning-record-edit-form"
       );
-      expect(forms).toHaveLength(2);
+      expect(forms).toHaveLength(1);
 
-      const editFields = forms[1].querySelectorAll("lightning-input-field");
-      expect(Array.from(editFields).map((f) => f.fieldName)).toEqual([
+      const fields = forms[0].querySelectorAll("lightning-input-field");
+      expect(Array.from(fields).map((f) => f.fieldName)).toEqual([
+        "Status",
         "Priority",
         "OwnerId"
       ]);
     });
 
-    it("re-dispatches the Edit tab form's success as previeweditsuccess", async () => {
+    it("submits both tabs' fields via a single Save button", async () => {
       const element = createElement("c-markdown-task-preview", {
         is: MarkdownTaskPreview
       });
       element.editableFieldApiNames = ["Priority"];
-      const handler = jest.fn();
-      element.addEventListener("previeweditsuccess", handler);
       document.body.appendChild(element);
 
       element.showPreviewFor(
@@ -260,15 +266,9 @@ describe("c-markdown-task-preview", () => {
       );
       await Promise.resolve();
 
-      const forms = element.shadowRoot.querySelectorAll(
-        "lightning-record-edit-form"
-      );
-      forms[1].dispatchEvent(
-        new CustomEvent("success", { detail: { id: "task-1" } })
-      );
-
-      expect(handler).toHaveBeenCalledTimes(1);
-      expect(handler.mock.calls[0][0].detail).toEqual({ id: "task-1" });
+      expect(
+        element.shadowRoot.querySelectorAll("lightning-button")
+      ).toHaveLength(1);
     });
   });
 });
