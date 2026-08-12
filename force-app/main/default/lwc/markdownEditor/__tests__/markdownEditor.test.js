@@ -147,4 +147,36 @@ describe("c-markdown-editor", () => {
     );
     expect(el.shadowRoot.querySelector(".md-dirty-badge")).not.toBeNull();
   });
+
+  it("adopts the checklist panel's already-saved markdown without marking dirty", async () => {
+    // markdownChecklistPanel persists the marker-inserted markdown itself
+    // (via saveMarkdownWithImages) before dispatching checklisttaskcreated,
+    // so the editor must treat this as an already-saved update — like
+    // wiredRecord's own refresh — rather than a pending edit that would
+    // depend on a further manual Save.
+    const el = createElement("c-markdown-editor", { is: MarkdownEditor });
+    document.body.appendChild(el);
+
+    el.shadowRoot.querySelector('[data-tab="preview"]').click();
+    await Promise.resolve();
+
+    const panel = el.shadowRoot.querySelector("c-markdown-checklist-panel");
+    panel.dispatchEvent(
+      new CustomEvent("checklisttaskcreated", {
+        detail: {
+          updatedMarkdown: "- [ ] first item ^[todo:aaaaaa]",
+          task: { id: "00T000000000001AAA" }
+        }
+      })
+    );
+    await Promise.resolve();
+
+    el.shadowRoot.querySelector('[data-tab="edit"]').click();
+    await Promise.resolve();
+
+    expect(el.shadowRoot.querySelector("textarea").value).toBe(
+      "- [ ] first item ^[todo:aaaaaa]"
+    );
+    expect(el.shadowRoot.querySelector(".md-dirty-badge")).toBeNull();
+  });
 });

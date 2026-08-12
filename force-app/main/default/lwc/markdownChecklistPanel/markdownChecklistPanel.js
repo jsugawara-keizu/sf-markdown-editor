@@ -314,6 +314,7 @@ export default class MarkdownChecklistPanel extends NavigationMixin(
     );
 
     this.isCreating = true;
+    let createdTask;
     createTaskForCheckbox({
       whatId: this.recordId,
       fieldApiName: this.normalizedFieldApiName,
@@ -323,25 +324,31 @@ export default class MarkdownChecklistPanel extends NavigationMixin(
       ownerId: row.ownerId
     })
       .then((task) => {
+        createdTask = task;
         this.tasks = [...this.tasks, task];
+        // Persisted immediately in both modes — "Create Task" is a
+        // deliberate, discrete action, not part of freeform editing, so it
+        // must not depend on the embedded MarkdownEditor's separate Save
+        // button. Leaving the marker only in an embedded host's unsaved
+        // internalValue meant a page reload before the next Save silently
+        // stranded the just-created Task with no matching checkbox line.
+        return saveMarkdownWithImages({
+          recordId: this.recordId,
+          objectApiName: this.objectApiName,
+          fieldApiName: this.normalizedFieldApiName,
+          markdownContent: updatedMarkdown
+        });
+      })
+      .then((saved) => {
+        this._wiredMarkdownText = saved;
+        getRecordNotifyChange([{ recordId: this.recordId }]);
         if (this.isEmbedded) {
           this.dispatchEvent(
             new CustomEvent("checklisttaskcreated", {
-              detail: { updatedMarkdown, task }
+              detail: { updatedMarkdown: saved, task: createdTask }
             })
           );
-        } else {
-          return saveMarkdownWithImages({
-            recordId: this.recordId,
-            objectApiName: this.objectApiName,
-            fieldApiName: this.normalizedFieldApiName,
-            markdownContent: updatedMarkdown
-          }).then((saved) => {
-            this._wiredMarkdownText = saved;
-            getRecordNotifyChange([{ recordId: this.recordId }]);
-          });
         }
-        return undefined;
       })
       .then(() => {
         this.dispatchEvent(

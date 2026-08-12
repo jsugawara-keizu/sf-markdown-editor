@@ -206,7 +206,12 @@ describe("c-markdown-checklist-panel", () => {
     expect(el.shadowRoot.textContent).toContain("orphaned task");
   });
 
-  it("dispatches checklisttaskcreated with the marker-inserted markdown in embedded mode", async () => {
+  it("persists immediately via saveMarkdownWithImages and dispatches checklisttaskcreated in embedded mode", async () => {
+    // Regression test: creating a Task must persist the marker-inserted
+    // markdown right away even when embedded in markdownEditor, not just
+    // update the host's unsaved internalValue — otherwise a page reload
+    // before the next manual Save silently loses the marker while the Task
+    // itself remains, stranding it as an orphan row.
     getTasksForField.mockResolvedValue([]);
     createTaskForCheckbox.mockResolvedValue({
       id: "00T000000000003AAA",
@@ -217,6 +222,9 @@ describe("c-markdown-checklist-panel", () => {
       ownerName: "Jane Doe",
       markdownMarkerId: "aaaaaa"
     });
+    saveMarkdownWithImages.mockImplementation(({ markdownContent }) =>
+      Promise.resolve(markdownContent)
+    );
 
     const el = createElement("c-markdown-checklist-panel", {
       is: MarkdownChecklistPanel
@@ -242,11 +250,23 @@ describe("c-markdown-checklist-panel", () => {
         ownerId: "005000000000001AAA"
       })
     );
+    expect(saveMarkdownWithImages).toHaveBeenCalledWith(
+      expect.objectContaining({
+        recordId: "001000000000001AAA",
+        objectApiName: "Account",
+        fieldApiName: "Description",
+        markdownContent: expect.stringMatching(
+          /^- \[ \] first item \^\[todo:[0-9a-f]{6}\]$/
+        )
+      })
+    );
+    expect(getRecordNotifyChange).toHaveBeenCalledWith([
+      { recordId: "001000000000001AAA" }
+    ]);
     expect(handler).toHaveBeenCalledTimes(1);
     expect(handler.mock.calls[0][0].detail.updatedMarkdown).toMatch(
       /^- \[ \] first item \^\[todo:[0-9a-f]{6}\]$/
     );
-    expect(saveMarkdownWithImages).not.toHaveBeenCalled();
   });
 
   it("persists via saveMarkdownWithImages instead of dispatching in standalone mode", async () => {

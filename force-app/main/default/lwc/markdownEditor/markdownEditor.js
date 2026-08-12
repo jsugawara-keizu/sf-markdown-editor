@@ -612,12 +612,18 @@ export default class MarkdownEditor extends LightningElement {
   }
 
   handleChecklistTaskCreated(event) {
+    // markdownChecklistPanel already persisted this value via
+    // saveMarkdownWithImages before dispatching — mirror it into
+    // internalValue as an already-saved state (isDirty stays false, like
+    // wiredRecord's own updates) rather than marking it as a pending edit
+    // that would depend on this editor's separate Save button.
     const { updatedMarkdown } = event.detail;
     if (updatedMarkdown === this.internalValue) {
       return;
     }
     this.internalValue = updatedMarkdown;
-    this.isDirty = true;
+    this.editStartValue = updatedMarkdown;
+    this.isDirty = false;
     this.recordHistory(this.internalValue, 0, 0);
   }
 
