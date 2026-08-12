@@ -51,7 +51,7 @@
 
 - **翻訳カバレッジ**: ラベルを追加・変更した際は `ja.translation-meta.xml` / `en_US.translation-meta.xml` の両方を更新する。既存の欠落（上記「既知の制約 #5」）は計画的に埋めることを推奨する。
 - **`manifest/package.xml` の網羅性**: 新規メタデータ追加時は必ず追記し、dry-run で確認する（[deployment.md](deployment.md#manifestpackagexml-の保守)）。
-- **開発元リポジトリと各 Sandbox（hk.issue 等）の乖離**: デプロイ後は必ず Sandbox 側リポジトリにも最新状態を反映してコミットする運用を継続する（[deployment.md](deployment.md#開発元リポジトリからの複数-sandbox-展開hkissue-等)）。
+- **開発元リポジトリと各利用組織の Sandbox の乖離**: デプロイ後は必ず利用組織側リポジトリにも最新状態を反映してコミットする運用を継続する（[deployment.md](deployment.md#開発元リポジトリからの複数-sandbox-展開)）。
 
 ## バックログ
 

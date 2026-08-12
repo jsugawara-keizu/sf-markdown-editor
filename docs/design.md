@@ -151,7 +151,7 @@ _図: 画像埋め込み保存とチェックリスト同期の一連の流れ�
 
 ### `Activity` エンティティ経由でのフィールド追加
 
-`Task`/`Event` に直接カスタム項目を追加しようとすると、Metadata API・Tooling API のいずれでも `INVALID_OR_NULL_FOR_RESTRICTED_PICKLIST` エラーになる（hk.issue org 固有の制約として判明）。回避策として、`Task`/`Event` 共通のフィールドコンテナである `Activity` エンティティ（`force-app/main/default/objects/Activity/fields/`）経由でカスタム項目（`MarkdownMarkerId__c` / `MarkdownFieldApiName__c`）を追加している。Apex コード上は変更なく `Task.MarkdownMarkerId__c` として参照できる。
+`Task`/`Event` に直接カスタム項目を追加しようとすると、Metadata API・Tooling API のいずれでも `INVALID_OR_NULL_FOR_RESTRICTED_PICKLIST` エラーになる（一部の利用組織で固有の制約として判明）。回避策として、`Task`/`Event` 共通のフィールドコンテナである `Activity` エンティティ（`force-app/main/default/objects/Activity/fields/`）経由でカスタム項目（`MarkdownMarkerId__c` / `MarkdownFieldApiName__c`）を追加している。Apex コード上は変更なく `Task.MarkdownMarkerId__c` として参照できる。
 
 ### バルク処理の考慮
 
