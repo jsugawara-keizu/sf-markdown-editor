@@ -1,5 +1,7 @@
 # sf-markdown-editor
 
+A Salesforce Lightning Web Component (LWC) suite for editing and rendering Markdown directly on record pages — with image upload, checklist-to-Task sync, and Marp/Mermaid rendering.
+
 `sf-markdown-editor` は Salesforce 上で Markdown 編集と表示を提供する LWC ベースのリポジトリです。
 
 ## 概要
