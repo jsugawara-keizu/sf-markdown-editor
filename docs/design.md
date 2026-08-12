@@ -85,7 +85,7 @@ sequenceDiagram
     participant TaskSync as MarkdownTaskSync
 
     LWC->>Apex: saveMarkdownWithImages(recordId, objectApiName, fieldApiName, markdown)
-    Apex->>Apex: extractDataUris() で data:image/...;base64,... を走査
+    Apex->>Apex: "extractDataUris() で data:image/...;base64,... を走査"
     Apex->>Apex: validateEmbeddedImages()（MIME許可リスト・サイズ上限）
     loop 画像ごと
         Apex->>Apex: checkRuntimeLimits()（CPU時間・ヒープ）
@@ -174,9 +174,30 @@ TypeScript で実装された Markdown 処理パイプラインで、Vite によ
 
 ### レンダリングパイプライン
 
-remark（Markdown パース）→ remark-gfm/remark-breaks/remark-math → remark-rehype（`allowDangerousHtml: true`）→ rehype-raw → rehype-slug → rehype-highlight → rehype-katex → 自前の `rehypeMakeCheckboxesInteractive`（チェックボックスの `disabled` 解除・`data-md-line` 付与）→ **`rehypeSanitize`（サニタイズ）** → 自前の `rehypeSanitizeStyleContent`（`<style>` 内の `url()`/`@import`/`expression()` 除去）→ rehype-stringify。
+```mermaid
+flowchart TD
+    Parse["remarkParse<br/>Markdown を AST 化"] --> Gfm["remarkGfm<br/>表・打消し線・タスクリスト"]
 
-非同期版（`renderMarkdownAsync`、`markdownViewer` が使用）は、この途中で mermaid コードブロックを SVG に変換するステップを挟む。同期版（`renderMarkdown`）は mermaid ブロックを未変換のまま出力する。
+    Gfm -->|"同期版 renderMarkdown"| Breaks["remarkBreaks"]
+    Breaks --> Math["remarkMath"]
+    Math --> Rehype["remarkRehype<br/>allowDangerousHtml=true"]
+
+    Gfm -->|"非同期版 renderMarkdownAsync"| Mermaid["transformMermaidCodeBlocks<br/>mermaid コードブロックを<br/>SVGへ変換（mdast上で実施）"]
+    Mermaid --> Rehype
+
+    Rehype --> Raw["rehypeRaw"]
+    Raw --> Slug["rehypeSlug"]
+    Slug --> Highlight["rehypeHighlight"]
+    Highlight --> Katex["rehypeKatex"]
+    Katex --> Checkbox["rehypeMakeCheckboxesInteractive<br/>チェックボックスの disabled 解除<br/>data-md-line 付与"]
+    Checkbox --> Sanitize["rehypeSanitize<br/>サニタイズ（セキュリティの中核）"]
+    Sanitize --> StyleClean["rehypeSanitizeStyleContent<br/>style内の url()/@import 除去"]
+    StyleClean --> Stringify["rehype-stringify<br/>HTML文字列を出力"]
+```
+
+_図: Markdown→HTML変換パイプライン。GFM 変換後、同期版（`renderMarkdown`）は `remarkBreaks`/`remarkMath` を経て変換するのに対し、非同期版（`renderMarkdownAsync`、`markdownViewer` が使用）はその代わりに mermaid コードブロックを mdast 上で SVG に変換するステップ（`transformMermaidCodeBlocks`）を挟んでから同じ後段（`remarkRehype` 以降）に合流する。そのため非同期版では `remarkBreaks`/`remarkMath` は適用されない。_
+
+同期版（`renderMarkdown`）は mermaid ブロックを未変換のまま出力する（コードブロックとして表示される）。
 
 ### サニタイズ設計（セキュリティの中核）
 
