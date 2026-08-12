@@ -15,8 +15,24 @@
   - Markdown 編集用 LWC
 - `force-app/main/default/lwc/markdownViewer`
   - Markdown 表示用 LWC
+- `force-app/main/default/lwc/marpViewer`
+  - Marp スライド表示用 LWC（`MarpRenderer.page` を iframe で読み込む）
+- `force-app/main/default/lwc/markdownChecklistPanel`
+  - Markdown 内チェックボックスの一覧・Task 作成用 LWC（`markdownEditor` へ埋め込み、または単体配置）
+- `force-app/main/default/lwc/markdownTaskPreview`
+  - `markdownChecklistPanel` 用のホバー/タップ編集ポップオーバー（非公開サブコンポーネント）
 - `force-app/main/default/classes`
   - Apex 保存ロジック `MarkdownImageHandler` / `MarkdownImageHandlerTest`
+  - Task 連携 `MarkdownTaskSync` / `MarkdownTaskSyncTest`
+  - Task→Markdown 同期の Trigger ハンドラー `MarkdownTaskTriggerHandler` / `MarkdownTaskTriggerHandlerTest`
+  - 動的フィールドアクセスの共通処理 `MarkdownRecordFieldAccessor`
+- `force-app/main/default/triggers`
+  - `MarkdownTaskTrigger`（Task の Status 変更を Markdown チェックボックスへ反映）
+- `force-app/main/default/objects/Activity/fields`
+  - `MarkdownMarkerId__c` / `MarkdownFieldApiName__c`（Task/Event 共通のチェックリスト連携用カスタム項目。Task/Event へは直接追加できないため `Activity` エンティティ経由で追加している）
+- `force-app/main/default/pages`
+  - `MarpRenderer`（Marp スライド描画用 VF ページ）
+  - `MermaidRenderer`（Mermaid 図描画用 VF ページ。LWS 配下での描画負荷回避のため）
 - `force-app/main/default/labels`
   - カスタムラベル定義
 - `force-app/main/default/translations`
@@ -25,12 +41,15 @@
   - `MarkdownEditorViewerAccess`
 - `force-app/main/default/permissionsets`
   - `MarkdownEditorViewer`
+  - `MarkdownTaskSync`（`Activity` カスタム項目2件・`MarkdownTaskSync` クラスへのアクセス権）
 - `force-app/main/default/staticresources`
-  - `markdownCore` / `mermaidJs`
+  - `markdownCore` / `marpCore` / `mermaidJs`
 - `packages/markdown-core`
-  - Markdown 解析・レンダリング・サニタイズの共通ロジック
+  - Markdown 解析・レンダリング・サニタイズ・チェックリスト抽出の共通ロジック
 - `manifest/package.xml`
-  - デプロイ対象メタデータをまとめたパッケージマニフェスト
+  - デプロイ対象メタデータをまとめたパッケージマニフェスト（翻訳を除く。新規コンポーネント追加時は都度更新すること — 詳細は下記「manifest/package.xml の保守」参照）
+- `manifest/package_lang-ja.xml` / `manifest/package_lang-en_US.xml`
+  - 翻訳（`Translations`）専用のデプロイマニフェスト
 
 ## ライセンス
 
@@ -123,4 +142,16 @@ sf project deploy start --manifest manifest/package_lang-en_US.xml --target-org 
 
 - カスタムラベル定義は `force-app/main/default/labels/CustomLabels.labels-meta.xml` にあります。
 - 翻訳ファイルは `force-app/main/default/translations/en_US.translation` および `force-app/main/default/translations/ja.translation` にあります。
-- `manifest/package.xml` には Apex クラス、LWC、静的リソース、カスタムラベル、翻訳、パーミッションセット、カスタムパーミッションが含まれます。
+- `manifest/package.xml` には Apex クラス、LWC、静的リソース、カスタムラベル、パーミッションセット、カスタムパーミッションが含まれます（翻訳は含みません。上記「Salesforce へのデプロイ」ステップ2の `package_lang-*.xml` で別途管理）。
+
+### manifest/package.xml の保守
+
+新規コンポーネント（Apex クラス・Trigger・カスタム項目・LWC バンドル・PermissionSet・ApexPage 等）を追加した際は、`manifest/package.xml` にも都度追記すること。追記漏れがあっても deploy 自体は `--source-dir` 指定なら成功するため気づきにくいが、この manifest を使った参照デプロイ（`sf project deploy start --manifest manifest/package.xml`）でサイレントに欠落する。
+
+追記後は dry-run で実ファイルへの解決を確認する。
+
+```bash
+sf project deploy start --manifest manifest/package.xml --target-org <alias> --dry-run
+```
+
+> **注意**: 翻訳（`Translations`）は `package.xml` に追加しないこと。Translation Workbench が無効な環境で通常デプロイが失敗する原因になるため、`package_lang-ja.xml` / `package_lang-en_US.xml` 側で管理する。
