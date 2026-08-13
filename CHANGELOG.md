@@ -1,3 +1,9 @@
+## [1.0.1](https://github.com/jsugawara-keizu/sf-markdown-editor/compare/v1.0.0...v1.0.1) (2026-08-13)
+
+### Bug Fixes
+
+- **test:** MarkdownTaskSyncTestのAccount名を一意化し重複ルール抵触を回避 ([2077291](https://github.com/jsugawara-keizu/sf-markdown-editor/commit/20772916b1222355be4a0f25a432a8ffae2c3eaa))
+
 ## 1.0.0 (2026-08-12)
 
 ### Features
