@@ -97,6 +97,28 @@ describe("c-markdown-editor", () => {
     expect(el.shadowRoot.querySelector("textarea")).toBeNull();
   });
 
+  it("shows the checklist panel for a Marp doc switched to normal preview", async () => {
+    const el = createElement("c-markdown-editor", { is: MarkdownEditor });
+    el.defaultMode = "preview";
+    el.value = "---\nmarp: true\n---\n\n- [ ] task";
+    document.body.appendChild(el);
+    await Promise.resolve();
+
+    // marpViewer defaults to slide mode on large form factors in this test
+    // environment, so simulate the user switching it back to the normal
+    // (non-slide) document preview via its slidemodechange event.
+    const marpViewer = el.shadowRoot.querySelector("c-marp-viewer");
+    marpViewer.dispatchEvent(
+      new CustomEvent("slidemodechange", { detail: { isSlideMode: false } })
+    );
+    await Promise.resolve();
+
+    expect(
+      el.shadowRoot.querySelector("c-markdown-checklist-panel")
+    ).not.toBeNull();
+    expect(el.shadowRoot.querySelector("c-markdown-viewer")).not.toBeNull();
+  });
+
   it("does not merge fenced code block lines containing pipes", () => {
     const input = "```\n| foo |\n| bar |\n```\n\n| col1 |\n| --- |\n| val |";
     expect(fixMarkdownTables(input)).toBe(input);

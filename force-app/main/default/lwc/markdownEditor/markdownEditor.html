@@ -267,7 +267,7 @@
             value={internalValue}
             onslidemodechange={handleMarpSlideModeChange}
           ></c-marp-viewer>
-          <template lwc:if={hasMarp}></template>
+          <template lwc:if={isMarpSlideView}></template>
           <template lwc:else>
             <c-markdown-viewer
               value={internalValue}

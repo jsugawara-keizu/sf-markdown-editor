@@ -423,6 +423,14 @@ export default class MarkdownEditor extends LightningElement {
     return this.isPreviewMode && !(this.hasMarp && this._marpSlideMode);
   }
 
+  get isMarpSlideView() {
+    // True only while a Marp doc is actively showing its slide sub-view.
+    // Used to hide markdown-viewer/checklist-panel (which marpViewer already
+    // renders internally in slide mode) without hiding them for Marp docs
+    // switched back to the normal/document preview.
+    return this.hasMarp && this._marpSlideMode;
+  }
+
   handleMarpSlideModeChange(event) {
     this._marpSlideMode = event.detail.isSlideMode;
   }
