@@ -1,7 +1,12 @@
 @IsTest
 private class MarkdownTaskSyncTest {
+  private static Integer accountCounter = 0;
+
   private static Account makeAccount() {
-    Account a = new Account(Name = 'Markdown Task Sync Test Account');
+    accountCounter++;
+    Account a = new Account(
+      Name = 'Markdown Task Sync Test Account ' + accountCounter
+    );
     insert a;
     return a;
   }
