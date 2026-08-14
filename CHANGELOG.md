@@ -1,3 +1,13 @@
+## [1.1.0](https://github.com/jsugawara-keizu/sf-markdown-editor/compare/v1.0.1...v1.1.0) (2026-08-14)
+
+### Features
+
+- markdownChecklistPanel - タスク登録時に期日(ActivityDate)を指定可能にする ([0197220](https://github.com/jsugawara-keizu/sf-markdown-editor/commit/01972203d8c949298e1c771af5100e532a83c62a))
+
+### Bug Fixes
+
+- Marp文書を通常プレビューに切替時にチェックリストパネルが表示されない不具合を修正 ([9b7dcca](https://github.com/jsugawara-keizu/sf-markdown-editor/commit/9b7dcca9354438107b97a351a1809bc0fa5ced63))
+
 ## [1.0.1](https://github.com/jsugawara-keizu/sf-markdown-editor/compare/v1.0.0...v1.0.1) (2026-08-13)
 
 ### Bug Fixes
