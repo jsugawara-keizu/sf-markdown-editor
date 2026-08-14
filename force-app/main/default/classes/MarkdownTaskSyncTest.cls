@@ -32,7 +32,8 @@ private class MarkdownTaskSyncTest {
       'aaaaaa',
       'first item',
       false,
-      UserInfo.getUserId()
+      UserInfo.getUserId(),
+      null
     );
     MarkdownTaskSync.createTaskForCheckbox(
       a.Id,
@@ -40,7 +41,8 @@ private class MarkdownTaskSyncTest {
       'bbbbbb',
       'different field',
       false,
-      UserInfo.getUserId()
+      UserInfo.getUserId(),
+      null
     );
     MarkdownTaskSync.createTaskForCheckbox(
       other.Id,
@@ -48,7 +50,8 @@ private class MarkdownTaskSyncTest {
       'cccccc',
       'different record',
       false,
-      UserInfo.getUserId()
+      UserInfo.getUserId(),
+      null
     );
 
     Test.startTest();
@@ -97,7 +100,8 @@ private class MarkdownTaskSyncTest {
       'dead01',
       'review docs',
       true,
-      UserInfo.getUserId()
+      UserInfo.getUserId(),
+      null
     );
     Test.stopTest();
 
@@ -127,11 +131,54 @@ private class MarkdownTaskSyncTest {
       'cafe02',
       'not done yet',
       false,
-      UserInfo.getUserId()
+      UserInfo.getUserId(),
+      null
     );
     Test.stopTest();
 
     System.assertEquals(false, row.isClosed);
+  }
+
+  @IsTest
+  static void createTaskForCheckbox_withDueDate_setsActivityDate() {
+    Account a = makeAccount();
+    Date dueDate = Date.today().addDays(7);
+
+    Test.startTest();
+    MarkdownTaskSync.TaskRow row = MarkdownTaskSync.createTaskForCheckbox(
+      a.Id,
+      'Markdown__c',
+      'face03',
+      'ship the feature',
+      false,
+      UserInfo.getUserId(),
+      dueDate
+    );
+    Test.stopTest();
+
+    System.assertEquals(dueDate, row.dueDate);
+
+    Task reloaded = [SELECT ActivityDate FROM Task WHERE Id = :row.id];
+    System.assertEquals(dueDate, reloaded.ActivityDate);
+  }
+
+  @IsTest
+  static void createTaskForCheckbox_withoutDueDate_leavesActivityDateNull() {
+    Account a = makeAccount();
+
+    Test.startTest();
+    MarkdownTaskSync.TaskRow row = MarkdownTaskSync.createTaskForCheckbox(
+      a.Id,
+      'Markdown__c',
+      'face04',
+      'no deadline yet',
+      false,
+      UserInfo.getUserId(),
+      null
+    );
+    Test.stopTest();
+
+    System.assertEquals(null, row.dueDate);
   }
 
   @IsTest
@@ -145,7 +192,8 @@ private class MarkdownTaskSyncTest {
         'aaaaaa',
         '',
         false,
-        UserInfo.getUserId()
+        UserInfo.getUserId(),
+        null
       );
     } catch (AuraHandledException e) {
       threw = true;
@@ -164,7 +212,8 @@ private class MarkdownTaskSyncTest {
         '',
         'subject',
         false,
-        UserInfo.getUserId()
+        UserInfo.getUserId(),
+        null
       );
     } catch (AuraHandledException e) {
       threw = true;
@@ -182,7 +231,8 @@ private class MarkdownTaskSyncTest {
         'aaaaaa',
         'subject',
         false,
-        UserInfo.getUserId()
+        UserInfo.getUserId(),
+        null
       );
     } catch (AuraHandledException e) {
       threw = true;
@@ -199,7 +249,8 @@ private class MarkdownTaskSyncTest {
       'ab12cd',
       'review docs',
       false,
-      UserInfo.getUserId()
+      UserInfo.getUserId(),
+      null
     );
 
     Test.startTest();
@@ -223,7 +274,8 @@ private class MarkdownTaskSyncTest {
       'ab12ce',
       'review docs',
       true,
-      UserInfo.getUserId()
+      UserInfo.getUserId(),
+      null
     );
 
     Test.startTest();
@@ -247,7 +299,8 @@ private class MarkdownTaskSyncTest {
       'ab12cf',
       'review docs',
       true,
-      UserInfo.getUserId()
+      UserInfo.getUserId(),
+      null
     );
 
     Test.startTest();

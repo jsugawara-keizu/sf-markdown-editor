@@ -18,6 +18,7 @@ import OPEN_LABEL from "@salesforce/label/c.MarkdownChecklistOpenLabel";
 import ORPHAN_LABEL from "@salesforce/label/c.MarkdownChecklistOrphanLabel";
 import CREATE_TASK_BUTTON_LABEL from "@salesforce/label/c.MarkdownChecklistCreateTaskButtonLabel";
 import ASSIGNEE_LABEL from "@salesforce/label/c.MarkdownChecklistAssigneeLabel";
+import DUE_DATE_LABEL from "@salesforce/label/c.MarkdownChecklistDueDateLabel";
 import EMPTY_STATE_LABEL from "@salesforce/label/c.MarkdownChecklistEmptyStateLabel";
 import CREATE_ERROR_TITLE from "@salesforce/label/c.MarkdownChecklistCreateErrorTitle";
 import CREATE_SUCCESS_TITLE from "@salesforce/label/c.MarkdownChecklistCreateSuccessTitle";
@@ -38,6 +39,7 @@ const LABELS = {
   orphan: ORPHAN_LABEL,
   createTaskButton: CREATE_TASK_BUTTON_LABEL,
   assignee: ASSIGNEE_LABEL,
+  dueDate: DUE_DATE_LABEL,
   emptyState: EMPTY_STATE_LABEL,
   createErrorTitle: CREATE_ERROR_TITLE,
   createSuccessTitle: CREATE_SUCCESS_TITLE,
@@ -112,6 +114,7 @@ export default class MarkdownChecklistPanel extends LightningElement {
   // every time regardless of this value.
   @track _coreReady = false;
   _selectedOwnerByLine = new Map();
+  _selectedDueDateByLine = new Map();
   _corePollTimer = null;
 
   // Hover/focus preview (ported from sf-gantt-lwc's ganttChart +
@@ -343,7 +346,8 @@ export default class MarkdownChecklistPanel extends LightningElement {
           // deleted directly (not through this panel) — reused on Create
           // Task instead of appending a second marker to the same line.
           markerId: item.markerId,
-          ownerId: this._selectedOwnerByLine.get(item.line) || USER_ID
+          ownerId: this._selectedOwnerByLine.get(item.line) || USER_ID,
+          dueDate: this._selectedDueDateByLine.get(item.line) || null
         });
       }
     });
@@ -393,6 +397,16 @@ export default class MarkdownChecklistPanel extends LightningElement {
       this._selectedOwnerByLine.set(line, ownerId);
     } else {
       this._selectedOwnerByLine.delete(line);
+    }
+  }
+
+  handleDueDateChange(event) {
+    const line = Number(event.currentTarget.dataset.line);
+    const dueDate = event.detail.value;
+    if (dueDate) {
+      this._selectedDueDateByLine.set(line, dueDate);
+    } else {
+      this._selectedDueDateByLine.delete(line);
     }
   }
 
@@ -507,7 +521,8 @@ export default class MarkdownChecklistPanel extends LightningElement {
       markerId,
       subject: row.text,
       checked: row.checked,
-      ownerId: row.ownerId
+      ownerId: row.ownerId,
+      dueDate: row.dueDate
     })
       .then((task) => {
         createdTask = task;

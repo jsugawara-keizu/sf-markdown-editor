@@ -59,6 +59,15 @@
                 data-line={row.line}
                 onchange={handleOwnerChange}
               ></lightning-record-picker>
+              <lightning-input
+                type="date"
+                class="md-checklist-due-date-picker"
+                label={labels.dueDate}
+                variant="label-hidden"
+                value={row.dueDate}
+                data-line={row.line}
+                onchange={handleDueDateChange}
+              ></lightning-input>
               <lightning-button
                 variant="brand"
                 label={labels.createTaskButton}

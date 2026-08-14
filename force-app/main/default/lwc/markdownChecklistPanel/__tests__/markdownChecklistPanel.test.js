@@ -488,7 +488,8 @@ describe("c-markdown-checklist-panel", () => {
         fieldApiName: "Description",
         subject: "first item",
         checked: false,
-        ownerId: "005000000000001AAA"
+        ownerId: "005000000000001AAA",
+        dueDate: null
       })
     );
     expect(saveMarkdownWithImages).toHaveBeenCalledWith(
@@ -507,6 +508,47 @@ describe("c-markdown-checklist-panel", () => {
     expect(handler).toHaveBeenCalledTimes(1);
     expect(handler.mock.calls[0][0].detail.updatedMarkdown).toMatch(
       /^- \[ \] first item \^\[todo:[0-9a-f]{6}\]$/
+    );
+  });
+
+  it("passes the picked due date through to createTaskForCheckbox", async () => {
+    getTasksForField.mockResolvedValue([]);
+    createTaskForCheckbox.mockResolvedValue({
+      id: "00T000000000006AAA",
+      subject: "first item",
+      status: "Not Started",
+      isClosed: false,
+      ownerId: "005000000000001AAA",
+      ownerName: "Jane Doe",
+      dueDate: "2026-09-01",
+      markdownMarkerId: "cccccc"
+    });
+    saveMarkdownWithImages.mockImplementation(({ markdownContent }) =>
+      Promise.resolve(markdownContent)
+    );
+
+    const el = createElement("c-markdown-checklist-panel", {
+      is: MarkdownChecklistPanel
+    });
+    el.recordId = "001000000000001AAA";
+    el.objectApiName = "Account";
+    el.fieldApiName = "Description";
+    el.markdownText = "- [ ] first item";
+    document.body.appendChild(el);
+    await flushPromises();
+
+    const dueDateInput = el.shadowRoot.querySelector(
+      'lightning-input[data-line="1"]'
+    );
+    dueDateInput.dispatchEvent(
+      new CustomEvent("change", { detail: { value: "2026-09-01" } })
+    );
+
+    el.shadowRoot.querySelector('lightning-button[data-line="1"]').click();
+    await flushPromises();
+
+    expect(createTaskForCheckbox).toHaveBeenCalledWith(
+      expect.objectContaining({ dueDate: "2026-09-01" })
     );
   });
 

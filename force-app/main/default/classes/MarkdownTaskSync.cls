@@ -13,7 +13,7 @@ public with sharing class MarkdownTaskSync {
       // Tasks whose checkbox line has since been deleted from the Markdown
       // source are still returned as "orphaned" rows rather than dropped.
       List<Task> tasks = [
-        SELECT Id, Subject, Status, IsClosed, OwnerId, Owner.Name, MarkdownMarkerId__c
+        SELECT Id, Subject, Status, IsClosed, OwnerId, Owner.Name, ActivityDate, MarkdownMarkerId__c
         FROM Task
         WHERE WhatId = :whatId AND MarkdownFieldApiName__c = :fieldApiName
         WITH USER_MODE
@@ -41,7 +41,8 @@ public with sharing class MarkdownTaskSync {
     String markerId,
     String subject,
     Boolean checked,
-    Id ownerId
+    Id ownerId,
+    Date dueDate
   ) {
     try {
       if (whatId == null) {
@@ -61,6 +62,7 @@ public with sharing class MarkdownTaskSync {
         WhatId = whatId,
         Subject = subject,
         OwnerId = ownerId,
+        ActivityDate = dueDate,
         IsReminderSet = false,
         MarkdownMarkerId__c = markerId,
         MarkdownFieldApiName__c = fieldApiName
@@ -70,7 +72,7 @@ public with sharing class MarkdownTaskSync {
       insert as user t;
 
       Task reloaded = [
-        SELECT Id, Subject, Status, IsClosed, OwnerId, Owner.Name, MarkdownMarkerId__c
+        SELECT Id, Subject, Status, IsClosed, OwnerId, Owner.Name, ActivityDate, MarkdownMarkerId__c
         FROM Task
         WHERE Id = :t.Id
         WITH USER_MODE
@@ -205,6 +207,8 @@ public with sharing class MarkdownTaskSync {
     @AuraEnabled
     public String ownerName;
     @AuraEnabled
+    public Date dueDate;
+    @AuraEnabled
     public String markdownMarkerId;
 
     public TaskRow(Task t) {
@@ -214,6 +218,7 @@ public with sharing class MarkdownTaskSync {
       this.isClosed = t.IsClosed;
       this.ownerId = t.OwnerId;
       this.ownerName = t.Owner != null ? t.Owner.Name : null;
+      this.dueDate = t.ActivityDate;
       this.markdownMarkerId = t.MarkdownMarkerId__c;
     }
   }

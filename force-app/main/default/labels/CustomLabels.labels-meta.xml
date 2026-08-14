@@ -555,6 +555,13 @@
         <value>Assignee</value>
     </labels>
     <labels>
+        <fullName>MarkdownChecklistDueDateLabel</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Checklist: due date picker label</shortDescription>
+        <value>Due Date</value>
+    </labels>
+    <labels>
         <fullName>MarkdownChecklistEmptyStateLabel</fullName>
         <language>en_US</language>
         <protected>false</protected>

@@ -114,3 +114,7 @@
 .md-checklist-owner-picker {
   width: 12rem;
 }
+
+.md-checklist-due-date-picker {
+  width: 9rem;
+}
