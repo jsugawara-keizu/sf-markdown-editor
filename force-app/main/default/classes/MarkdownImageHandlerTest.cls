@@ -468,7 +468,8 @@ private class MarkdownImageHandlerTest {
       'ab12cd',
       'review docs',
       false,
-      UserInfo.getUserId()
+      UserInfo.getUserId(),
+      null
     );
 
     Test.startTest();
@@ -501,7 +502,8 @@ private class MarkdownImageHandlerTest {
       'ab12ce',
       'review docs',
       false,
-      UserInfo.getUserId()
+      UserInfo.getUserId(),
+      null
     );
 
     Test.startTest();
