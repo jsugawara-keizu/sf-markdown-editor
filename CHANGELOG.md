@@ -1,3 +1,9 @@
+## [1.1.1](https://github.com/jsugawara-keizu/sf-markdown-editor/compare/v1.1.0...v1.1.1) (2026-08-17)
+
+### Bug Fixes
+
+- **test:** メソッドシグネチャ変更に合わせてテストの引数を更新 ([dd0025e](https://github.com/jsugawara-keizu/sf-markdown-editor/commit/dd0025e5dca2d94ebeaa43687f2284a83dbbc3ed))
+
 ## [1.1.0](https://github.com/jsugawara-keizu/sf-markdown-editor/compare/v1.0.1...v1.1.0) (2026-08-14)
 
 ### Features
