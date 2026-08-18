@@ -13,7 +13,8 @@ public with sharing class MarkdownTaskSync {
       // Tasks whose checkbox line has since been deleted from the Markdown
       // source are still returned as "orphaned" rows rather than dropped.
       List<Task> tasks = [
-        SELECT Id, Subject, Status, IsClosed, OwnerId, Owner.Name, ActivityDate, MarkdownMarkerId__c
+        SELECT Id, Subject, Status, IsClosed, OwnerId, Owner.Name, ActivityDate,
+          IsReminderSet, ReminderDateTime, MarkdownMarkerId__c
         FROM Task
         WHERE WhatId = :whatId AND MarkdownFieldApiName__c = :fieldApiName
         WITH USER_MODE
@@ -34,7 +35,9 @@ public with sharing class MarkdownTaskSync {
     }
   }
 
-  @AuraEnabled
+  // Plain (non-AuraEnabled) overload kept for callers that don't need
+  // reminder support — mainly existing Apex tests, so they don't all have
+  // to grow two more positional args unrelated to what they're verifying.
   public static TaskRow createTaskForCheckbox(
     Id whatId,
     String fieldApiName,
@@ -43,6 +46,31 @@ public with sharing class MarkdownTaskSync {
     Boolean checked,
     Id ownerId,
     Date dueDate
+  ) {
+    return createTaskForCheckbox(
+      whatId,
+      fieldApiName,
+      markerId,
+      subject,
+      checked,
+      ownerId,
+      dueDate,
+      false,
+      null
+    );
+  }
+
+  @AuraEnabled
+  public static TaskRow createTaskForCheckbox(
+    Id whatId,
+    String fieldApiName,
+    String markerId,
+    String subject,
+    Boolean checked,
+    Id ownerId,
+    Date dueDate,
+    Boolean isReminderSet,
+    Datetime reminderDateTime
   ) {
     try {
       if (whatId == null) {
@@ -58,12 +86,18 @@ public with sharing class MarkdownTaskSync {
         throw new MarkdownTaskSyncException('subject is required.');
       }
 
+      // IsReminderSet=true with a null ReminderDateTime fails Salesforce's
+      // own standard validation on Task ("reminder date/time" required), so
+      // the reminder is only actually turned on when a datetime came with it.
+      Boolean reminderSet = isReminderSet == true && reminderDateTime != null;
+
       Task t = new Task(
         WhatId = whatId,
         Subject = subject,
         OwnerId = ownerId,
         ActivityDate = dueDate,
-        IsReminderSet = false,
+        IsReminderSet = reminderSet,
+        ReminderDateTime = reminderSet ? reminderDateTime : null,
         MarkdownMarkerId__c = markerId,
         MarkdownFieldApiName__c = fieldApiName
       );
@@ -72,7 +106,8 @@ public with sharing class MarkdownTaskSync {
       insert as user t;
 
       Task reloaded = [
-        SELECT Id, Subject, Status, IsClosed, OwnerId, Owner.Name, ActivityDate, MarkdownMarkerId__c
+        SELECT Id, Subject, Status, IsClosed, OwnerId, Owner.Name, ActivityDate,
+          IsReminderSet, ReminderDateTime, MarkdownMarkerId__c
         FROM Task
         WHERE Id = :t.Id
         WITH USER_MODE
@@ -209,6 +244,10 @@ public with sharing class MarkdownTaskSync {
     @AuraEnabled
     public Date dueDate;
     @AuraEnabled
+    public Boolean isReminderSet;
+    @AuraEnabled
+    public Datetime reminderDateTime;
+    @AuraEnabled
     public String markdownMarkerId;
 
     public TaskRow(Task t) {
@@ -219,6 +258,8 @@ public with sharing class MarkdownTaskSync {
       this.ownerId = t.OwnerId;
       this.ownerName = t.Owner != null ? t.Owner.Name : null;
       this.dueDate = t.ActivityDate;
+      this.isReminderSet = t.IsReminderSet;
+      this.reminderDateTime = t.ReminderDateTime;
       this.markdownMarkerId = t.MarkdownMarkerId__c;
     }
   }

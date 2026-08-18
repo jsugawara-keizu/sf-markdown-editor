@@ -346,6 +346,14 @@
         <label>期日</label>
     </customLabels>
     <customLabels>
+        <name>MarkdownChecklistReminderLabel</name>
+        <label>リマインダー</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownChecklistReminderDateTimeLabel</name>
+        <label>リマインド日時</label>
+    </customLabels>
+    <customLabels>
         <name>MarkdownSaveErrorTitle</name>
         <label>保存失敗</label>
     </customLabels>

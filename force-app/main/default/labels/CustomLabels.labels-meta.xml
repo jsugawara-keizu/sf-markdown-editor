@@ -562,6 +562,20 @@
         <value>Due Date</value>
     </labels>
     <labels>
+        <fullName>MarkdownChecklistReminderLabel</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Checklist: reminder toggle label</shortDescription>
+        <value>Reminder</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownChecklistReminderDateTimeLabel</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Checklist: reminder datetime picker label</shortDescription>
+        <value>Reminder Date/Time</value>
+    </labels>
+    <labels>
         <fullName>MarkdownChecklistEmptyStateLabel</fullName>
         <language>en_US</language>
         <protected>false</protected>

@@ -318,6 +318,14 @@
         <label>Due Date</label>
     </customLabels>
     <customLabels>
+        <name>MarkdownChecklistReminderLabel</name>
+        <label>Reminder</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownChecklistReminderDateTimeLabel</name>
+        <label>Reminder Date/Time</label>
+    </customLabels>
+    <customLabels>
         <name>MarkdownChecklistEmptyStateLabel</name>
         <label>No checkboxes found in this document.</label>
     </customLabels>

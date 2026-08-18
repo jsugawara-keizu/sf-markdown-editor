@@ -57,9 +57,15 @@
   padding: 0;
 }
 
+/*
+ * 内容列（テキスト）とタスク作成エリア列（担当者・期日・リマインダー・ボタン）を
+ * 明確な2カラムに分離する。テキストの文字数で作成エリアの位置が動く表示ゆれ
+ * （Layout Shift）を防ぐのが目的（sf-markdown-editor/docs/backlog/10_user-feedback.md #1）。
+ * 作成エリア自体は必要に応じて内部で折り返す（.md-checklist-row-actions）。
+ */
 .md-checklist-row {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: minmax(8rem, 1fr) auto;
   align-items: center;
   gap: 0.5rem;
   padding: 0.4rem 0;
@@ -70,9 +76,24 @@
   border-bottom: none;
 }
 
+.md-checklist-row-content {
+  min-width: 0;
+}
+
 .md-checklist-row-text {
-  flex: 1 1 auto;
-  min-width: 8rem;
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.md-checklist-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 0 0 auto;
+  justify-content: flex-end;
 }
 
 .md-checklist-row-link {
@@ -117,4 +138,12 @@
 
 .md-checklist-due-date-picker {
   width: 9rem;
+}
+
+.md-checklist-reminder-toggle {
+  width: 3rem;
+}
+
+.md-checklist-reminder-datetime-picker {
+  width: 13rem;
 }

@@ -19,6 +19,8 @@ import ORPHAN_LABEL from "@salesforce/label/c.MarkdownChecklistOrphanLabel";
 import CREATE_TASK_BUTTON_LABEL from "@salesforce/label/c.MarkdownChecklistCreateTaskButtonLabel";
 import ASSIGNEE_LABEL from "@salesforce/label/c.MarkdownChecklistAssigneeLabel";
 import DUE_DATE_LABEL from "@salesforce/label/c.MarkdownChecklistDueDateLabel";
+import REMINDER_LABEL from "@salesforce/label/c.MarkdownChecklistReminderLabel";
+import REMINDER_DATETIME_LABEL from "@salesforce/label/c.MarkdownChecklistReminderDateTimeLabel";
 import EMPTY_STATE_LABEL from "@salesforce/label/c.MarkdownChecklistEmptyStateLabel";
 import CREATE_ERROR_TITLE from "@salesforce/label/c.MarkdownChecklistCreateErrorTitle";
 import CREATE_SUCCESS_TITLE from "@salesforce/label/c.MarkdownChecklistCreateSuccessTitle";
@@ -40,6 +42,8 @@ const LABELS = {
   createTaskButton: CREATE_TASK_BUTTON_LABEL,
   assignee: ASSIGNEE_LABEL,
   dueDate: DUE_DATE_LABEL,
+  reminder: REMINDER_LABEL,
+  reminderDateTime: REMINDER_DATETIME_LABEL,
   emptyState: EMPTY_STATE_LABEL,
   createErrorTitle: CREATE_ERROR_TITLE,
   createSuccessTitle: CREATE_SUCCESS_TITLE,
@@ -64,6 +68,25 @@ function randomMarkerId() {
   return Array.from({ length: 6 }, () =>
     Math.floor(Math.random() * 16).toString(16)
   ).join("");
+}
+
+const DEFAULT_REMINDER_LOCAL_TIME = "09:00:00";
+
+// dueDate is the plain "YYYY-MM-DD" string lightning-input type="date"
+// hands back. Parsed without a timezone suffix so the JS Date constructor
+// treats it as the browser's local time (this org's users are all in a
+// single timezone, JST) — toISOString() then gives the UTC value
+// lightning-input type="datetime" expects for its `value`, displaying back
+// as 09:00 local once round-tripped.
+function computeDefaultReminderDateTime(dueDate) {
+  if (!dueDate) {
+    return null;
+  }
+  const localDate = new Date(`${dueDate}T${DEFAULT_REMINDER_LOCAL_TIME}`);
+  if (Number.isNaN(localDate.getTime())) {
+    return null;
+  }
+  return localDate.toISOString();
 }
 
 export default class MarkdownChecklistPanel extends LightningElement {
@@ -115,6 +138,17 @@ export default class MarkdownChecklistPanel extends LightningElement {
   @track _coreReady = false;
   _selectedOwnerByLine = new Map();
   _selectedDueDateByLine = new Map();
+  _selectedReminderEnabledByLine = new Map();
+  _selectedReminderDateTimeByLine = new Map();
+  // Lines where the user has explicitly picked a reminder datetime — once a
+  // line is in here, a later due-date change must not clobber their choice
+  // with the auto-computed default (see handleDueDateChange).
+  _manualReminderDateTimeLines = new Set();
+  // Bumped whenever a reminder default is filled in programmatically (not by
+  // direct user input into that field), so `rows` — a plain getter over the
+  // Maps above — is known to depend on something reactive and re-renders.
+  // Same trick as `_coreReady` above.
+  @track _selectionVersion = 0;
   _corePollTimer = null;
 
   // Hover/focus preview (ported from sf-gantt-lwc's ganttChart +
@@ -301,6 +335,11 @@ export default class MarkdownChecklistPanel extends LightningElement {
     // flipping _coreReady from the poll in connectedCallback is a mutation
     // nothing is known to depend on, so it never triggers a re-render — the
     // getter silently keeps returning its first (empty) answer forever.
+    // Read (not otherwise used) so LWC's reactive dependency tracking
+    // associates this getter with `_selectionVersion` too — see its
+    // declaration above for why that's needed.
+    // eslint-disable-next-line no-unused-expressions
+    this._selectionVersion;
     if (!this._coreReady || typeof window === "undefined") {
       return [];
     }
@@ -347,7 +386,11 @@ export default class MarkdownChecklistPanel extends LightningElement {
           // Task instead of appending a second marker to the same line.
           markerId: item.markerId,
           ownerId: this._selectedOwnerByLine.get(item.line) || USER_ID,
-          dueDate: this._selectedDueDateByLine.get(item.line) || null
+          dueDate: this._selectedDueDateByLine.get(item.line) || null,
+          reminderEnabled:
+            this._selectedReminderEnabledByLine.get(item.line) || false,
+          reminderDateTime:
+            this._selectedReminderDateTimeByLine.get(item.line) || null
         });
       }
     });
@@ -408,6 +451,64 @@ export default class MarkdownChecklistPanel extends LightningElement {
     } else {
       this._selectedDueDateByLine.delete(line);
     }
+
+    // Keep the reminder's auto-filled default in step with the due date —
+    // but only while the user hasn't picked their own reminder time, so
+    // this never overwrites a deliberate choice.
+    if (
+      this._selectedReminderEnabledByLine.get(line) &&
+      !this._manualReminderDateTimeLines.has(line)
+    ) {
+      this._applyDefaultReminderDateTime(line, dueDate);
+    }
+  }
+
+  handleReminderToggleChange(event) {
+    const line = Number(event.currentTarget.dataset.line);
+    const enabled = event.detail.checked;
+    if (enabled) {
+      this._selectedReminderEnabledByLine.set(line, true);
+      if (
+        !this._manualReminderDateTimeLines.has(line) &&
+        !this._selectedReminderDateTimeByLine.has(line)
+      ) {
+        this._applyDefaultReminderDateTime(
+          line,
+          this._selectedDueDateByLine.get(line)
+        );
+      }
+    } else {
+      this._selectedReminderEnabledByLine.delete(line);
+    }
+    this._selectionVersion += 1;
+  }
+
+  handleReminderDateTimeChange(event) {
+    const line = Number(event.currentTarget.dataset.line);
+    const value = event.detail.value;
+    if (value) {
+      this._selectedReminderDateTimeByLine.set(line, value);
+      this._manualReminderDateTimeLines.add(line);
+    } else {
+      this._selectedReminderDateTimeByLine.delete(line);
+      this._manualReminderDateTimeLines.delete(line);
+    }
+  }
+
+  // Default reminder time: the due date itself at 09:00 local time — this
+  // org's business day (and its own daily automation, e.g. retrieve.yml)
+  // starts at 09:00 JST, so it reads as "remind me right as the day the
+  // task is due starts" rather than an arbitrary offset. Falls back to no
+  // default when there is no due date yet to anchor it to; the user can
+  // still pick a reminder datetime by hand once one is set.
+  _applyDefaultReminderDateTime(line, dueDate) {
+    const defaultDateTime = computeDefaultReminderDateTime(dueDate);
+    if (defaultDateTime) {
+      this._selectedReminderDateTimeByLine.set(line, defaultDateTime);
+    } else {
+      this._selectedReminderDateTimeByLine.delete(line);
+    }
+    this._selectionVersion += 1;
   }
 
   // Click and hover both open the same preview popover — touch devices never
@@ -522,7 +623,9 @@ export default class MarkdownChecklistPanel extends LightningElement {
       subject: row.text,
       checked: row.checked,
       ownerId: row.ownerId,
-      dueDate: row.dueDate
+      dueDate: row.dueDate,
+      isReminderSet: row.reminderEnabled,
+      reminderDateTime: row.reminderEnabled ? row.reminderDateTime : null
     })
       .then((task) => {
         createdTask = task;

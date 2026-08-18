@@ -28,54 +28,80 @@
       <ul class="md-checklist-list">
         <template for:each={rows} for:item="row">
           <li key={row.key} class="md-checklist-row">
-            <span class="md-checklist-row-text">{row.text}</span>
-
-            <template lwc:if={row.statusLabel}>
-              <span class={row.statusClass}>{row.statusLabel}</span>
-              <template lwc:if={row.task}>
-                <button
-                  type="button"
-                  class="md-checklist-row-link"
-                  data-task-id={row.task.id}
-                  onclick={handleTaskClick}
-                  onmouseenter={handleTaskMouseEnter}
-                  onmouseleave={handleTaskMouseLeave}
-                >
-                  {row.task.ownerName}
-                </button>
-              </template>
-            </template>
-
-            <template lwc:else>
-              <span class="md-checklist-badge md-checklist-badge--untodo"
-                >{labels.untodo}</span
+            <div class="md-checklist-row-content">
+              <span class="md-checklist-row-text" title={row.text}
+                >{row.text}</span
               >
-              <lightning-record-picker
-                class="md-checklist-owner-picker"
-                object-api-name="User"
-                label={labels.assignee}
-                variant="label-hidden"
-                value={row.ownerId}
-                data-line={row.line}
-                onchange={handleOwnerChange}
-              ></lightning-record-picker>
-              <lightning-input
-                type="date"
-                class="md-checklist-due-date-picker"
-                label={labels.dueDate}
-                variant="label-hidden"
-                value={row.dueDate}
-                data-line={row.line}
-                onchange={handleDueDateChange}
-              ></lightning-input>
-              <lightning-button
-                variant="brand"
-                label={labels.createTaskButton}
-                data-line={row.line}
-                disabled={isCreating}
-                onclick={handleCreateTask}
-              ></lightning-button>
-            </template>
+            </div>
+
+            <div class="md-checklist-row-actions">
+              <template lwc:if={row.statusLabel}>
+                <span class={row.statusClass}>{row.statusLabel}</span>
+                <template lwc:if={row.task}>
+                  <button
+                    type="button"
+                    class="md-checklist-row-link"
+                    data-task-id={row.task.id}
+                    onclick={handleTaskClick}
+                    onmouseenter={handleTaskMouseEnter}
+                    onmouseleave={handleTaskMouseLeave}
+                  >
+                    {row.task.ownerName}
+                  </button>
+                </template>
+              </template>
+
+              <template lwc:else>
+                <span class="md-checklist-badge md-checklist-badge--untodo"
+                  >{labels.untodo}</span
+                >
+                <lightning-record-picker
+                  class="md-checklist-owner-picker"
+                  object-api-name="User"
+                  label={labels.assignee}
+                  variant="label-hidden"
+                  value={row.ownerId}
+                  data-line={row.line}
+                  onchange={handleOwnerChange}
+                ></lightning-record-picker>
+                <lightning-input
+                  type="date"
+                  class="md-checklist-due-date-picker"
+                  label={labels.dueDate}
+                  variant="label-hidden"
+                  value={row.dueDate}
+                  data-line={row.line}
+                  onchange={handleDueDateChange}
+                ></lightning-input>
+                <lightning-input
+                  type="toggle"
+                  class="md-checklist-reminder-toggle"
+                  label={labels.reminder}
+                  variant="label-hidden"
+                  checked={row.reminderEnabled}
+                  data-line={row.line}
+                  onchange={handleReminderToggleChange}
+                ></lightning-input>
+                <template lwc:if={row.reminderEnabled}>
+                  <lightning-input
+                    type="datetime"
+                    class="md-checklist-reminder-datetime-picker"
+                    label={labels.reminderDateTime}
+                    variant="label-hidden"
+                    value={row.reminderDateTime}
+                    data-line={row.line}
+                    onchange={handleReminderDateTimeChange}
+                  ></lightning-input>
+                </template>
+                <lightning-button
+                  variant="brand"
+                  label={labels.createTaskButton}
+                  data-line={row.line}
+                  disabled={isCreating}
+                  onclick={handleCreateTask}
+                ></lightning-button>
+              </template>
+            </div>
           </li>
         </template>
       </ul>

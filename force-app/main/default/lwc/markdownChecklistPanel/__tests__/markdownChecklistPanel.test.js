@@ -538,7 +538,7 @@ describe("c-markdown-checklist-panel", () => {
     await flushPromises();
 
     const dueDateInput = el.shadowRoot.querySelector(
-      'lightning-input[data-line="1"]'
+      '.md-checklist-due-date-picker[data-line="1"]'
     );
     dueDateInput.dispatchEvent(
       new CustomEvent("change", { detail: { value: "2026-09-01" } })
@@ -549,6 +549,160 @@ describe("c-markdown-checklist-panel", () => {
 
     expect(createTaskForCheckbox).toHaveBeenCalledWith(
       expect.objectContaining({ dueDate: "2026-09-01" })
+    );
+  });
+
+  it("defaults the reminder datetime to 09:00 local time on the due date once toggled on", async () => {
+    getTasksForField.mockResolvedValue([]);
+    createTaskForCheckbox.mockResolvedValue({
+      id: "00T000000000007AAA",
+      subject: "first item",
+      status: "Not Started",
+      isClosed: false,
+      ownerId: "005000000000001AAA",
+      ownerName: "Jane Doe",
+      markdownMarkerId: "dddddd"
+    });
+    saveMarkdownWithImages.mockImplementation(({ markdownContent }) =>
+      Promise.resolve(markdownContent)
+    );
+
+    const el = createElement("c-markdown-checklist-panel", {
+      is: MarkdownChecklistPanel
+    });
+    el.recordId = "001000000000001AAA";
+    el.objectApiName = "Account";
+    el.fieldApiName = "Description";
+    el.markdownText = "- [ ] first item";
+    document.body.appendChild(el);
+    await flushPromises();
+
+    const dueDateInput = el.shadowRoot.querySelector(
+      '.md-checklist-due-date-picker[data-line="1"]'
+    );
+    dueDateInput.dispatchEvent(
+      new CustomEvent("change", { detail: { value: "2026-09-01" } })
+    );
+
+    const reminderToggle = el.shadowRoot.querySelector(
+      '.md-checklist-reminder-toggle[data-line="1"]'
+    );
+    reminderToggle.dispatchEvent(
+      new CustomEvent("change", { detail: { checked: true } })
+    );
+    await flushPromises();
+
+    const reminderDateTimeInput = el.shadowRoot.querySelector(
+      '.md-checklist-reminder-datetime-picker[data-line="1"]'
+    );
+    expect(reminderDateTimeInput).not.toBeNull();
+    // 2026-09-01T09:00:00 local time, round-tripped through toISOString().
+    expect(reminderDateTimeInput.value).toBe(
+      new Date("2026-09-01T09:00:00").toISOString()
+    );
+
+    el.shadowRoot.querySelector('lightning-button[data-line="1"]').click();
+    await flushPromises();
+
+    expect(createTaskForCheckbox).toHaveBeenCalledWith(
+      expect.objectContaining({
+        isReminderSet: true,
+        reminderDateTime: new Date("2026-09-01T09:00:00").toISOString()
+      })
+    );
+  });
+
+  it("does not auto-fill a reminder datetime when no due date has been picked yet", async () => {
+    getTasksForField.mockResolvedValue([]);
+    const el = createElement("c-markdown-checklist-panel", {
+      is: MarkdownChecklistPanel
+    });
+    el.recordId = "001000000000001AAA";
+    el.objectApiName = "Account";
+    el.fieldApiName = "Description";
+    el.markdownText = "- [ ] first item";
+    document.body.appendChild(el);
+    await flushPromises();
+
+    const reminderToggle = el.shadowRoot.querySelector(
+      '.md-checklist-reminder-toggle[data-line="1"]'
+    );
+    reminderToggle.dispatchEvent(
+      new CustomEvent("change", { detail: { checked: true } })
+    );
+    await flushPromises();
+
+    expect(
+      el.shadowRoot.querySelector(
+        '.md-checklist-reminder-datetime-picker[data-line="1"]'
+      ).value
+    ).toBeNull();
+  });
+
+  it("keeps a manually-picked reminder datetime when the due date changes afterwards", async () => {
+    // The datetime picker's own displayed value isn't asserted here: in this
+    // stub environment (unlike a real lightning-input, where the user's own
+    // keystrokes update the field's display directly) a synthetic "change"
+    // dispatch doesn't also update the stub's `value` property, so the only
+    // reliable way to observe what this component actually remembered for
+    // the line is what it sends on Create Task.
+    getTasksForField.mockResolvedValue([]);
+    createTaskForCheckbox.mockResolvedValue({
+      id: "00T000000000008AAA",
+      subject: "first item",
+      status: "Not Started",
+      isClosed: false,
+      ownerId: "005000000000001AAA",
+      ownerName: "Jane Doe",
+      markdownMarkerId: "eeeeee"
+    });
+    saveMarkdownWithImages.mockImplementation(({ markdownContent }) =>
+      Promise.resolve(markdownContent)
+    );
+
+    const el = createElement("c-markdown-checklist-panel", {
+      is: MarkdownChecklistPanel
+    });
+    el.recordId = "001000000000001AAA";
+    el.objectApiName = "Account";
+    el.fieldApiName = "Description";
+    el.markdownText = "- [ ] first item";
+    document.body.appendChild(el);
+    await flushPromises();
+
+    el.shadowRoot
+      .querySelector('.md-checklist-due-date-picker[data-line="1"]')
+      .dispatchEvent(
+        new CustomEvent("change", { detail: { value: "2026-09-01" } })
+      );
+    el.shadowRoot
+      .querySelector('.md-checklist-reminder-toggle[data-line="1"]')
+      .dispatchEvent(new CustomEvent("change", { detail: { checked: true } }));
+    await flushPromises();
+
+    const manualValue = "2026-08-31T23:00:00.000Z";
+    el.shadowRoot
+      .querySelector('.md-checklist-reminder-datetime-picker[data-line="1"]')
+      .dispatchEvent(
+        new CustomEvent("change", { detail: { value: manualValue } })
+      );
+
+    el.shadowRoot
+      .querySelector('.md-checklist-due-date-picker[data-line="1"]')
+      .dispatchEvent(
+        new CustomEvent("change", { detail: { value: "2026-09-05" } })
+      );
+    await flushPromises();
+
+    el.shadowRoot.querySelector('lightning-button[data-line="1"]').click();
+    await flushPromises();
+
+    expect(createTaskForCheckbox).toHaveBeenCalledWith(
+      expect.objectContaining({
+        dueDate: "2026-09-05",
+        isReminderSet: true,
+        reminderDateTime: manualValue
+      })
     );
   });
 
