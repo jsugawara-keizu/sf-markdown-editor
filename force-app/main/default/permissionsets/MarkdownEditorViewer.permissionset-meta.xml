@@ -16,6 +16,10 @@
         <apexPage>MarpRenderer</apexPage>
         <enabled>true</enabled>
     </pageAccesses>
+    <pageAccesses>
+        <apexPage>MermaidRenderer</apexPage>
+        <enabled>true</enabled>
+    </pageAccesses>
     <userPermissions>
         <enabled>true</enabled>
         <name>ApiEnabled</name>

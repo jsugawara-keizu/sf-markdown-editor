@@ -174,3 +174,46 @@
   max-width: 100%;
   height: auto;
 }
+
+/* ---- Details / Summary ---- */
+.md-content :global(details) {
+  margin-bottom: 1em;
+  padding: 0.5em 1em;
+  border: 1px solid var(--slds-g-color-border-1, #dddbda);
+  border-radius: 6px;
+}
+
+.md-content :global(summary) {
+  cursor: pointer;
+  font-weight: 600;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+}
+
+.md-content :global(summary::-webkit-details-marker) {
+  display: none;
+}
+
+/* Custom triangle marker: the native marker is unreliable across browsers
+   and inside Lightning Web Security's Shadow DOM, so we draw and rotate
+   our own instead of relying on the built-in list-item indicator. */
+.md-content :global(summary::before) {
+  content: "";
+  flex: 0 0 auto;
+  width: 0;
+  height: 0;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  border-left: 5px solid var(--slds-g-color-on-surface, #080707);
+  transition: transform 0.15s ease;
+}
+
+.md-content :global(details[open] > summary::before) {
+  transform: rotate(90deg);
+}
+
+.md-content :global(details > *:not(summary)) {
+  margin-top: 0.5em;
+}

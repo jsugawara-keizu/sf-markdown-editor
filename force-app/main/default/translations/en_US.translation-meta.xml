@@ -229,4 +229,124 @@
         <name>MarpExitFullscreen</name>
         <label>Exit fullscreen</label>
     </customLabels>
+    <customLabels>
+        <name>MarkdownUndoTitle</name>
+        <label>Undo</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownUndoLabel</name>
+        <label>Undo</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownRedoTitle</name>
+        <label>Redo</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownRedoLabel</name>
+        <label>Redo</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownCancelTitle</name>
+        <label>Cancel</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownCancelLabel</name>
+        <label>Cancel</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownSavingStatus</name>
+        <label>Saving…</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownRecordIdMissingError</name>
+        <label>recordId is missing. Place this component on a Record Page.</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownObjectApiNameMissingError</name>
+        <label>objectApiName is missing. Verify this component is on a Record Page.</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownFieldApiNameMissingError</name>
+        <label>fieldApiName is not configured. Check the component settings.</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownFieldAccessSummary</name>
+        <label>objectApiName={0} | fieldApiName={1} | readable={2} | updateable={3}</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownSaveSuccessTitle</name>
+        <label>Save successful</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownSaveErrorTitle</name>
+        <label>Save failed</label>
+    </customLabels>
+    <customLabels>
+        <name>MarpMobileUnsupportedNotice</name>
+        <label>Slide view is not available on mobile. Showing document view instead.</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownChecklistPanelTitle</name>
+        <label>Checklist</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownChecklistUntodoLabel</name>
+        <label>Not tracked</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownChecklistDoneLabel</name>
+        <label>Done</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownChecklistOpenLabel</name>
+        <label>Open</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownChecklistOrphanLabel</name>
+        <label>No matching checkbox</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownChecklistCreateTaskButtonLabel</name>
+        <label>Create Task</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownChecklistAssigneeLabel</name>
+        <label>Assignee</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownChecklistDueDateLabel</name>
+        <label>Due Date</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownChecklistEmptyStateLabel</name>
+        <label>No checkboxes found in this document.</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownChecklistCreateErrorTitle</name>
+        <label>Failed to create task</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownChecklistCreateSuccessTitle</name>
+        <label>Task created</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownChecklistLoadErrorLabel</name>
+        <label>Failed to load tasks</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownChecklistOpenRecordLabel</name>
+        <label>Open Record</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownChecklistCloseLabel</name>
+        <label>Close</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownChecklistDetailsTabLabel</name>
+        <label>Details</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownChecklistEditTabLabel</name>
+        <label>Edit</label>
+    </customLabels>
 </Translations>

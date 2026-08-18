@@ -2,17 +2,22 @@ import { loadScript } from "lightning/platformResourceLoader";
 import { getRecord, getRecordNotifyChange } from "lightning/uiRecordApi";
 import { LightningElement, api, track, wire } from "lwc";
 import { getObjectInfo } from "lightning/uiObjectInfoApi";
+import { ShowToastEvent } from "lightning/platformShowToastEvent";
 import toggleCheckboxLine from "@salesforce/apex/MarkdownImageHandler.toggleCheckboxLine";
 import MARKDOWN_CORE from "@salesforce/resourceUrl/markdownCore";
 import MERMAID_JS from "@salesforce/resourceUrl/mermaidJs";
 import MARKDOWN_PREVIEW_ARIA_LABEL from "@salesforce/label/c.MarkdownPreviewAriaLabel";
 import MARKDOWN_LOADING_ALT_TEXT from "@salesforce/label/c.MarkdownLoadingAltText";
 import MARKDOWN_VIEWER_ERROR_TEXT from "@salesforce/label/c.MarkdownViewerErrorText";
+import MARKDOWN_SAVE_ERROR_TITLE from "@salesforce/label/c.MarkdownSaveErrorTitle";
+import MARKDOWN_SAVE_ERROR_MESSAGE from "@salesforce/label/c.MarkdownSaveErrorMessage";
 
 const LABELS = {
   previewAria: MARKDOWN_PREVIEW_ARIA_LABEL,
   loadingAltText: MARKDOWN_LOADING_ALT_TEXT,
-  viewerErrorText: MARKDOWN_VIEWER_ERROR_TEXT
+  viewerErrorText: MARKDOWN_VIEWER_ERROR_TEXT,
+  saveErrorTitle: MARKDOWN_SAVE_ERROR_TITLE,
+  saveErrorMessage: MARKDOWN_SAVE_ERROR_MESSAGE
 };
 
 function clearChildren(el) {
@@ -440,6 +445,13 @@ export default class MarkdownViewer extends LightningElement {
       this.bindCheckboxToggle(container);
     } catch (err) {
       console.error("[markdownViewer] render failed:", err);
+      this.dispatchEvent(
+        new ShowToastEvent({
+          title: this.labels.saveErrorTitle,
+          message: this.labels.viewerErrorText,
+          variant: "error"
+        })
+      );
     }
   }
 
@@ -510,6 +522,13 @@ export default class MarkdownViewer extends LightningElement {
         // the still-unpersisted server value.
         checkboxEl.checked = !checked;
         console.error("[markdownViewer] checkbox toggle failed:", err);
+        this.dispatchEvent(
+          new ShowToastEvent({
+            title: this.labels.saveErrorTitle,
+            message: err.body ? err.body.message : this.labels.saveErrorMessage,
+            variant: "error"
+          })
+        );
       });
   }
 

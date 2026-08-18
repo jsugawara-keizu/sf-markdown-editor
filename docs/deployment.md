@@ -97,9 +97,9 @@ Setup > **セキュリティ** > **セッションの設定** > **インライ�
 
 `MarkdownEditorViewer` 権限セットには、デプロイ先環境固有のオブジェクト・項目への FLS は**意図的に**含まれていない（[development.md](development.md#権限セット運用方針) 参照）。プロファイルまたは環境専用の権限セットで、対象項目（例: 任意オブジェクトの Long Text Area 項目）への読み取り・編集権限を個別に付与すること。
 
-### 5. `MermaidRenderer` ページへのアクセス確認（既知の抜け漏れ）
+### 5. `MermaidRenderer` ページへのアクセス確認
 
-`MarkdownEditorViewer` 権限セットには `MarpRenderer` ページへの `pageAccesses` は含まれているが、`MermaidRenderer` ページは含まれていない。プロファイル側で「全 Visualforce ページを参照可」になっていない環境では、`markdownViewer` の Mermaid 図が iframe 経由で描画できず、直接描画へのフォールバックも機能しない可能性がある。デプロイ先環境でのプロファイル設定、または `MermaidRenderer` への明示的な `pageAccesses` 付与を検討すること。
+`MarkdownEditorViewer` 権限セットには `MarpRenderer`・`MermaidRenderer` 両ページへの `pageAccesses` が含まれている（2026-08 に `MermaidRenderer` 分の抜け漏れを解消）。プロファイル側で「全 Visualforce ページを参照可」になっていない環境では、念のため権限セットの割り当てが行われているか確認すること。
 
 ## 開発元リポジトリからの複数 Sandbox 展開
 

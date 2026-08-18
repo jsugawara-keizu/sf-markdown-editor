@@ -28,6 +28,7 @@ node_modules/
 
 # Built package artifacts
 /packages/markdown-core/dist
+/packages/marp-core/dist
 
 # Editor directories
 .vscode/

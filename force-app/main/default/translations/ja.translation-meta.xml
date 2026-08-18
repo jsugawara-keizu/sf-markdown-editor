@@ -297,4 +297,56 @@
         <name>MarpExitFullscreen</name>
         <label>全画面を終了</label>
     </customLabels>
+    <customLabels>
+        <name>MarkdownUndoTitle</name>
+        <label>元に戻す</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownUndoLabel</name>
+        <label>元に戻す</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownRedoTitle</name>
+        <label>やり直す</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownRedoLabel</name>
+        <label>やり直す</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownCancelTitle</name>
+        <label>キャンセル</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownCancelLabel</name>
+        <label>キャンセル</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownSavingStatus</name>
+        <label>保存中…</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownRecordIdMissingError</name>
+        <label>recordId が見つかりません。このコンポーネントをレコードページに配置してください。</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownObjectApiNameMissingError</name>
+        <label>objectApiName が見つかりません。このコンポーネントがレコードページに配置されているか確認してください。</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownFieldApiNameMissingError</name>
+        <label>fieldApiName が設定されていません。コンポーネントの設定を確認してください。</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownFieldAccessSummary</name>
+        <label>objectApiName={0} | fieldApiName={1} | readable={2} | updateable={3}</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownChecklistDueDateLabel</name>
+        <label>期日</label>
+    </customLabels>
+    <customLabels>
+        <name>MarkdownSaveErrorTitle</name>
+        <label>保存失敗</label>
+    </customLabels>
 </Translations>
