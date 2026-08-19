@@ -1,3 +1,13 @@
+## [1.2.0](https://github.com/jsugawara-keizu/sf-markdown-editor/compare/v1.1.1...v1.2.0) (2026-08-19)
+
+### Features
+
+- **checklist:** チェックリストの列分けと作成時リマインダー設定に対応 ([224b506](https://github.com/jsugawara-keizu/sf-markdown-editor/commit/224b506d52bfddea2a9c10b7ac5849d078937621)), closes [#2](https://github.com/jsugawara-keizu/sf-markdown-editor/issues/2)
+
+### Bug Fixes
+
+- MermaidRenderer権限セット未設定・apiVersion不統一・i18n未整備・成果物不整合・詳細開閉インジケーター・保存失敗の非通知を解消 ([ceb9cb7](https://github.com/jsugawara-keizu/sf-markdown-editor/commit/ceb9cb78af4f69938d3b5116bb58f03d7fe1e646))
+
 ## [1.1.1](https://github.com/jsugawara-keizu/sf-markdown-editor/compare/v1.1.0...v1.1.1) (2026-08-17)
 
 ### Bug Fixes
