@@ -1,3 +1,9 @@
+## [1.2.2](https://github.com/jsugawara-keizu/sf-markdown-editor/compare/v1.2.1...v1.2.2) (2026-08-25)
+
+### Bug Fixes
+
+- 同一Base64画像の重複アップロードを防止 ([60079e7](https://github.com/jsugawara-keizu/sf-markdown-editor/commit/60079e741d5e45240f7160d4554ec4d63132a293))
+
 ## [1.2.1](https://github.com/jsugawara-keizu/sf-markdown-editor/compare/v1.2.0...v1.2.1) (2026-08-25)
 
 ### Bug Fixes
