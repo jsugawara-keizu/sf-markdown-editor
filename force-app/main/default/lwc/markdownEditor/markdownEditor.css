@@ -72,19 +72,19 @@
   border: 1px solid var(--slds-g-color-border-1, #dddbda);
   border-radius: 0.25rem;
   background: var(--slds-g-color-surface-1, #ffffff);
-  color: var(--slds-g-color-on-surface, #080707);
+  color: var(--slds-g-color-neutral-base-10, #080707);
   font-size: var(--slds-g-font-size-3, 0.875rem);
   cursor: pointer;
   transition: background 0.1s ease;
 }
 
 .md-toolbar__btn:hover {
-  background: var(--slds-g-color-brand-container-2, #e8f4ff);
-  border-color: var(--slds-g-color-brand-1, #0070d2);
+  background: var(--slds-g-color-brand-base-95, #e8f4ff);
+  border-color: var(--slds-g-color-brand-base-50, #0070d2);
 }
 
 .md-toolbar__btn:focus-visible {
-  outline: 2px solid var(--slds-g-color-brand-1, #0070d2);
+  outline: 2px solid var(--slds-g-color-brand-base-50, #0070d2);
   outline-offset: 2px;
 }
 
@@ -99,7 +99,7 @@
 .md-error__detail {
   margin-top: 0.5rem;
   font-size: var(--slds-g-font-size-2, 0.75rem);
-  color: var(--slds-g-color-text-weak, #606060);
+  color: var(--slds-g-color-neutral-base-50, #606060);
 }
 .md-toolbar__divider {
   flex: 1;
@@ -122,7 +122,7 @@
   border: 1px solid transparent;
   border-radius: 999px;
   background: transparent;
-  color: var(--slds-g-color-on-surface, #3e3e3c);
+  color: var(--slds-g-color-neutral-base-30, #3e3e3c);
   font-size: var(--slds-g-font-size-3, 0.875rem);
   cursor: pointer;
   transition:
@@ -136,7 +136,7 @@
 }
 
 .md-tab:hover {
-  background: var(--slds-g-color-surface-3, #e5e5e5);
+  background: var(--slds-g-color-neutral-base-95, #e5e5e5);
 }
 
 .md-tab--disabled {
@@ -148,9 +148,9 @@
   background: var(--slds-g-color-surface-1, #ffffff);
   border-color: var(--slds-g-color-border-1, #dddbda);
   font-weight: 700;
-  color: var(--slds-g-color-brand-1, #0070d2);
+  color: var(--slds-g-color-brand-base-50, #0070d2);
   box-shadow: var(--slds-g-shadow-1, 0 1px 2px 0 rgba(0, 0, 0, 0.16));
-  --slds-c-icon-color-foreground: var(--slds-g-color-brand-1, #0070d2);
+  --slds-c-icon-color-foreground: var(--slds-g-color-brand-base-50, #0070d2);
 }
 
 .md-tab--active:hover {
@@ -158,7 +158,7 @@
 }
 
 .md-tab:focus-visible {
-  outline: 2px solid var(--slds-g-color-brand-1, #0070d2);
+  outline: 2px solid var(--slds-g-color-brand-base-50, #0070d2);
   outline-offset: 2px;
 }
 
@@ -170,7 +170,7 @@
   border: none;
   border-radius: 0;
   background: var(--slds-g-color-surface-1, #ffffff);
-  color: var(--slds-g-color-on-surface, #080707);
+  color: var(--slds-g-color-neutral-base-10, #080707);
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   font-size: var(--slds-g-font-size-3, 0.875rem);
   line-height: 1.6;
@@ -180,7 +180,7 @@
 }
 
 .md-textarea:focus {
-  box-shadow: inset 0 0 0 2px var(--slds-g-color-brand-1, #0070d2);
+  box-shadow: inset 0 0 0 2px var(--slds-g-color-brand-base-50, #0070d2);
 }
 
 /* ---- Preview pane ---- */
@@ -206,7 +206,7 @@
 
 .md-save-status {
   font-size: var(--slds-g-font-size-1, 0.625rem);
-  color: var(--slds-g-color-on-surface, #080707);
+  color: var(--slds-g-color-neutral-base-10, #080707);
   margin-left: 0.25rem;
 }
 
@@ -223,12 +223,12 @@
 
 .md-char-count {
   font-size: var(--slds-g-font-size-1, 0.625rem);
-  color: var(--slds-g-color-neutral-2, #706e6b);
+  color: var(--slds-g-color-neutral-base-50, #706e6b);
 }
 
 .md-dirty-badge {
   font-size: var(--slds-g-font-size-1, 0.625rem);
-  color: var(--slds-g-color-warning-1, #dd7a01);
+  color: var(--slds-g-color-warning-base-40, #dd7a01);
   font-weight: 600;
 }
 
@@ -261,7 +261,7 @@
   padding: 1rem;
   border: 1px solid var(--slds-g-color-border-1, #dddbda);
   border-radius: 0.25rem;
-  background: var(--slds-g-color-surface-2, #f3f2f2);
-  color: var(--slds-g-color-on-surface, #080707);
+  background: var(--slds-g-color-neutral-base-95, #f3f2f2);
+  color: var(--slds-g-color-neutral-base-10, #080707);
   font-size: var(--slds-g-font-size-3, 0.875rem);
 }

@@ -36,17 +36,17 @@
   flex-wrap: wrap;
   gap: 0.75rem;
   font-size: var(--slds-g-font-size-2, 0.75rem);
-  color: var(--slds-g-color-on-surface-2, #706e6b);
+  color: var(--slds-g-color-neutral-base-50, #706e6b);
 }
 
 .md-checklist-error {
-  color: var(--slds-g-color-error, #c23934);
+  color: var(--slds-g-color-error-base-40, #c23934);
   font-size: var(--slds-g-font-size-2, 0.75rem);
   margin: 0 0 0.5rem;
 }
 
 .md-checklist-empty {
-  color: var(--slds-g-color-on-surface-2, #706e6b);
+  color: var(--slds-g-color-neutral-base-50, #706e6b);
   font-size: var(--slds-g-font-size-2, 0.75rem);
   margin: 0;
 }
@@ -113,23 +113,23 @@
 }
 
 .md-checklist-badge--untodo {
-  background: var(--slds-g-color-surface-2, #f3f2f2);
-  color: var(--slds-g-color-on-surface-2, #706e6b);
+  background: var(--slds-g-color-neutral-base-95, #f3f2f2);
+  color: var(--slds-g-color-neutral-base-50, #706e6b);
 }
 
 .md-checklist-badge--open {
-  background: var(--slds-g-color-warning-container, #fef2cd);
-  color: var(--slds-g-color-on-warning-container, #684b03);
+  background: var(--slds-g-color-warning-base-95, #fef2cd);
+  color: var(--slds-g-color-warning-base-30, #684b03);
 }
 
 .md-checklist-badge--done {
-  background: var(--slds-g-color-success-container, #dff0e6);
-  color: var(--slds-g-color-on-success-container, #024a2c);
+  background: var(--slds-g-color-success-base-90, #dff0e6);
+  color: var(--slds-g-color-success-base-30, #024a2c);
 }
 
 .md-checklist-badge--orphan {
-  background: var(--slds-g-color-error-container, #fedbd7);
-  color: var(--slds-g-color-on-error-container, #5c0a09);
+  background: var(--slds-g-color-error-base-95, #fedbd7);
+  color: var(--slds-g-color-error-base-20, #5c0a09);
 }
 
 .md-checklist-owner-picker {

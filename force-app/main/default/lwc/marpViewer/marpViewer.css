@@ -13,7 +13,7 @@
 
 .marp-toggle-label {
   font-size: var(--slds-g-font-size-2, 0.75rem);
-  color: var(--slds-g-color-neutral-2, #706e6b);
+  color: var(--slds-g-color-neutral-base-50, #706e6b);
 }
 
 .marp-slide-wrapper {
@@ -28,7 +28,7 @@
   position: relative;
   width: 100%;
   aspect-ratio: 16 / 9;
-  background: var(--slds-g-color-neutral-base-95, #1a1a2e);
+  background: var(--slds-g-color-neutral-base-10, #1a1a2e);
   border-radius: 4px;
   overflow: hidden;
 }
@@ -53,7 +53,7 @@
   position: fixed;
   inset: 0;
   z-index: 9999;
-  background: var(--slds-g-color-neutral-base-15, #111);
+  background: var(--slds-g-color-neutral-base-10, #111);
   display: flex;
   flex-direction: column;
   padding: var(--slds-g-spacing-3, 0.75rem);
@@ -73,7 +73,7 @@
 
 .marp-counter {
   font-size: var(--slds-g-font-size-2, 0.75rem);
-  color: var(--slds-g-color-neutral-2, #706e6b);
+  color: var(--slds-g-color-neutral-base-50, #706e6b);
   min-width: 4rem;
   text-align: center;
   font-variant-numeric: tabular-nums;
@@ -83,7 +83,7 @@
   margin: 0;
   padding: 0.5rem 0.75rem;
   border-radius: 4px;
-  background: var(--slds-g-color-surface-2, #f3f2f2);
-  color: var(--slds-g-color-neutral-2, #706e6b);
+  background: var(--slds-g-color-neutral-base-95, #f3f2f2);
+  color: var(--slds-g-color-neutral-base-50, #706e6b);
   font-size: var(--slds-g-font-size-2, 0.75rem);
 }
