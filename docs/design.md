@@ -87,12 +87,14 @@ sequenceDiagram
     LWC->>Apex: saveMarkdownWithImages(recordId, objectApiName, fieldApiName, markdown)
     Apex->>Apex: "extractDataUris() で data:image/...;base64,... を走査"
     Apex->>Apex: validateEmbeddedImages()（MIME許可リスト・サイズ上限）
-    loop 画像ごと
+    Apex->>Apex: 画像ごとに computeContentHash()（base64文字列のSHA-256）
+    Apex->>CV: Title IN (md-image-<hash>...) で同一レコードの既存CVを検索
+    loop 未アップロードの画像のみ（既存CVと一致 / 同一保存内の重複はスキップ）
         Apex->>Apex: checkRuntimeLimits()（CPU時間・ヒープ）
         Apex->>CV: insert as user（Base64デコード→ContentVersion、まとめて1回）
     end
     Apex->>CV: WITH USER_MODE で ContentDocumentId を再取得
-    Apex->>Apex: 末尾から前方向に data URI をダウンロードURLへ置換
+    Apex->>Apex: 末尾から前方向に data URI をダウンロードURLへ置換（既存/新規いずれもハッシュ経由で解決）
     Apex->>Accessor: updateRecordField(recordId, fieldApiName, 置換後markdown)
     Accessor->>Accessor: isUpdateable() チェック → update as user
     Apex->>TaskSync: syncCheckboxStatesFromMarkdown(recordId, fieldApiName, 置換後markdown)
@@ -101,6 +103,10 @@ sequenceDiagram
 ```
 
 _図: 画像埋め込み保存とチェックリスト同期の一連の流れ。画像がない場合は ContentVersion 関連の手順をスキップし、フィールド更新とチェックリスト同期のみ行う。_
+
+### 同一画像の重複アップロード防止
+
+各画像の base64 文字列そのもの（デコード後バイト列ではない）に対して SHA-256 ハッシュを計算し、`ContentVersion.Title` に `md-image-<hash>` という形式で埋め込む。保存のたびに `FirstPublishLocationId = recordId AND Title IN (...)` で同一レコードに紐づく既存 `ContentVersion` を検索し、一致するものがあればアップロードをスキップしてその `ContentDocumentId` を再利用する。同一保存内で同じ画像が複数回貼り付けられているケース（例: 同じ画像を2箇所に貼り付け）も、この仕組みで自然に1件のみアップロードされる。
 
 ### data URI 抽出・置換アルゴリズム
 

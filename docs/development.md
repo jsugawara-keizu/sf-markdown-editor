@@ -109,7 +109,7 @@ npm run build   # vite build → force-app/main/default/staticresources/marpCore
 
 ### Apex のテスト構成
 
-`MarkdownImageHandlerTest.cls` は実際の `Account` レコード・`ContentVersion` DML・`Task` レコードを使った統合的なテスト（モックなし）。`saveMarkdownWithImages` の正常系（画像0/1/複数枚、MIME種別ごと）、異常系（MIME不許可・Base64不正・recordId/fieldApiName不備・オブジェクト不一致・非更新可能項目・存在しない項目）、`toggleCheckboxLine` の正常系・異常系、チェックリスト同期の呼び出し確認を含む。ただし **2MB/6MB の上限超過やCPU/ヒープ閾値超過の境界値テストは存在しない**（[design.md](design.md#バリデーションとガバナ制限対策) 参照）。
+`MarkdownImageHandlerTest.cls` は実際の `Account` レコード・`ContentVersion` DML・`Task` レコードを使った統合的なテスト（モックなし）。`saveMarkdownWithImages` の正常系（画像0/1/複数枚、MIME種別ごと）、重複防止（同一保存内での同一画像の複数回貼り付け・別の保存での再貼り付けがいずれも既存 `ContentVersion` を再利用し新規作成しないこと）、異常系（MIME不許可・Base64不正・recordId/fieldApiName不備・オブジェクト不一致・非更新可能項目・存在しない項目）、`toggleCheckboxLine` の正常系・異常系、チェックリスト同期の呼び出し確認を含む。ただし **2MB/6MB の上限超過やCPU/ヒープ閾値超過の境界値テストは存在しない**（[design.md](design.md#バリデーションとガバナ制限対策) 参照）。
 
 `MarkdownTaskSyncTest.cls` / `MarkdownTaskTriggerHandlerTest.cls` は Markdown⇔Task 双方向同期の正常系・ループガード（DML件数アサーションによる冪等性検証）・エッジケース（マーカーなし、未知マーカー等）をカバーする。
 
