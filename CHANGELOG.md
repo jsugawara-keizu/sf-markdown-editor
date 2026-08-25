@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/jsugawara-keizu/sf-markdown-editor/compare/v1.2.0...v1.2.1) (2026-08-25)
+
+### Bug Fixes
+
+- details/summaryの開閉マーカーが分かりにくい問題を解消 ([c38dec6](https://github.com/jsugawara-keizu/sf-markdown-editor/commit/c38dec667ebae821f415d1b0e22b87ad1b03deb1))
+- postMessage送信元偽装・base64画像検証の2件のガバナ制限違反・エラーメッセージ欠落を解消 ([15236d6](https://github.com/jsugawara-keizu/sf-markdown-editor/commit/15236d6db27b5a1443962f048d12796cec5a0a26))
+
 ## [1.2.0](https://github.com/jsugawara-keizu/sf-markdown-editor/compare/v1.1.1...v1.2.0) (2026-08-19)
 
 ### Features
