@@ -39,6 +39,13 @@ export function createMermaidFrameCompiler(
   let listenerAttached = false;
 
   function handleMessage(event: MessageEvent): void {
+    // Only accept messages from the render frame this compiler created —
+    // targetOrigin stays "*" on the reply below because the Visualforce
+    // domain isn't known ahead of time (varies per org/sandbox/My Domain),
+    // but checking the sender's window identity is origin-agnostic and rules
+    // out any other frame/window on the page forging a MERMAID_RESULT to
+    // inject arbitrary SVG.
+    if (event.source !== iframeEl?.contentWindow) return;
     const data = event.data as
       | { type?: string; id?: string; svg?: string; message?: string }
       | null

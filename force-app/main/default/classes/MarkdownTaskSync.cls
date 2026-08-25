@@ -27,12 +27,22 @@ public with sharing class MarkdownTaskSync {
       }
       return rows;
     } catch (MarkdownTaskSyncException mtse) {
-      throw new AuraHandledException(mtse.getMessage());
+      throw friendlyError(mtse.getMessage());
     } catch (Exception e) {
-      throw new AuraHandledException(
-        'Failed to load tasks for checklist: ' + e.getMessage()
-      );
+      throw friendlyError('Failed to load tasks for checklist: ' + e.getMessage());
     }
+  }
+
+  // AuraHandledException's own message constructor argument is NOT what
+  // getMessage() returns on the client — confirmed against this org,
+  // getMessage() always comes back as the generic "Script-thrown exception"
+  // unless setMessage() is called explicitly first. Centralized here so
+  // every throw site gets the fix instead of relying on each call site to
+  // remember it.
+  private static AuraHandledException friendlyError(String message) {
+    AuraHandledException ex = new AuraHandledException(message);
+    ex.setMessage(message);
+    return ex;
   }
 
   // Plain (non-AuraEnabled) overload kept for callers that don't need
@@ -114,15 +124,11 @@ public with sharing class MarkdownTaskSync {
       ];
       return new TaskRow(reloaded);
     } catch (MarkdownTaskSyncException mtse) {
-      throw new AuraHandledException(mtse.getMessage());
+      throw friendlyError(mtse.getMessage());
     } catch (DmlException de) {
-      throw new AuraHandledException(
-        'Failed to create task: ' + de.getMessage()
-      );
+      throw friendlyError('Failed to create task: ' + de.getMessage());
     } catch (Exception e) {
-      throw new AuraHandledException(
-        'Failed to create task for checkbox: ' + e.getMessage()
-      );
+      throw friendlyError('Failed to create task for checkbox: ' + e.getMessage());
     }
   }
 

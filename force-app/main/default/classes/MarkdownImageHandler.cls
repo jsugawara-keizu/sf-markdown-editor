@@ -4,6 +4,16 @@ public with sharing class MarkdownImageHandler {
   private static final Integer MAX_TOTAL_IMAGE_BYTES = 6 * 1024 * 1024; // 6 MB
   private static final Integer CPU_TIME_THRESHOLD_MS = 10000; // 10 seconds
   private static final Integer HEAP_BUFFER_BYTES = 256 * 1024; // 256 KB
+  // Bound for findBase64RunEnd()'s per-chunk regex scan. Confirmed against
+  // this org: Pattern-based matching starts throwing "Regex too complicated"
+  // somewhere between 1,000,000 and 1,500,000 characters in a single call,
+  // and a naive one-character-at-a-time loop exhausts the Apex CPU time
+  // governor limit even earlier (~700,000-900,000 characters) due to
+  // per-character method-call overhead. 200,000 leaves wide headroom below
+  // both limits while keeping the number of chunk operations small even for
+  // a 2MB (~2,796,204 character) image.
+  private static final Integer BASE64_SCAN_CHUNK_SIZE = 200000;
+  private static final Pattern NON_BASE64_CHAR_PATTERN = Pattern.compile('[^A-Za-z0-9+/=]');
   private static final Set<String> SUPPORTED_IMAGE_MIME_TYPES = new Set<String>{
     'image/png',
     'image/jpeg',
@@ -102,22 +112,34 @@ public with sharing class MarkdownImageHandler {
       updateRecordField(recordId, fieldApiName, modifiedMarkdown);
       return modifiedMarkdown;
     } catch (MarkdownImageHandlerException mie) {
-      throw new AuraHandledException(mie.getMessage());
+      throw friendlyError(mie.getMessage());
     } catch (System.LimitException le) {
-      throw new AuraHandledException(
+      throw friendlyError(
         'Failed to save markdown due to Salesforce runtime limits. Reduce the number or size of embedded images and try again. ' +
         le.getMessage()
       );
     } catch (DmlException de) {
-      throw new AuraHandledException(
+      throw friendlyError(
         'Failed to save embedded images. Reduce the number or size of images and try again. ' +
         de.getMessage()
       );
     } catch (Exception e) {
-      throw new AuraHandledException(
-        'Failed to save markdown with images: ' + e.getMessage()
-      );
+      throw friendlyError('Failed to save markdown with images: ' + e.getMessage());
     }
+  }
+
+  // AuraHandledException's own message constructor argument is NOT what
+  // getMessage() returns on the client — confirmed against this org,
+  // getMessage() always comes back as the generic "Script-thrown exception"
+  // unless setMessage() is called explicitly first. Every friendly message
+  // this class builds (image too large, unsupported type, runtime-limit
+  // guidance, etc.) was silently being replaced with that generic string
+  // before reaching the LWC caller. Centralized here so every throw site
+  // gets the fix instead of relying on each call site to remember it.
+  private static AuraHandledException friendlyError(String message) {
+    AuraHandledException ex = new AuraHandledException(message);
+    ex.setMessage(message);
+    return ex;
   }
 
   @AuraEnabled
@@ -159,13 +181,11 @@ public with sharing class MarkdownImageHandler {
       updateRecordField(recordId, fieldApiName, updatedValue);
       return updatedValue;
     } catch (MarkdownImageHandlerException mie) {
-      throw new AuraHandledException(mie.getMessage());
+      throw friendlyError(mie.getMessage());
     } catch (MarkdownRecordFieldAccessor.FieldAccessException fae) {
-      throw new AuraHandledException(fae.getMessage());
+      throw friendlyError(fae.getMessage());
     } catch (Exception e) {
-      throw new AuraHandledException(
-        'Failed to toggle checkbox: ' + e.getMessage()
-      );
+      throw friendlyError('Failed to toggle checkbox: ' + e.getMessage());
     }
   }
 
@@ -213,20 +233,61 @@ public with sharing class MarkdownImageHandler {
   }
 
   private static void checkRuntimeLimits() {
-    Integer cpuTime = Limits.getCpuTime();
+    checkRuntimeLimits(
+      Limits.getCpuTime(),
+      Limits.getHeapSize(),
+      Limits.getLimitHeapSize()
+    );
+  }
+
+  // Split out from checkRuntimeLimits() so the threshold decision itself is
+  // unit-testable with explicit boundary values — actually driving real CPU
+  // time or heap usage past the threshold from a test is impractical and
+  // flaky, which is why this comparison logic previously had no regression
+  // coverage at all.
+  @TestVisible
+  private static void checkRuntimeLimits(
+    Integer cpuTime,
+    Integer heapSize,
+    Integer heapLimit
+  ) {
     if (cpuTime > CPU_TIME_THRESHOLD_MS) {
       throw new MarkdownImageHandlerException(
         'Processing is too close to Salesforce CPU time limit. Reduce the size or number of embedded images and try again.'
       );
     }
 
-    Integer heapSize = Limits.getHeapSize();
-    Integer heapLimit = Limits.getLimitHeapSize();
     if (heapSize > heapLimit - HEAP_BUFFER_BYTES) {
       throw new MarkdownImageHandlerException(
         'Processing is too close to Salesforce heap limit. Reduce the size or number of embedded images and try again.'
       );
     }
+  }
+
+  // Finds where a run of base64-alphabet characters (plus '=' padding)
+  // starting at `start` ends, by scanning in bounded chunks with one regex
+  // find() per chunk rather than one method call per character — see
+  // BASE64_SCAN_CHUNK_SIZE for why. Each chunk stays far under both the
+  // regex-engine and per-character-loop limits regardless of total input
+  // size, at the cost of stopping at most BASE64_SCAN_CHUNK_SIZE characters
+  // late if the run's true end isn't the first non-base64 character
+  // scanned — which never happens here since the pattern matches exactly
+  // the complement of the base64 alphabet.
+  @TestVisible
+  private static Integer findBase64RunEnd(String text, Integer start) {
+    Integer cursor = start;
+    Integer textLength = text.length();
+    while (cursor < textLength) {
+      Integer chunkEnd = Math.min(cursor + BASE64_SCAN_CHUNK_SIZE, textLength);
+      Matcher notBase64 = NON_BASE64_CHAR_PATTERN.matcher(
+        text.substring(cursor, chunkEnd)
+      );
+      if (notBase64.find()) {
+        return cursor + notBase64.start();
+      }
+      cursor = chunkEnd;
+    }
+    return textLength;
   }
 
   @TestVisible
@@ -256,13 +317,7 @@ public with sharing class MarkdownImageHandler {
       }
 
       Integer base64Start = markerPos + ';base64,'.length();
-      Integer cursor = base64Start;
-      while (
-        cursor < markdown.length() &&
-        isBase64Char(markdown.substring(cursor, cursor + 1))
-      ) {
-        cursor++;
-      }
+      Integer cursor = findBase64RunEnd(markdown, base64Start);
 
       if (cursor == base64Start) {
         searchFrom = base64Start;
@@ -283,6 +338,7 @@ public with sharing class MarkdownImageHandler {
     return result;
   }
 
+  @TestVisible
   private static void validateEmbeddedImages(List<DataUriMatch> matches) {
     if (matches == null || matches.isEmpty()) {
       return;
@@ -332,6 +388,7 @@ public with sharing class MarkdownImageHandler {
     return SUPPORTED_IMAGE_MIME_TYPES.contains(mimeType.toLowerCase());
   }
 
+  @TestVisible
   private static Long estimateBytesFromBase64(String base64Data) {
     if (String.isBlank(base64Data)) {
       return 0;
@@ -346,22 +403,32 @@ public with sharing class MarkdownImageHandler {
     return ((length * 3) / 4) - padding;
   }
 
-  @TestVisible
-  private static Boolean isBase64Char(String c) {
-    if (String.isBlank(c) || c.length() != 1) {
-      return false;
-    }
-    String base64Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
-    return base64Chars.contains(c);
-  }
-
+  // Deliberately avoids Pattern.matches() and any per-character loop: both
+  // throw "System.LimitException: Regex too complicated" / "Apex CPU time
+  // limit exceeded" once base64Data crosses roughly 1-1.5 million characters
+  // (well inside the advertised 2MB-per-image limit, ~2.8 million
+  // characters) — confirmed against this org. extractDataUris() already
+  // guarantees base64Data contains nothing outside the base64 alphabet plus
+  // '=' (findBase64RunEnd()'s scan only advances past characters matching
+  // that alphabet), so the only thing left worth checking here — cheaply,
+  // via a couple of native String scans instead of one per character — is
+  // that any padding is a well-formed trailing block, not scattered through
+  // the middle.
   @TestVisible
   private static Boolean isValidBase64(String base64Data) {
     if (String.isBlank(base64Data)) {
       return false;
     }
-    return Pattern.matches('[A-Za-z0-9+/]+=*', base64Data) &&
-      base64Data.length() > 0;
+    Integer contentLength = base64Data.length();
+    if (base64Data.endsWith('==')) {
+      contentLength -= 2;
+    } else if (base64Data.endsWith('=')) {
+      contentLength -= 1;
+    }
+    if (contentLength <= 0) {
+      return false;
+    }
+    return !base64Data.substring(0, contentLength).contains('=');
   }
 
   // Centralizes the write path for every caller (save w/ or w/o images,

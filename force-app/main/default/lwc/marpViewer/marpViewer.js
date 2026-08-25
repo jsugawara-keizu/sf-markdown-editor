@@ -237,6 +237,12 @@ export default class MarpViewer extends LightningElement {
   }
 
   _handleMessage(event) {
+    // Only accept messages from the mounted marp-frame iframe. targetOrigin
+    // stays "*" when we postMessage to it because the Visualforce domain
+    // isn't known ahead of time (varies per org/sandbox/My Domain), but
+    // checking the sender's window identity is origin-agnostic and rules out
+    // any other frame/window on the page forging READY/SLIDE_CHANGED/etc.
+    if (event.source !== this._frameEl?.contentWindow) return;
     const data = event.data;
     if (!data || !data.type) return;
 

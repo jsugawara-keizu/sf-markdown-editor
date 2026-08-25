@@ -108,6 +108,8 @@ _図: 画像埋め込み保存とチェックリスト同期の一連の流れ�
 
 置換は **末尾（インデックスの大きい方）から前方向へ** 行う。理由は、先に見つかった（インデックスの小さい）data URI を置換すると、それより後ろにある文字列のオフセットがずれてしまうため。降順に処理すれば、まだ処理していない前方のマッチのオフセットは常に有効なまま残る。
 
+Base64 文字集合の走査自体（`findBase64RunEnd`）は、1文字ずつ `substring` + 文字判定を呼ぶ素朴なループでは実装していない。この org で実測したところ、そのループは約700,000〜900,000文字（実画像で約525〜675KB相当、2MB上限よりずっと小さい）で Apex の CPU 時間ガバナ制限に達して失敗することが判明したため（詳細は [operations.md #6](operations.md#既知の制約・ギャップ一覧)）、200,000文字ずつのチャンクに区切って正規表現 `Matcher.find()` を1回ずつ適用する方式に置き換えている。チャンクサイズは、同じくこの org で確認した「正規表現エンジンが `System.LimitException: Regex too complicated` を投げ始めるサイズ（約1,000,000〜1,500,000文字）」に対して十分な余裕を持たせて選んでいる。
+
 ### バリデーションとガバナ制限対策
 
 | 項目                | 値                                                                    |
@@ -118,9 +120,13 @@ _図: 画像埋め込み保存とチェックリスト同期の一連の流れ�
 | CPU時間の閾値       | 10,000ms（`CPU_TIME_THRESHOLD_MS`）                                   |
 | ヒープ余裕バッファ  | 256KB（`HEAP_BUFFER_BYTES`）                                          |
 
-画像ごとの処理ループの中で `Limits.getCpuTime()` と `Limits.getHeapSize()`（実際のガバナ上限 `Limits.getLimitHeapSize()` を基準に判定）を都度チェックし、閾値超過時は保存全体を中断してユーザーにエラーを返す。エラーは常に `AuraHandledException` としてラップされ、LWC 側で生のメッセージを表示できる。
+画像ごとの処理ループの中で `Limits.getCpuTime()` と `Limits.getHeapSize()`（実際のガバナ上限 `Limits.getLimitHeapSize()` を基準に判定）を都度チェックし、閾値超過時は保存全体を中断してユーザーにエラーを返す。エラーは `MarkdownImageHandlerException` として送出され、`saveMarkdownWithImages`/`toggleCheckboxLine` の catch 節で `friendlyError()` ヘルパー経由の `AuraHandledException` にラップされ、LWC 側で本来のメッセージを表示できる（`friendlyError()` が内部で `setMessage()` を呼ぶ理由は下記コラム参照）。
 
-> **既知のテストギャップ**: 2MB/6MB の境界値超過ケース、CPU/ヒープ閾値超過ケースを実際に駆動するテストは現時点で存在しない（`MarkdownImageHandlerTest.cls` にこれらのテストメソッドはない）。
+> **`AuraHandledException` は `getMessage()` に自動でメッセージを反映しない**: `new AuraHandledException(message)` のコンストラクタ引数は、明示的に `.setMessage(message)` を呼ばない限り `getMessage()` には反映されず、常に固定文字列 `"Script-thrown exception"` が返る（Apex/Aura のよく知られた挙動。この org で実機確認済み）。`MarkdownImageHandler.cls`・`MarkdownTaskSync.cls` はこれを踏まえ、`throw new AuraHandledException(...)` を直接書かず、必ず `friendlyError(message)` ヘルパー（内部で `setMessage()` を呼んでから返す）経由で例外を組み立てる（2026-08-25 修正。詳細は [operations.md #13](operations.md#既知の制約・ギャップ一覧)）。
+>
+> **画像サイズ上限は Apex のヒープ制約に対して楽観的な可能性がある**: 上表の2MB/6MBという上限値は、実際の処理中に元markdown・`DataUriMatch.fullMatch`・`base64Data`・デコード後Blob等、同じデータの複数コピーがヒープ上に同時に存在することを考慮していない。この org での実測では、約1.1MB（150万文字）規模の画像で既にヒープ安全弁が作動して保存を拒否する。安全弁自体は意図通り機能しているが、上限表示の見直しが必要な可能性がある（詳細は [operations.md #6](operations.md#既知の制約・ギャップ一覧)）。
+
+2MB/6MB の境界値超過ケース、CPU/ヒープ閾値超過ケースを実際に駆動するテスト、および上記2件のバグの回帰テストは `MarkdownImageHandlerTest.cls` に追加済み（2026-08-25）。
 
 ## チェックリスト⇔Task 双方向同期
 
@@ -237,7 +243,7 @@ Marp スライド内の Mermaid 図は、`MarpRenderer.page` 側で同様の理�
 | `MarpRenderer.page`    | `RENDER {markdown}` / `PREV` / `NEXT` / `GOTO {slide}` / `PING` | `PAGE_READY` / `PONG` / `READY {slideCount}` / `SLIDE_CHANGED {slide, slideCount}` / `ERROR {message}` |
 | `MermaidRenderer.page` | `RENDER_MERMAID {id, definition}`                               | `PAGE_READY` / `MERMAID_RESULT {id, svg}` / `MERMAID_ERROR {id, message}`                              |
 
-両ページとも `postMessage(data, "*")`（ワイルドカードオリジン）で送受信し、受信側は `event.origin` の検証を行わない。同一 org 内の自ページ（同一オリジン想定）であることを前提にした簡略化であり、セキュリティ上の考慮点として [operations.md](operations.md) に記載する。
+両ページとも `postMessage(data, "*")`（ワイルドカードオリジン）で送信する。org・サンドボックス・My Domain 設定によって Visualforce のドメイン文字列が変わるため、`targetOrigin` を具体的な文字列に固定することは避けている。一方、受信側では `event.origin` の文字列検証ではなく **`event.source`（送信元ウィンドウの参照）を、実際にマウントした iframe の `contentWindow` または `window.parent` と突き合わせる**方式で送信元を検証している（2026-08-25 対応。`marpViewer.js`・`mermaid-frame-compiler.ts` は自身がマウントした iframe と比較し、`MarpRenderer.page`・`MermaidRenderer.page` は `window.parent` と比較する）。この方式は org ごとに異なるドメインパターンを知らなくても、ページ上の別ウィンドウ・別フレームからの偽装メッセージを排除できる。
 
 初回読み込みと `PAGE_READY` イベントが同時に発火しうるため、両ページとも「初回送信済みフラグ」「レンダリング中フラグ」による二重描画防止のガードを持つ（二重描画は Mermaid の固定id同士が競合し、フリーズしたように見える不具合の原因になっていたため、明示的に対処している）。
 
@@ -247,11 +253,6 @@ Marp スライド内の Mermaid 図は、`MarpRenderer.page` 側で同様の理�
 - **`lwc:dom="manual"`**: `markdownViewer` はサニタイズ済み HTML を `Range.createContextualFragment` で直接 DOM に注入する。LWC の再レンダリングループとの競合を避けるため、対象コンテナを手動DOM管理にしている。
 - **markdown-core のグローバル公開**: Vite ビルド時にカスタムプラグイン（`lwsGlobalExport`）で `window.MarkdownCore = MarkdownCore;` を明示的に追記している。LWS 配下では IIFE トップレベルの `var` 代入が実際の `window` に届かず、コンポーネントのプロキシ内のローカル変数になってしまうため。
 
-## 既知の設計上のギャップ（ドキュメント化推奨事項）
+## 既知の制約・ギャップ
 
-以下は実装調査で判明した、今後のレビュー・改善時に踏まえておくべき点。詳細な運用上の対処は [operations.md](operations.md) を参照。
-
-- `MermaidRenderer.page` への `pageAccesses` が `MarkdownEditorViewer` 権限セットに含まれていない（`MarpRenderer.page` のみ含む）。プロファイル側で「全ページ参照可」でない環境では Mermaid の iframe 描画が読み込めず、直接描画へのフォールバックすら効かない可能性がある。
-- `postMessage` の送受信双方で `event.origin` の検証を行っていない。
-- 2つの VF ページ（`MarpRenderer.page-meta.xml` / `MermaidRenderer.page-meta.xml`）の `apiVersion` は `62.0` で、`sfdx-project.json` の `sourceApiVersion`（`66.0`）や `manifest/package.xml` の `<version>`（`66.0`）と揃っていない。
-- カスタムラベルのうち一部（`MarpMobileUnsupportedNotice`、`MarkdownRecordIdMissingError` 等のエラー系ラベル）はマスターの `CustomLabels.labels-meta.xml` 自体で値が空文字のまま残っている。
+実装調査・修正の過程で判明した既知の制約・ギャップは、二重管理を避けるため [operations.md の「既知の制約・ギャップ一覧」](operations.md#既知の制約・ギャップ一覧) に一元化している。対応状況（未対応／対応済み）も含めて随時更新されるため、最新情報はそちらを参照。

@@ -180,6 +180,13 @@
           }
 
           window.addEventListener("message", function (event) {
+            // Only accept commands from our own embedder. targetOrigin stays
+            // "*" on replies because the Lightning domain that frames this
+            // page isn't known ahead of time (varies per org/sandbox/My
+            // Domain), but checking the sender's window identity is
+            // origin-agnostic and rules out any other window on the page
+            // forging a RENDER/GOTO/PREV/NEXT command.
+            if (event.source !== window.parent) return;
             var data = event.data;
             if (!data || !data.type) return;
             if (data.type === "RENDER") {
