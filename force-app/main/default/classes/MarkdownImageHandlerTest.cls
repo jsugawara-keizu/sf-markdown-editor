@@ -143,6 +143,79 @@ private class MarkdownImageHandlerTest {
   }
 
   @IsTest
+  static void saveMarkdownWithSameImageTwice_inOneSave_createsOnlyOneContentVersion() {
+    Account a = makeAccount();
+    String dataUri = 'data:image/png;base64,' + PNG_B64;
+    String md = '![a](' + dataUri + ')\n![b](' + dataUri + ')';
+
+    Test.startTest();
+    String result = MarkdownImageHandler.saveMarkdownWithImages(
+      a.Id,
+      'Account',
+      'Description',
+      md
+    );
+    Test.stopTest();
+
+    System.assertEquals(
+      1,
+      [SELECT COUNT() FROM ContentVersion],
+      '同一保存内で同じ画像が複数回貼り付けられても CV は1件のみ'
+    );
+
+    List<String> downloadUrls = new List<String>();
+    for (String part : result.split('\n')) {
+      Integer start = part.indexOf('/sfc/servlet.shepherd/document/download/');
+      System.assert(start >= 0, '両方とも download URL に置換されるべき: ' + part);
+      downloadUrls.add(part.substring(start));
+    }
+    System.assertEquals(
+      downloadUrls[0],
+      downloadUrls[1],
+      '同じ画像は同じ download URL に置換されるべき'
+    );
+  }
+
+  @IsTest
+  static void saveMarkdownWithSameImage_acrossSaves_reusesExistingContentVersion() {
+    Account a = makeAccount();
+    String dataUri = 'data:image/png;base64,' + PNG_B64;
+
+    Test.startTest();
+    String firstResult = MarkdownImageHandler.saveMarkdownWithImages(
+      a.Id,
+      'Account',
+      'Description',
+      '![first](' + dataUri + ')'
+    );
+    String secondResult = MarkdownImageHandler.saveMarkdownWithImages(
+      a.Id,
+      'Account',
+      'Description',
+      '![second](' + dataUri + ')'
+    );
+    Test.stopTest();
+
+    System.assertEquals(
+      1,
+      [SELECT COUNT() FROM ContentVersion],
+      '別の保存であっても同じ画像なら既存の CV を再利用し、新規作成しない'
+    );
+
+    Integer firstUrlStart = firstResult.indexOf(
+      '/sfc/servlet.shepherd/document/download/'
+    );
+    Integer secondUrlStart = secondResult.indexOf(
+      '/sfc/servlet.shepherd/document/download/'
+    );
+    System.assertEquals(
+      firstResult.substring(firstUrlStart),
+      secondResult.substring(secondUrlStart),
+      '2回目の保存でも同じ download URL に置換されるべき'
+    );
+  }
+
+  @IsTest
   static void saveMarkdownWithUnsupportedImageType_throwsFriendlyAuraHandledException() {
     Account a = makeAccount();
     String md = '![txt](data:text/plain;base64,' + PNG_B64 + ')';

@@ -60,48 +60,99 @@ public with sharing class MarkdownImageHandler {
         return markdownContent;
       }
 
+      // 同一画像（base64データが同一）を再アップロードしないよう、内容の
+      // SHA-256ハッシュを ContentVersion.Title に埋め込んで既存ファイルを
+      // 特定できるようにする。同一保存内での重複（同じ画像を複数回貼り付け）
+      // と、過去の保存で既にアップロード済みの画像（同一レコードに紐づく
+      // ContentVersion を Title で検索）の両方をこの仕組みでまとめて防ぐ。
+      List<String> hashes = new List<String>();
+      Map<String, String> titleByHash = new Map<String, String>();
+      for (DataUriMatch m : matches) {
+        checkRuntimeLimits();
+        String h = computeContentHash(m.base64Data);
+        hashes.add(h);
+        titleByHash.put(h, 'md-image-' + h);
+      }
+
+      List<String> expectedTitles = titleByHash.values();
+      Map<String, Id> contentDocumentIdByHash = new Map<String, Id>();
+      for (ContentVersion existing : [
+        SELECT Id, ContentDocumentId, Title
+        FROM ContentVersion
+        WHERE FirstPublishLocationId = :recordId AND Title IN :expectedTitles
+        WITH USER_MODE
+      ]) {
+        for (String h : titleByHash.keySet()) {
+          if (titleByHash.get(h) == existing.Title) {
+            contentDocumentIdByHash.put(h, existing.ContentDocumentId);
+            break;
+          }
+        }
+      }
+
       List<ContentVersion> versionsToInsert = new List<ContentVersion>();
-      Long ts = System.currentTimeMillis();
+      List<String> hashesToInsert = new List<String>();
+      Integer uniqueIndex = 0;
 
       for (Integer i = 0; i < matches.size(); i++) {
         checkRuntimeLimits();
+        String h = hashes[i];
+        if (
+          contentDocumentIdByHash.containsKey(h) ||
+          hashesToInsert.contains(h)
+        ) {
+          // 既存ファイルとして解決済み、または同一保存内で既にアップロード
+          // 対象として登録済みのため、再アップロードしない。
+          continue;
+        }
         DataUriMatch m = matches[i];
         String ext = mimeTypeToExtension(m.mimeType);
         ContentVersion cv = new ContentVersion();
-        cv.Title = 'md-image-' + ts + '-' + i;
-        cv.PathOnClient = 'md-image-' + i + '.' + ext;
+        cv.Title = titleByHash.get(h);
+        cv.PathOnClient = 'md-image-' + uniqueIndex + '.' + ext;
         cv.VersionData = EncodingUtil.base64Decode(m.base64Data);
         cv.FirstPublishLocationId = recordId;
         versionsToInsert.add(cv);
+        hashesToInsert.add(h);
+        uniqueIndex++;
       }
 
-      insert as user versionsToInsert;
+      if (!versionsToInsert.isEmpty()) {
+        insert as user versionsToInsert;
 
-      Set<Id> versionIds = new Set<Id>();
-      for (ContentVersion cv : versionsToInsert) {
-        versionIds.add(cv.Id);
+        Set<Id> versionIds = new Set<Id>();
+        for (ContentVersion cv : versionsToInsert) {
+          versionIds.add(cv.Id);
+        }
+
+        Map<Id, ContentVersion> reloaded = new Map<Id, ContentVersion>(
+          [
+            SELECT Id, ContentDocumentId
+            FROM ContentVersion
+            WHERE Id IN :versionIds
+            WITH USER_MODE
+          ]
+        );
+
+        for (Integer i = 0; i < versionsToInsert.size(); i++) {
+          ContentVersion saved = reloaded.get(versionsToInsert[i].Id);
+          if (saved != null && saved.ContentDocumentId != null) {
+            contentDocumentIdByHash.put(hashesToInsert[i], saved.ContentDocumentId);
+          }
+        }
       }
-
-      Map<Id, ContentVersion> reloaded = new Map<Id, ContentVersion>(
-        [
-          SELECT Id, ContentDocumentId
-          FROM ContentVersion
-          WHERE Id IN :versionIds
-          WITH USER_MODE
-        ]
-      );
 
       // 末尾から置換することで、先行する置換がオフセットに影響しないようにする
       String modifiedMarkdown = markdownContent;
       for (Integer i = matches.size() - 1; i >= 0; i--) {
         DataUriMatch m = matches[i];
-        ContentVersion saved = reloaded.get(versionsToInsert[i].Id);
-        if (saved == null || saved.ContentDocumentId == null) {
+        Id docId = contentDocumentIdByHash.get(hashes[i]);
+        if (docId == null) {
           continue;
         }
         String downloadUrl = String.format(
           DOWNLOAD_URL_TEMPLATE,
-          new List<String>{ String.valueOf(saved.ContentDocumentId) }
+          new List<String>{ String.valueOf(docId) }
         );
         modifiedMarkdown =
           modifiedMarkdown.substring(0, m.startIndex) +
@@ -386,6 +437,17 @@ public with sharing class MarkdownImageHandler {
       return false;
     }
     return SUPPORTED_IMAGE_MIME_TYPES.contains(mimeType.toLowerCase());
+  }
+
+  // 同一画像の重複アップロードを防ぐための識別子。base64文字列そのものに
+  // 対して求める（デコード後バイト列にしないのは、デコード結果を余分に
+  // ヒープへ保持せずに済ませるため）。同一画像であれば常に同一の base64
+  // 表現になる前提（extractDataUris が抽出する元データはそのまま比較する
+  // ため、エンコード方式の揺れは考慮不要）。
+  @TestVisible
+  private static String computeContentHash(String base64Data) {
+    Blob digest = Crypto.generateDigest('SHA-256', Blob.valueOf(base64Data));
+    return EncodingUtil.convertToHex(digest);
   }
 
   @TestVisible
