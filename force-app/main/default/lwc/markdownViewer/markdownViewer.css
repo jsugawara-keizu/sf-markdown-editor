@@ -173,6 +173,51 @@
 .md-content :global(img) {
   max-width: 100%;
   height: auto;
+  cursor: zoom-in;
+}
+
+/* ---- Image zoom popup ----
+   CSS-based fixed overlay, same family as the fullscreen-preview overlay in
+   markdownEditor.css (LWS blocks the native Fullscreen API, so there's no
+   <dialog>/requestFullscreen alternative here either). */
+.md-image-zoom-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--slds-g-spacing-6, 2rem);
+  background: rgba(0, 0, 0, 0.85);
+  cursor: zoom-out;
+}
+
+.md-image-zoom-img {
+  max-width: 100%;
+  max-height: 100%;
+  cursor: default;
+  box-shadow: 0 0.25rem 1.5rem rgba(0, 0, 0, 0.5);
+}
+
+.md-image-zoom-close {
+  position: fixed;
+  top: var(--slds-g-spacing-4, 1rem);
+  right: var(--slds-g-spacing-4, 1rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+}
+
+.md-image-zoom-close:hover,
+.md-image-zoom-close:focus {
+  background: rgba(0, 0, 0, 0.75);
 }
 
 /* ---- Details / Summary ---- */

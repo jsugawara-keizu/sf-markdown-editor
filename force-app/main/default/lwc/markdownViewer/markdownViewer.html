@@ -25,6 +25,33 @@
         lwc:dom="manual"
         aria-label={labels.previewAria}
       ></div>
+
+      <template lwc:if={isImageZoomOpen}>
+        <div
+          class="md-image-zoom-overlay"
+          onclick={handleImageZoomOverlayClick}
+          role="presentation"
+        >
+          <button
+            type="button"
+            class="md-image-zoom-close"
+            onclick={handleImageZoomCloseClick}
+            aria-label={labels.imageZoomCloseLabel}
+            title={labels.imageZoomCloseLabel}
+          >
+            <lightning-icon
+              icon-name="utility:close"
+              size="small"
+              variant="inverse"
+            ></lightning-icon>
+          </button>
+          <img
+            src={zoomedImageSrc}
+            alt={zoomedImageAlt}
+            class="md-image-zoom-img"
+          />
+        </div>
+      </template>
     </div>
   </template>
 </template>

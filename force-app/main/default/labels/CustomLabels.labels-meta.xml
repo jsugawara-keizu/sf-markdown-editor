@@ -631,4 +631,11 @@
         <shortDescription>Checklist: task hover preview "Edit" tab</shortDescription>
         <value>Edit</value>
     </labels>
+    <labels>
+        <fullName>MarkdownImageZoomCloseLabel</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Image zoom popup close button</shortDescription>
+        <value>Close</value>
+    </labels>
 </CustomLabels>

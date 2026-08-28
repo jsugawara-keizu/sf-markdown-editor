@@ -366,4 +366,115 @@ describe("c-markdown-viewer", () => {
       errorSpy.mockRestore();
     });
   });
+
+  describe("image zoom", () => {
+    function markdownCoreMockWithImage() {
+      return {
+        renderAndSanitizeAsync: jest.fn(
+          async () => '<p><img src="/foo.png" alt="a photo"></p>'
+        )
+      };
+    }
+
+    async function renderWithImage(el) {
+      document.body.appendChild(el);
+      await flushPromises();
+      jest.advanceTimersByTime(100);
+      await flushPromises();
+      await flushPromises();
+    }
+
+    it("opens a zoom overlay showing the clicked image on click", async () => {
+      global.MarkdownCore = markdownCoreMockWithImage();
+      window.MarkdownCore = global.MarkdownCore;
+      const el = createElement("c-markdown-viewer", { is: MarkdownViewer });
+      el.value = "![a photo](/foo.png)";
+      await renderWithImage(el);
+
+      expect(el.shadowRoot.querySelector(".md-image-zoom-overlay")).toBeNull();
+
+      const img = el.shadowRoot.querySelector('[data-id="content"] img');
+      expect(img).not.toBeNull();
+      img.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      await flushPromises();
+
+      const overlay = el.shadowRoot.querySelector(".md-image-zoom-overlay");
+      expect(overlay).not.toBeNull();
+      const zoomedImg = overlay.querySelector(".md-image-zoom-img");
+      expect(zoomedImg.src).toContain("/foo.png");
+      expect(zoomedImg.alt).toBe("a photo");
+    });
+
+    it("closes the overlay when the close button is clicked", async () => {
+      global.MarkdownCore = markdownCoreMockWithImage();
+      window.MarkdownCore = global.MarkdownCore;
+      const el = createElement("c-markdown-viewer", { is: MarkdownViewer });
+      el.value = "![a photo](/foo.png)";
+      await renderWithImage(el);
+
+      const img = el.shadowRoot.querySelector('[data-id="content"] img');
+      img.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      await flushPromises();
+
+      const closeBtn = el.shadowRoot.querySelector(".md-image-zoom-close");
+      closeBtn.click();
+      await flushPromises();
+
+      expect(el.shadowRoot.querySelector(".md-image-zoom-overlay")).toBeNull();
+    });
+
+    it("closes the overlay when the backdrop (not the image) is clicked", async () => {
+      global.MarkdownCore = markdownCoreMockWithImage();
+      window.MarkdownCore = global.MarkdownCore;
+      const el = createElement("c-markdown-viewer", { is: MarkdownViewer });
+      el.value = "![a photo](/foo.png)";
+      await renderWithImage(el);
+
+      const img = el.shadowRoot.querySelector('[data-id="content"] img');
+      img.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      await flushPromises();
+
+      const overlay = el.shadowRoot.querySelector(".md-image-zoom-overlay");
+      overlay.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      await flushPromises();
+
+      expect(el.shadowRoot.querySelector(".md-image-zoom-overlay")).toBeNull();
+    });
+
+    it("does not close the overlay when the zoomed image itself is clicked", async () => {
+      global.MarkdownCore = markdownCoreMockWithImage();
+      window.MarkdownCore = global.MarkdownCore;
+      const el = createElement("c-markdown-viewer", { is: MarkdownViewer });
+      el.value = "![a photo](/foo.png)";
+      await renderWithImage(el);
+
+      const img = el.shadowRoot.querySelector('[data-id="content"] img');
+      img.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      await flushPromises();
+
+      const zoomedImg = el.shadowRoot.querySelector(".md-image-zoom-img");
+      zoomedImg.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      await flushPromises();
+
+      expect(el.shadowRoot.querySelector(".md-image-zoom-overlay")).not.toBeNull();
+    });
+
+    it("closes the overlay on Escape key", async () => {
+      global.MarkdownCore = markdownCoreMockWithImage();
+      window.MarkdownCore = global.MarkdownCore;
+      const el = createElement("c-markdown-viewer", { is: MarkdownViewer });
+      el.value = "![a photo](/foo.png)";
+      await renderWithImage(el);
+
+      const img = el.shadowRoot.querySelector('[data-id="content"] img');
+      img.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      await flushPromises();
+      expect(el.shadowRoot.querySelector(".md-image-zoom-overlay")).not.toBeNull();
+
+      window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+      await flushPromises();
+
+      expect(el.shadowRoot.querySelector(".md-image-zoom-overlay")).toBeNull();
+    });
+  });
 });

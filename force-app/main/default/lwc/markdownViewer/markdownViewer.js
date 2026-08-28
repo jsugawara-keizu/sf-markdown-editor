@@ -11,13 +11,15 @@ import MARKDOWN_LOADING_ALT_TEXT from "@salesforce/label/c.MarkdownLoadingAltTex
 import MARKDOWN_VIEWER_ERROR_TEXT from "@salesforce/label/c.MarkdownViewerErrorText";
 import MARKDOWN_SAVE_ERROR_TITLE from "@salesforce/label/c.MarkdownSaveErrorTitle";
 import MARKDOWN_SAVE_ERROR_MESSAGE from "@salesforce/label/c.MarkdownSaveErrorMessage";
+import MARKDOWN_IMAGE_ZOOM_CLOSE_LABEL from "@salesforce/label/c.MarkdownImageZoomCloseLabel";
 
 const LABELS = {
   previewAria: MARKDOWN_PREVIEW_ARIA_LABEL,
   loadingAltText: MARKDOWN_LOADING_ALT_TEXT,
   viewerErrorText: MARKDOWN_VIEWER_ERROR_TEXT,
   saveErrorTitle: MARKDOWN_SAVE_ERROR_TITLE,
-  saveErrorMessage: MARKDOWN_SAVE_ERROR_MESSAGE
+  saveErrorMessage: MARKDOWN_SAVE_ERROR_MESSAGE,
+  imageZoomCloseLabel: MARKDOWN_IMAGE_ZOOM_CLOSE_LABEL
 };
 
 function clearChildren(el) {
@@ -53,7 +55,7 @@ const MD_CONTENT_STYLES = `
 .md-content a{color:#0176d3;text-decoration:none}
 .md-content a:hover{text-decoration:underline}
 .md-content hr{border:none;border-top:1px solid #dddbda;margin:1rem 0}
-.md-content img{max-width:100%;height:auto}
+.md-content img{max-width:100%;height:auto;cursor:zoom-in}
 .md-content strong{font-weight:700}
 .md-content em{font-style:italic}
 .md-content del{text-decoration:line-through}
@@ -145,6 +147,10 @@ export default class MarkdownViewer extends LightningElement {
   _checkboxLineOffset = 0;
   _debounceTimer = null;
   labels = LABELS;
+
+  @track isImageZoomOpen = false;
+  zoomedImageSrc = "";
+  zoomedImageAlt = "";
 
   get qualifiedFields() {
     if (!this.normalizedFieldApiName) {
@@ -370,6 +376,7 @@ export default class MarkdownViewer extends LightningElement {
       clearTimeout(this._debounceTimer);
       this._debounceTimer = null;
     }
+    this.closeImageZoom();
   }
 
   renderedCallback() {
@@ -443,6 +450,7 @@ export default class MarkdownViewer extends LightningElement {
       appendHtml(container, safeHtml);
       this.bindAnchorLinks(container);
       this.bindCheckboxToggle(container);
+      this.bindImageZoom(container);
     } catch (err) {
       console.error("[markdownViewer] render failed:", err);
       this.dispatchEvent(
@@ -568,6 +576,62 @@ export default class MarkdownViewer extends LightningElement {
         });
       });
     });
+  }
+
+  bindImageZoom(container) {
+    // Same one-time-bind-on-the-persistent-container pattern as
+    // bindCheckboxToggle/bindAnchorLinks above: the <img> elements
+    // themselves are recreated on every render, but this container isn't.
+    if (this._imageZoomBound) {
+      return;
+    }
+    this._imageZoomBound = true;
+    container.addEventListener("click", (e) => {
+      const img = e.target.closest("img");
+      if (!img || !container.contains(img)) {
+        return;
+      }
+      this.openImageZoom(img.getAttribute("src"), img.getAttribute("alt"));
+    });
+  }
+
+  openImageZoom(src, alt) {
+    if (!src) {
+      return;
+    }
+    this.zoomedImageSrc = src;
+    this.zoomedImageAlt = alt || "";
+    this.isImageZoomOpen = true;
+    window.addEventListener("keydown", this.handleImageZoomKeydown);
+  }
+
+  closeImageZoom() {
+    if (!this.isImageZoomOpen) {
+      return;
+    }
+    this.isImageZoomOpen = false;
+    this.zoomedImageSrc = "";
+    this.zoomedImageAlt = "";
+    window.removeEventListener("keydown", this.handleImageZoomKeydown);
+  }
+
+  // Class-field arrow function so the same bound reference can be passed to
+  // both addEventListener (openImageZoom) and removeEventListener
+  // (closeImageZoom) above.
+  handleImageZoomKeydown = (e) => {
+    if (e.key === "Escape") {
+      this.closeImageZoom();
+    }
+  };
+
+  handleImageZoomOverlayClick(e) {
+    if (e.target === e.currentTarget) {
+      this.closeImageZoom();
+    }
+  }
+
+  handleImageZoomCloseClick() {
+    this.closeImageZoom();
   }
 
   findScrollParent(startEl) {
