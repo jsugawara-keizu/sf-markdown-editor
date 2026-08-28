@@ -1,3 +1,9 @@
+## [1.3.0](https://github.com/jsugawara-keizu/sf-markdown-editor/compare/v1.2.2...v1.3.0) (2026-08-28)
+
+### Features
+
+- markdownViewerでプレビュー画像クリック時のポップアップ拡大表示に対応 ([3259ed7](https://github.com/jsugawara-keizu/sf-markdown-editor/commit/3259ed744826fac3f1679757a1ebbae06c2cb506))
+
 ## [1.2.2](https://github.com/jsugawara-keizu/sf-markdown-editor/compare/v1.2.1...v1.2.2) (2026-08-25)
 
 ### Bug Fixes
