@@ -1,3 +1,9 @@
+## [1.4.0](https://github.com/jsugawara-keizu/sf-markdown-editor/compare/v1.3.0...v1.4.0) (2026-08-29)
+
+### Features
+
+- 画像ズームポップアップにホイール/ボタン/ダブルクリック/キーボードでの拡大縮小とドラッグパンを追加 ([04605ff](https://github.com/jsugawara-keizu/sf-markdown-editor/commit/04605ff83d7f1fd0f021da179729fb368553b84e))
+
 ## [1.3.0](https://github.com/jsugawara-keizu/sf-markdown-editor/compare/v1.2.2...v1.3.0) (2026-08-28)
 
 ### Features
