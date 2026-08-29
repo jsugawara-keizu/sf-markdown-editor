@@ -476,5 +476,205 @@ describe("c-markdown-viewer", () => {
 
       expect(el.shadowRoot.querySelector(".md-image-zoom-overlay")).toBeNull();
     });
+
+    function scaleFromStyle(imgEl) {
+      const match = /scale\(([\d.]+)\)/.exec(imgEl.style.cssText);
+      return match ? Number(match[1]) : null;
+    }
+
+    function translateFromStyle(imgEl) {
+      const match = /translate\(([-\d.]+)px, ([-\d.]+)px\)/.exec(
+        imgEl.style.cssText
+      );
+      return match ? { x: Number(match[1]), y: Number(match[2]) } : null;
+    }
+
+    async function openZoom(el) {
+      const img = el.shadowRoot.querySelector('[data-id="content"] img');
+      img.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      await flushPromises();
+      return el.shadowRoot.querySelector(".md-image-zoom-img");
+    }
+
+    it("zooms in and out via the wheel event, clamped to [1, 5]", async () => {
+      global.MarkdownCore = markdownCoreMockWithImage();
+      window.MarkdownCore = global.MarkdownCore;
+      const el = createElement("c-markdown-viewer", { is: MarkdownViewer });
+      el.value = "![a photo](/foo.png)";
+      await renderWithImage(el);
+      const zoomedImg = await openZoom(el);
+
+      expect(scaleFromStyle(zoomedImg)).toBe(1);
+
+      zoomedImg.dispatchEvent(new WheelEvent("wheel", { deltaY: -100, bubbles: true }));
+      await flushPromises();
+      expect(scaleFromStyle(el.shadowRoot.querySelector(".md-image-zoom-img"))).toBe(
+        1.5
+      );
+
+      for (let i = 0; i < 10; i += 1) {
+        el.shadowRoot
+          .querySelector(".md-image-zoom-img")
+          .dispatchEvent(new WheelEvent("wheel", { deltaY: -100, bubbles: true }));
+        // eslint-disable-next-line no-await-in-loop
+        await flushPromises();
+      }
+      expect(scaleFromStyle(el.shadowRoot.querySelector(".md-image-zoom-img"))).toBe(
+        5
+      );
+
+      el.shadowRoot
+        .querySelector(".md-image-zoom-img")
+        .dispatchEvent(new WheelEvent("wheel", { deltaY: 100, bubbles: true }));
+      await flushPromises();
+      expect(scaleFromStyle(el.shadowRoot.querySelector(".md-image-zoom-img"))).toBe(
+        4.5
+      );
+    });
+
+    it("zooms via the toolbar buttons and resets with the reset button", async () => {
+      global.MarkdownCore = markdownCoreMockWithImage();
+      window.MarkdownCore = global.MarkdownCore;
+      const el = createElement("c-markdown-viewer", { is: MarkdownViewer });
+      el.value = "![a photo](/foo.png)";
+      await renderWithImage(el);
+      await openZoom(el);
+
+      const [zoomOutBtn, resetBtn, zoomInBtn] =
+        el.shadowRoot.querySelectorAll(".md-image-zoom-btn");
+
+      zoomInBtn.click();
+      await flushPromises();
+      expect(
+        scaleFromStyle(el.shadowRoot.querySelector(".md-image-zoom-img"))
+      ).toBe(1.5);
+
+      zoomOutBtn.click();
+      await flushPromises();
+      expect(
+        scaleFromStyle(el.shadowRoot.querySelector(".md-image-zoom-img"))
+      ).toBe(1);
+
+      zoomInBtn.click();
+      zoomInBtn.click();
+      resetBtn.click();
+      await flushPromises();
+      expect(
+        scaleFromStyle(el.shadowRoot.querySelector(".md-image-zoom-img"))
+      ).toBe(1);
+    });
+
+    it("toggles zoom on double-click", async () => {
+      global.MarkdownCore = markdownCoreMockWithImage();
+      window.MarkdownCore = global.MarkdownCore;
+      const el = createElement("c-markdown-viewer", { is: MarkdownViewer });
+      el.value = "![a photo](/foo.png)";
+      await renderWithImage(el);
+      const zoomedImg = await openZoom(el);
+
+      zoomedImg.dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
+      await flushPromises();
+      expect(
+        scaleFromStyle(el.shadowRoot.querySelector(".md-image-zoom-img"))
+      ).toBe(2);
+
+      el.shadowRoot
+        .querySelector(".md-image-zoom-img")
+        .dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
+      await flushPromises();
+      expect(
+        scaleFromStyle(el.shadowRoot.querySelector(".md-image-zoom-img"))
+      ).toBe(1);
+    });
+
+    it("supports keyboard zoom (+/-/0)", async () => {
+      global.MarkdownCore = markdownCoreMockWithImage();
+      window.MarkdownCore = global.MarkdownCore;
+      const el = createElement("c-markdown-viewer", { is: MarkdownViewer });
+      el.value = "![a photo](/foo.png)";
+      await renderWithImage(el);
+      await openZoom(el);
+
+      window.dispatchEvent(new KeyboardEvent("keydown", { key: "+" }));
+      await flushPromises();
+      expect(
+        scaleFromStyle(el.shadowRoot.querySelector(".md-image-zoom-img"))
+      ).toBe(1.5);
+
+      window.dispatchEvent(new KeyboardEvent("keydown", { key: "0" }));
+      await flushPromises();
+      expect(
+        scaleFromStyle(el.shadowRoot.querySelector(".md-image-zoom-img"))
+      ).toBe(1);
+    });
+
+    it("pans the zoomed image by dragging, but not while at 1x", async () => {
+      global.MarkdownCore = markdownCoreMockWithImage();
+      window.MarkdownCore = global.MarkdownCore;
+      const el = createElement("c-markdown-viewer", { is: MarkdownViewer });
+      el.value = "![a photo](/foo.png)";
+      await renderWithImage(el);
+      let zoomedImg = await openZoom(el);
+
+      // Dragging at 1x should not pan (nothing to pan into view yet).
+      zoomedImg.dispatchEvent(
+        new MouseEvent("mousedown", { bubbles: true, clientX: 0, clientY: 0 })
+      );
+      window.dispatchEvent(
+        new MouseEvent("mousemove", { clientX: 50, clientY: 30 })
+      );
+      await flushPromises();
+      expect(
+        translateFromStyle(el.shadowRoot.querySelector(".md-image-zoom-img"))
+      ).toEqual({ x: 0, y: 0 });
+
+      zoomedImg.dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
+      await flushPromises();
+      zoomedImg = el.shadowRoot.querySelector(".md-image-zoom-img");
+      expect(scaleFromStyle(zoomedImg)).toBe(2);
+
+      zoomedImg.dispatchEvent(
+        new MouseEvent("mousedown", { bubbles: true, clientX: 0, clientY: 0 })
+      );
+      window.dispatchEvent(
+        new MouseEvent("mousemove", { clientX: 40, clientY: -20 })
+      );
+      await flushPromises();
+      expect(
+        translateFromStyle(el.shadowRoot.querySelector(".md-image-zoom-img"))
+      ).toEqual({ x: 40, y: -20 });
+
+      window.dispatchEvent(new MouseEvent("mouseup"));
+      window.dispatchEvent(
+        new MouseEvent("mousemove", { clientX: 100, clientY: 100 })
+      );
+      await flushPromises();
+      // Movement after mouseup must not continue panning.
+      expect(
+        translateFromStyle(el.shadowRoot.querySelector(".md-image-zoom-img"))
+      ).toEqual({ x: 40, y: -20 });
+    });
+
+    it("resets zoom/pan state when the overlay is reopened for a new image", async () => {
+      global.MarkdownCore = markdownCoreMockWithImage();
+      window.MarkdownCore = global.MarkdownCore;
+      const el = createElement("c-markdown-viewer", { is: MarkdownViewer });
+      el.value = "![a photo](/foo.png)";
+      await renderWithImage(el);
+      let zoomedImg = await openZoom(el);
+
+      zoomedImg.dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
+      await flushPromises();
+      expect(
+        scaleFromStyle(el.shadowRoot.querySelector(".md-image-zoom-img"))
+      ).toBe(2);
+
+      const closeBtn = el.shadowRoot.querySelector(".md-image-zoom-close");
+      closeBtn.click();
+      await flushPromises();
+
+      zoomedImg = await openZoom(el);
+      expect(scaleFromStyle(zoomedImg)).toBe(1);
+    });
   });
 });

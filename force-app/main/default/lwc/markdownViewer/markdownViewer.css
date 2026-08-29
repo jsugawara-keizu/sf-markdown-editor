@@ -190,19 +190,31 @@
   padding: var(--slds-g-spacing-6, 2rem);
   background: rgba(0, 0, 0, 0.85);
   cursor: zoom-out;
+  overflow: hidden;
 }
 
 .md-image-zoom-img {
   max-width: 100%;
   max-height: 100%;
-  cursor: default;
   box-shadow: 0 0.25rem 1.5rem rgba(0, 0, 0, 0.5);
+  /* Panning/zoom happens via inline transform (translate/scale) set from
+     JS — see markdownViewer.js's imageZoomStyle getter. No CSS transition
+     here: it would lag drag-to-pan noticeably behind the pointer. */
+  touch-action: none;
+  user-select: none;
 }
 
-.md-image-zoom-close {
+.md-image-zoom-toolbar {
   position: fixed;
   top: var(--slds-g-spacing-4, 1rem);
-  right: var(--slds-g-spacing-4, 1rem);
+  left: var(--slds-g-spacing-4, 1rem);
+  z-index: 10001;
+  display: flex;
+  gap: var(--slds-g-spacing-2, 0.5rem);
+}
+
+.md-image-zoom-btn,
+.md-image-zoom-close {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -215,9 +227,18 @@
   cursor: pointer;
 }
 
+.md-image-zoom-btn:hover,
+.md-image-zoom-btn:focus,
 .md-image-zoom-close:hover,
 .md-image-zoom-close:focus {
   background: rgba(0, 0, 0, 0.75);
+}
+
+.md-image-zoom-close {
+  position: fixed;
+  top: var(--slds-g-spacing-4, 1rem);
+  right: var(--slds-g-spacing-4, 1rem);
+  z-index: 10001;
 }
 
 /* ---- Details / Summary ---- */

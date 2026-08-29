@@ -30,8 +30,50 @@
         <div
           class="md-image-zoom-overlay"
           onclick={handleImageZoomOverlayClick}
+          onwheel={handleImageZoomWheel}
           role="presentation"
         >
+          <div class="md-image-zoom-toolbar">
+            <button
+              type="button"
+              class="md-image-zoom-btn"
+              onclick={handleImageZoomOutClick}
+              aria-label={labels.imageZoomOutLabel}
+              title={labels.imageZoomOutLabel}
+            >
+              <lightning-icon
+                icon-name="utility:zoomout"
+                size="x-small"
+                variant="inverse"
+              ></lightning-icon>
+            </button>
+            <button
+              type="button"
+              class="md-image-zoom-btn"
+              onclick={handleImageZoomResetClick}
+              aria-label={labels.imageZoomResetLabel}
+              title={labels.imageZoomResetLabel}
+            >
+              <lightning-icon
+                icon-name="utility:refresh"
+                size="x-small"
+                variant="inverse"
+              ></lightning-icon>
+            </button>
+            <button
+              type="button"
+              class="md-image-zoom-btn"
+              onclick={handleImageZoomInClick}
+              aria-label={labels.imageZoomInLabel}
+              title={labels.imageZoomInLabel}
+            >
+              <lightning-icon
+                icon-name="utility:zoomin"
+                size="x-small"
+                variant="inverse"
+              ></lightning-icon>
+            </button>
+          </div>
           <button
             type="button"
             class="md-image-zoom-close"
@@ -49,6 +91,9 @@
             src={zoomedImageSrc}
             alt={zoomedImageAlt}
             class="md-image-zoom-img"
+            style={imageZoomStyle}
+            onmousedown={handleImageZoomMouseDown}
+            ondblclick={handleImageZoomDoubleClick}
           />
         </div>
       </template>

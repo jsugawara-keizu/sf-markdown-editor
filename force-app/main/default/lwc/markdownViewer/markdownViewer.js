@@ -12,6 +12,9 @@ import MARKDOWN_VIEWER_ERROR_TEXT from "@salesforce/label/c.MarkdownViewerErrorT
 import MARKDOWN_SAVE_ERROR_TITLE from "@salesforce/label/c.MarkdownSaveErrorTitle";
 import MARKDOWN_SAVE_ERROR_MESSAGE from "@salesforce/label/c.MarkdownSaveErrorMessage";
 import MARKDOWN_IMAGE_ZOOM_CLOSE_LABEL from "@salesforce/label/c.MarkdownImageZoomCloseLabel";
+import MARKDOWN_IMAGE_ZOOM_IN_LABEL from "@salesforce/label/c.MarkdownImageZoomInLabel";
+import MARKDOWN_IMAGE_ZOOM_OUT_LABEL from "@salesforce/label/c.MarkdownImageZoomOutLabel";
+import MARKDOWN_IMAGE_ZOOM_RESET_LABEL from "@salesforce/label/c.MarkdownImageZoomResetLabel";
 
 const LABELS = {
   previewAria: MARKDOWN_PREVIEW_ARIA_LABEL,
@@ -19,8 +22,15 @@ const LABELS = {
   viewerErrorText: MARKDOWN_VIEWER_ERROR_TEXT,
   saveErrorTitle: MARKDOWN_SAVE_ERROR_TITLE,
   saveErrorMessage: MARKDOWN_SAVE_ERROR_MESSAGE,
-  imageZoomCloseLabel: MARKDOWN_IMAGE_ZOOM_CLOSE_LABEL
+  imageZoomCloseLabel: MARKDOWN_IMAGE_ZOOM_CLOSE_LABEL,
+  imageZoomInLabel: MARKDOWN_IMAGE_ZOOM_IN_LABEL,
+  imageZoomOutLabel: MARKDOWN_IMAGE_ZOOM_OUT_LABEL,
+  imageZoomResetLabel: MARKDOWN_IMAGE_ZOOM_RESET_LABEL
 };
+
+const IMAGE_ZOOM_MIN_SCALE = 1;
+const IMAGE_ZOOM_MAX_SCALE = 5;
+const IMAGE_ZOOM_STEP = 0.5;
 
 function clearChildren(el) {
   while (el.firstChild) {
@@ -149,8 +159,17 @@ export default class MarkdownViewer extends LightningElement {
   labels = LABELS;
 
   @track isImageZoomOpen = false;
+  @track imageZoomScale = IMAGE_ZOOM_MIN_SCALE;
+  @track imageZoomTranslateX = 0;
+  @track imageZoomTranslateY = 0;
   zoomedImageSrc = "";
   zoomedImageAlt = "";
+  _imageZoomDragState = null;
+
+  get imageZoomStyle() {
+    const cursor = this.imageZoomScale > IMAGE_ZOOM_MIN_SCALE ? "grab" : "default";
+    return `transform: translate(${this.imageZoomTranslateX}px, ${this.imageZoomTranslateY}px) scale(${this.imageZoomScale}); cursor: ${cursor};`;
+  }
 
   get qualifiedFields() {
     if (!this.normalizedFieldApiName) {
@@ -601,18 +620,41 @@ export default class MarkdownViewer extends LightningElement {
     }
     this.zoomedImageSrc = src;
     this.zoomedImageAlt = alt || "";
+    this.resetImageZoomTransform();
     this.isImageZoomOpen = true;
     window.addEventListener("keydown", this.handleImageZoomKeydown);
   }
 
   closeImageZoom() {
+    this.endImageZoomDrag();
+    window.removeEventListener("keydown", this.handleImageZoomKeydown);
     if (!this.isImageZoomOpen) {
       return;
     }
     this.isImageZoomOpen = false;
     this.zoomedImageSrc = "";
     this.zoomedImageAlt = "";
-    window.removeEventListener("keydown", this.handleImageZoomKeydown);
+  }
+
+  resetImageZoomTransform() {
+    this.imageZoomScale = IMAGE_ZOOM_MIN_SCALE;
+    this.imageZoomTranslateX = 0;
+    this.imageZoomTranslateY = 0;
+  }
+
+  setImageZoomScale(nextScale) {
+    const clamped = Math.min(
+      IMAGE_ZOOM_MAX_SCALE,
+      Math.max(IMAGE_ZOOM_MIN_SCALE, nextScale)
+    );
+    this.imageZoomScale = clamped;
+    // Panning only makes sense once zoomed in; snapping the pan back to
+    // center when returning to 1x avoids the image reappearing off-screen
+    // the next time it's zoomed back in from a leftover pan offset.
+    if (clamped === IMAGE_ZOOM_MIN_SCALE) {
+      this.imageZoomTranslateX = 0;
+      this.imageZoomTranslateY = 0;
+    }
   }
 
   // Class-field arrow function so the same bound reference can be passed to
@@ -621,6 +663,12 @@ export default class MarkdownViewer extends LightningElement {
   handleImageZoomKeydown = (e) => {
     if (e.key === "Escape") {
       this.closeImageZoom();
+    } else if (e.key === "+" || e.key === "=") {
+      this.setImageZoomScale(this.imageZoomScale + IMAGE_ZOOM_STEP);
+    } else if (e.key === "-") {
+      this.setImageZoomScale(this.imageZoomScale - IMAGE_ZOOM_STEP);
+    } else if (e.key === "0") {
+      this.resetImageZoomTransform();
     }
   };
 
@@ -632,6 +680,72 @@ export default class MarkdownViewer extends LightningElement {
 
   handleImageZoomCloseClick() {
     this.closeImageZoom();
+  }
+
+  handleImageZoomInClick() {
+    this.setImageZoomScale(this.imageZoomScale + IMAGE_ZOOM_STEP);
+  }
+
+  handleImageZoomOutClick() {
+    this.setImageZoomScale(this.imageZoomScale - IMAGE_ZOOM_STEP);
+  }
+
+  handleImageZoomResetClick() {
+    this.resetImageZoomTransform();
+  }
+
+  handleImageZoomDoubleClick(e) {
+    e.stopPropagation();
+    if (this.imageZoomScale > IMAGE_ZOOM_MIN_SCALE) {
+      this.resetImageZoomTransform();
+    } else {
+      this.setImageZoomScale(2);
+    }
+  }
+
+  handleImageZoomWheel(e) {
+    e.preventDefault();
+    const delta = e.deltaY < 0 ? IMAGE_ZOOM_STEP : -IMAGE_ZOOM_STEP;
+    this.setImageZoomScale(this.imageZoomScale + delta);
+  }
+
+  handleImageZoomMouseDown(e) {
+    if (this.imageZoomScale <= IMAGE_ZOOM_MIN_SCALE) {
+      return;
+    }
+    e.preventDefault();
+    this._imageZoomDragState = {
+      startX: e.clientX,
+      startY: e.clientY,
+      startTranslateX: this.imageZoomTranslateX,
+      startTranslateY: this.imageZoomTranslateY
+    };
+    window.addEventListener("mousemove", this.handleImageZoomMouseMove);
+    window.addEventListener("mouseup", this.handleImageZoomMouseUp);
+  }
+
+  // Class-field arrow functions: bound once per instance so the same
+  // reference can be added/removed from `window` across drag start/end.
+  handleImageZoomMouseMove = (e) => {
+    if (!this._imageZoomDragState) {
+      return;
+    }
+    this.imageZoomTranslateX =
+      this._imageZoomDragState.startTranslateX +
+      (e.clientX - this._imageZoomDragState.startX);
+    this.imageZoomTranslateY =
+      this._imageZoomDragState.startTranslateY +
+      (e.clientY - this._imageZoomDragState.startY);
+  };
+
+  handleImageZoomMouseUp = () => {
+    this.endImageZoomDrag();
+  };
+
+  endImageZoomDrag() {
+    this._imageZoomDragState = null;
+    window.removeEventListener("mousemove", this.handleImageZoomMouseMove);
+    window.removeEventListener("mouseup", this.handleImageZoomMouseUp);
   }
 
   findScrollParent(startEl) {

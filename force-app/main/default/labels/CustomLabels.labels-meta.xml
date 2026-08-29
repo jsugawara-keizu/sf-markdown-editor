@@ -638,4 +638,25 @@
         <shortDescription>Image zoom popup close button</shortDescription>
         <value>Close</value>
     </labels>
+    <labels>
+        <fullName>MarkdownImageZoomInLabel</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Image zoom popup zoom-in button</shortDescription>
+        <value>Zoom in</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownImageZoomOutLabel</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Image zoom popup zoom-out button</shortDescription>
+        <value>Zoom out</value>
+    </labels>
+    <labels>
+        <fullName>MarkdownImageZoomResetLabel</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Image zoom popup reset-zoom button</shortDescription>
+        <value>Reset zoom</value>
+    </labels>
 </CustomLabels>
