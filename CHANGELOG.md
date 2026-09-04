@@ -1,3 +1,10 @@
+## [1.4.1](https://github.com/jsugawara-keizu/sf-markdown-editor/compare/v1.4.0...v1.4.1) (2026-09-04)
+
+### Bug Fixes
+
+- H1レンダリング時の下線を削除 ([8644058](https://github.com/jsugawara-keizu/sf-markdown-editor/commit/864405824f037df18d16262d86089b705c286300))
+- Marp文書の通常プレビューでMarkdownが二重表示される不具合を修正 ([bda8ba9](https://github.com/jsugawara-keizu/sf-markdown-editor/commit/bda8ba9145fe186d96c9614bddac0180a89e6890))
+
 ## [1.4.0](https://github.com/jsugawara-keizu/sf-markdown-editor/compare/v1.3.0...v1.4.0) (2026-08-29)
 
 ### Features
