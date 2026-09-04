@@ -45,7 +45,7 @@ function appendHtml(container, html) {
 }
 
 const MD_CONTENT_STYLES = `
-.md-content h1{font-size:1.75em;font-weight:700;margin:.75rem 0 .5rem;padding-bottom:.25rem;border-bottom:1px solid #dddbda}
+.md-content h1{font-size:1.75em;font-weight:700;margin:.75rem 0 .5rem}
 .md-content h2{font-size:1.375em;font-weight:700;margin:.75rem 0 .375rem}
 .md-content h3{font-size:1.125em;font-weight:700;margin:.625rem 0 .25rem}
 .md-content h4,.md-content h5,.md-content h6{font-size:1em;font-weight:700;margin:.5rem 0 .25rem}
