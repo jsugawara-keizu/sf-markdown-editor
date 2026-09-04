@@ -424,10 +424,18 @@ export default class MarkdownEditor extends LightningElement {
   }
 
   get isMarpSlideView() {
-    // True only while a Marp doc is actively showing its slide sub-view.
-    // Used to hide markdown-viewer/checklist-panel (which marpViewer already
-    // renders internally in slide mode) without hiding them for Marp docs
-    // switched back to the normal/document preview.
+    // True only while a Marp doc is actively showing its slide sub-view
+    // (rendered as an iframe inside c-marp-viewer, with no markdown-viewer
+    // involved). Used to hide the checklist panel during slide view without
+    // hiding it for Marp docs switched back to the normal/document preview.
+    //
+    // The standalone <c-markdown-viewer> above is a separate case: it is
+    // gated on `hasMarp` alone (see the template), because c-marp-viewer
+    // already renders its own internal <c-markdown-viewer> whenever a Marp
+    // doc is in its *document* sub-view (i.e. exactly when isMarpSlideView
+    // is false). Gating the standalone one on isMarpSlideView instead of
+    // hasMarp previously caused Marp docs to render two overlapping copies
+    // of the document in that sub-view.
     return this.hasMarp && this._marpSlideMode;
   }
 

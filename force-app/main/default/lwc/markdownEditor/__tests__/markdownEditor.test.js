@@ -116,7 +116,15 @@ describe("c-markdown-editor", () => {
     expect(
       el.shadowRoot.querySelector("c-markdown-checklist-panel")
     ).not.toBeNull();
-    expect(el.shadowRoot.querySelector("c-markdown-viewer")).not.toBeNull();
+    // Exactly one c-markdown-viewer must exist here, not two: c-marp-viewer
+    // already renders its own internal c-markdown-viewer for a Marp doc's
+    // normal (non-slide) preview (found by this querySelectorAll since the
+    // test environment's synthetic shadow DOM doesn't stop traversal at
+    // component boundaries), so markdownEditor mounting a second, standalone
+    // one alongside it would render the whole document twice.
+    expect(el.shadowRoot.querySelectorAll("c-markdown-viewer")).toHaveLength(
+      1
+    );
   });
 
   it("does not merge fenced code block lines containing pipes", () => {

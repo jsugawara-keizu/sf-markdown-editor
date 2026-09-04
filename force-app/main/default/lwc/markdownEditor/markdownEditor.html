@@ -267,13 +267,16 @@
             value={internalValue}
             onslidemodechange={handleMarpSlideModeChange}
           ></c-marp-viewer>
-          <template lwc:if={isMarpSlideView}></template>
+          <template lwc:if={hasMarp}></template>
           <template lwc:else>
             <c-markdown-viewer
               value={internalValue}
               read-only={isCheckboxToggleReadOnly}
               onmdcheckboxtoggle={handleCheckboxToggle}
             ></c-markdown-viewer>
+          </template>
+          <template lwc:if={isMarpSlideView}></template>
+          <template lwc:else>
             <c-markdown-checklist-panel
               record-id={recordId}
               object-api-name={objectApiName}
